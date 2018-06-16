@@ -1,0 +1,2750 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for homebridge-plugin-wrapper/hap-nodejs/lib/StreamController.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../../index.html">all files</a> / <a href="index.html">homebridge-plugin-wrapper/hap-nodejs/lib/</a> StreamController.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">3.1% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>13/420</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/130</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/29</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">3.1% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>13/420</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507
+508
+509
+510
+511
+512
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524
+525
+526
+527
+528
+529
+530
+531
+532
+533
+534
+535
+536
+537
+538
+539
+540
+541
+542
+543
+544
+545
+546
+547
+548
+549
+550
+551
+552
+553
+554
+555
+556
+557
+558
+559
+560
+561
+562
+563
+564
+565
+566
+567
+568
+569
+570
+571
+572
+573
+574
+575
+576
+577
+578
+579
+580
+581
+582
+583
+584
+585
+586
+587
+588
+589
+590
+591
+592
+593
+594
+595
+596
+597
+598
+599
+600
+601
+602
+603
+604
+605
+606
+607
+608
+609
+610
+611
+612
+613
+614
+615
+616
+617
+618
+619
+620
+621
+622
+623
+624
+625
+626
+627
+628
+629
+630
+631
+632
+633
+634
+635
+636
+637
+638
+639
+640
+641
+642
+643
+644
+645
+646
+647
+648
+649
+650
+651
+652
+653
+654
+655
+656
+657
+658
+659
+660
+661
+662
+663
+664
+665
+666
+667
+668
+669
+670
+671
+672
+673
+674
+675
+676
+677
+678
+679
+680
+681
+682
+683
+684
+685
+686
+687
+688
+689
+690
+691
+692
+693
+694
+695
+696
+697
+698
+699
+700
+701
+702
+703
+704
+705
+706
+707
+708
+709
+710
+711
+712
+713
+714
+715
+716
+717
+718
+719
+720
+721
+722
+723
+724
+725
+726
+727
+728
+729
+730
+731
+732
+733
+734
+735
+736
+737
+738
+739
+740
+741
+742
+743
+744
+745
+746
+747
+748
+749
+750
+751
+752
+753
+754
+755
+756
+757
+758
+759
+760
+761
+762
+763
+764
+765
+766
+767
+768
+769
+770
+771
+772
+773
+774
+775
+776
+777
+778
+779
+780
+781
+782
+783
+784
+785
+786
+787
+788
+789
+790
+791
+792
+793
+794
+795
+796
+797
+798
+799
+800
+801
+802
+803
+804
+805
+806
+807
+808
+809
+810
+811
+812
+813
+814
+815
+816
+817
+818
+819
+820
+821
+822
+823
+824
+825
+826
+827
+828
+829
+830
+831
+832
+833
+834
+835
+836
+837
+838
+839
+840
+841
+842
+843
+844
+845
+846
+847
+848
+849
+850
+851
+852
+853
+854
+855
+856
+857
+858
+859
+860
+861
+862
+863
+864
+865
+866
+867
+868
+869
+870
+871
+872
+873
+874
+875
+876
+877
+878
+879
+880
+881
+882
+883
+884
+885
+886
+887
+888
+889
+890
+891
+892
+893
+894
+895
+896</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict';
+&nbsp;
+var debug = require('debug')('StreamController');
+var inherits = require('util').inherits;
+var EventEmitter = require('events').EventEmitter;
+var clone = require('./util/clone').clone;
+var uuid = require('./util/uuid');
+var tlv = require('./util/tlv');
+var Service = require('./Service').Service;
+var Characteristic = require('./Characteristic').Characteristic;
+var HomeKitTypes = require('./gen/HomeKitTypes');
+&nbsp;
+var RTPProxy = require('./camera/RTPProxy');
+var crypto = require('crypto');
+var ip = require('ip');
+<span class="cstat-no" title="statement not covered" >var bufferShim = require('buffer-shims');</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >module.exports = {</span>
+  StreamController: StreamController
+};
+&nbsp;
+<span class="fstat-no" title="function not covered" >function StreamController(identifier, options, cameraSource) {</span>
+<span class="cstat-no" title="statement not covered" >  if (identifier === undefined) {</span>
+<span class="cstat-no" title="statement not covered" >    throw new Error('Identifier cannot be undefined');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!options) {</span>
+<span class="cstat-no" title="statement not covered" >    throw new Error('Options cannot be undefined');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!cameraSource) {</span>
+<span class="cstat-no" title="statement not covered" >    throw new Error('CameraSource cannot be undefined');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  let self = this;</span>
+<span class="cstat-no" title="statement not covered" >  self.identifier = identifier;</span>
+<span class="cstat-no" title="statement not covered" >  self.cameraSource = cameraSource;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self.requireProxy = options["proxy"] || false;</span>
+<span class="cstat-no" title="statement not covered" >  self.disableAudioProxy = options["disable_audio_proxy"] || false;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self.supportSRTP = options["srtp"] || false;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self.supportedRTPConfiguration = self._supportedRTPConfiguration(self.supportSRTP);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  let videoParams = options["video"];</span>
+<span class="cstat-no" title="statement not covered" >  if (!videoParams) {</span>
+<span class="cstat-no" title="statement not covered" >    throw new Error('Video parameters cannot be undefined in options');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self.supportedVideoStreamConfiguration = self._supportedVideoStreamConfiguration(videoParams);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  let audioParams = options["audio"];</span>
+<span class="cstat-no" title="statement not covered" >  if (!audioParams) {</span>
+<span class="cstat-no" title="statement not covered" >    throw new Error('Audio parameters cannot be undefined in options');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self.supportedAudioStreamConfiguration = self._supportedAudioStreamConfiguration(audioParams);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self.selectedConfiguration = null;</span>
+<span class="cstat-no" title="statement not covered" >  self.sessionIdentifier = null;</span>
+<span class="cstat-no" title="statement not covered" >  self.streamStatus = StreamController.StreamingStatus.AVAILABLE;</span>
+<span class="cstat-no" title="statement not covered" >  self.videoOnly = false;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self._createService();</span>
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.prototype.forceStop = <span class="fstat-no" title="function not covered" >function() {</span></span>
+<span class="cstat-no" title="statement not covered" >  this.connectionID = undefined;</span>
+<span class="cstat-no" title="statement not covered" >  this._handleStopStream(undefined, true);</span>
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.prototype.handleCloseConnection = <span class="fstat-no" title="function not covered" >function(connectionID) {</span></span>
+<span class="cstat-no" title="statement not covered" >  if (this.connectionID &amp;&amp; this.connectionID == connectionID) {</span>
+<span class="cstat-no" title="statement not covered" >    this.connectionID = undefined;</span>
+<span class="cstat-no" title="statement not covered" >    this._handleStopStream();</span>
+  }
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.SetupTypes = {</span>
+  SESSION_ID: 0x01,
+  STATUS: 0x02,
+  ADDRESS: 0x03,
+  VIDEO_SRTP_PARAM: 0x04,
+  AUDIO_SRTP_PARAM: 0x05,
+  VIDEO_SSRC: 0x06,
+  AUDIO_SSRC: 0x07
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.SetupStatus = {</span>
+  SUCCESS: 0x00,
+  BUSY: 0x01,
+  ERROR: 0x02
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.SetupAddressVer = {</span>
+  IPV4: 0x00,
+  IPV6: 0x01
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.SetupAddressInfo = {</span>
+  ADDRESS_VER: 0x01,
+  ADDRESS: 0x02,
+  VIDEO_RTP_PORT: 0x03,
+  AUDIO_RTP_PORT: 0x04
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.SetupSRTP_PARAM = {</span>
+  CRYPTO: 0x01,
+  MASTER_KEY: 0x02,
+  MASTER_SALT: 0x03
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.StreamingStatus = {</span>
+  AVAILABLE: 0x00,
+  STREAMING: 0x01,
+  BUSY: 0x02
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.RTPConfigTypes = {</span>
+  CRYPTO: 0x02
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.SRTPCryptoSuites = {</span>
+  AES_CM_128_HMAC_SHA1_80: 0x00,
+  AES_CM_256_HMAC_SHA1_80: 0x01,
+  NONE: 0x02
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.VideoTypes = {</span>
+  CODEC: 0x01,
+  CODEC_PARAM: 0x02,
+  ATTRIBUTES: 0x03,
+  RTP_PARAM: 0x04
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.VideoCodecTypes = {</span>
+  H264: 0x00
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.VideoCodecParamTypes = {</span>
+  PROFILE_ID: 0x01,
+  LEVEL: 0x02,
+  PACKETIZATION_MODE: 0x03,
+  CVO_ENABLED: 0x04,
+  CVO_ID: 0x05
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.VideoCodecParamCVOTypes = {</span>
+  UNSUPPORTED: 0x01,
+  SUPPORTED: 0x02
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.VideoCodecParamProfileIDTypes = {</span>
+  BASELINE: 0x00,
+  MAIN: 0x01,
+  HIGH: 0x02
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.VideoCodecParamLevelTypes = {</span>
+  TYPE3_1: 0x00,
+  TYPE3_2: 0x01,
+  TYPE4_0: 0x02
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.VideoCodecParamPacketizationModeTypes = {</span>
+  NON_INTERLEAVED: 0x00
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.VideoAttributesTypes = {</span>
+  IMAGE_WIDTH: 0x01,
+  IMAGE_HEIGHT: 0x02,
+  FRAME_RATE: 0x03
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.SelectedStreamConfigurationTypes = {</span>
+  SESSION: 0x01,
+  VIDEO: 0x02,
+  AUDIO: 0x03
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.RTPParamTypes = {</span>
+  PAYLOAD_TYPE: 0x01,
+  SYNCHRONIZATION_SOURCE: 0x02,
+  MAX_BIT_RATE: 0x03,
+  RTCP_SEND_INTERVAL: 0x04,
+  MAX_MTU: 0x05,
+  COMFORT_NOISE_PAYLOAD_TYPE: 0x06
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.AudioTypes = {</span>
+  CODEC: 0x01,
+  CODEC_PARAM: 0x02,
+  RTP_PARAM: 0x03,
+  COMFORT_NOISE: 0x04
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.AudioCodecTypes = {</span>
+  PCMU: 0x00,
+  PCMA: 0x01,
+  AACELD: 0x02,
+  OPUS: 0x03
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.AudioCodecParamTypes = {</span>
+  CHANNEL: 0x01,
+  BIT_RATE: 0x02,
+  SAMPLE_RATE: 0x03,
+  PACKET_TIME: 0x04
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.AudioCodecParamBitRateTypes = {</span>
+  VARIABLE: 0x00,
+  CONSTANT: 0x01
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.AudioCodecParamSampleRateTypes = {</span>
+  KHZ_8: 0x00,
+  KHZ_16: 0x01,
+  KHZ_24: 0x02
+}
+&nbsp;
+// Private
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.prototype._createService = <span class="fstat-no" title="function not covered" >function() {</span></span>
+<span class="cstat-no" title="statement not covered" >  var self = this;</span>
+<span class="cstat-no" title="statement not covered" >  var managementService = new Service.CameraRTPStreamManagement(undefined, this.identifier.toString());</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  managementService</span>
+    .getCharacteristic(Characteristic.StreamingStatus)
+    .on('get', <span class="fstat-no" title="function not covered" >function(callback) {</span>
+<span class="cstat-no" title="statement not covered" >      var data = tlv.encode( 0x01, self.streamStatus );</span>
+<span class="cstat-no" title="statement not covered" >      callback(null, data.toString('base64'));</span>
+    });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  managementService</span>
+    .getCharacteristic(Characteristic.SupportedRTPConfiguration)
+    .on('get', <span class="fstat-no" title="function not covered" >function(callback) {</span>
+<span class="cstat-no" title="statement not covered" >      callback(null, self.supportedRTPConfiguration);</span>
+    });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  managementService</span>
+    .getCharacteristic(Characteristic.SupportedVideoStreamConfiguration)
+    .on('get', <span class="fstat-no" title="function not covered" >function(callback) {</span>
+<span class="cstat-no" title="statement not covered" >      callback(null, self.supportedVideoStreamConfiguration);</span>
+    });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  managementService</span>
+    .getCharacteristic(Characteristic.SupportedAudioStreamConfiguration)
+    .on('get', <span class="fstat-no" title="function not covered" >function(callback) {</span>
+<span class="cstat-no" title="statement not covered" >      callback(null, self.supportedAudioStreamConfiguration);</span>
+    });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  managementService</span>
+    .getCharacteristic(Characteristic.SelectedStreamConfiguration)
+    .on('get', <span class="fstat-no" title="function not covered" >function(callback) {</span>
+<span class="cstat-no" title="statement not covered" >      debug('Read SelectedStreamConfiguration');</span>
+<span class="cstat-no" title="statement not covered" >      callback(null, self.selectedConfiguration);</span>
+    })
+    .on('set',<span class="fstat-no" title="function not covered" >function(value, callback, context, connectionID) {</span>
+<span class="cstat-no" title="statement not covered" >      debug('Write SelectedStreamConfiguration');</span>
+<span class="cstat-no" title="statement not covered" >      self._handleSelectedStreamConfigurationWrite(value, callback, connectionID);</span>
+    });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  managementService</span>
+    .getCharacteristic(Characteristic.SetupEndpoints)
+    .on('get', <span class="fstat-no" title="function not covered" >function(callback) {</span>
+<span class="cstat-no" title="statement not covered" >      self._handleSetupRead(callback);</span>
+    })
+    .on('set', <span class="fstat-no" title="function not covered" >function(value, callback) {</span>
+<span class="cstat-no" title="statement not covered" >      self._handleSetupWrite(value, callback);</span>
+    });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self.service = managementService;</span>
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.prototype._handleSelectedStreamConfigurationWrite = <span class="fstat-no" title="function not covered" >function(value, callback, connectionID) {</span></span>
+<span class="cstat-no" title="statement not covered" >  var self = this;</span>
+<span class="cstat-no" title="statement not covered" >  self.selectedConfiguration = value;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var data = bufferShim.from(value, 'base64');</span>
+<span class="cstat-no" title="statement not covered" >  var objects = tlv.decode(data);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var session;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if(objects[StreamController.SelectedStreamConfigurationTypes.SESSION]) {</span>
+<span class="cstat-no" title="statement not covered" >    session = tlv.decode(objects[StreamController.SelectedStreamConfigurationTypes.SESSION]);</span>
+<span class="cstat-no" title="statement not covered" >    self.sessionIdentifier = session[0x01];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    let requestType = session[0x02][0];</span>
+<span class="cstat-no" title="statement not covered" >    if (requestType == 1) {</span>
+<span class="cstat-no" title="statement not covered" >      if (self.connectionID &amp;&amp; self.connectionID != connectionID) {</span>
+<span class="cstat-no" title="statement not covered" >        debug("Received start stream request from a different connection.");</span>
+      } else {
+<span class="cstat-no" title="statement not covered" >        self.connectionID = connectionID;</span>
+      }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      self._handleStartStream(objects, session, false, callback);</span>
+    } else <span class="cstat-no" title="statement not covered" >if (requestType == 0) {</span>
+<span class="cstat-no" title="statement not covered" >      if (self.connectionID &amp;&amp; self.connectionID != connectionID) {</span>
+<span class="cstat-no" title="statement not covered" >        debug("Received stop stream request from a different connection.")</span>
+      } else {
+<span class="cstat-no" title="statement not covered" >        self.connectionID = undefined;</span>
+      }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      self._handleStopStream(callback);</span>
+    } else <span class="cstat-no" title="statement not covered" >if (requestType == 4) {</span>
+<span class="cstat-no" title="statement not covered" >      self._handleStartStream(objects, session, true, callback);</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >      debug("Unhandled request type: ", requestType);</span>
+<span class="cstat-no" title="statement not covered" >      callback();</span>
+    }
+  } else {
+<span class="cstat-no" title="statement not covered" >    debug("Unexpected request for Selected Stream Configuration");</span>
+<span class="cstat-no" title="statement not covered" >    callback();</span>
+  }
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.prototype._handleStartStream = <span class="fstat-no" title="function not covered" >function(objects, session, reconfigure, callback) {</span></span>
+<span class="cstat-no" title="statement not covered" >  var self = this;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var request = {</span>
+    "sessionID": self.sessionIdentifier,
+    "type": !reconfigure ? "start" : "reconfigure"
+  };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  let videoPT = null;</span>
+<span class="cstat-no" title="statement not covered" >  let audioPT = null;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if(objects[StreamController.SelectedStreamConfigurationTypes.VIDEO]) {</span>
+<span class="cstat-no" title="statement not covered" >    var videoInfo = {};</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var video = tlv.decode(objects[StreamController.SelectedStreamConfigurationTypes.VIDEO]);</span>
+<span class="cstat-no" title="statement not covered" >    var codec = video[StreamController.VideoTypes.CODEC];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (video[StreamController.VideoTypes.CODEC_PARAM]) {</span>
+<span class="cstat-no" title="statement not covered" >      var videoCodecParamsTLV = tlv.decode(video[StreamController.VideoTypes.CODEC_PARAM]);</span>
+<span class="cstat-no" title="statement not covered" >      videoInfo["profile"] = videoCodecParamsTLV[StreamController.VideoCodecParamTypes.PROFILE_ID].readUInt8(0);</span>
+<span class="cstat-no" title="statement not covered" >      videoInfo["level"] = videoCodecParamsTLV[StreamController.VideoCodecParamTypes.LEVEL].readUInt8(0);</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (video[StreamController.VideoTypes.ATTRIBUTES]) {</span>
+<span class="cstat-no" title="statement not covered" >      var videoAttrTLV = tlv.decode(video[StreamController.VideoTypes.ATTRIBUTES]);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      videoInfo["width"] = videoAttrTLV[StreamController.VideoAttributesTypes.IMAGE_WIDTH].readUInt16LE(0);</span>
+<span class="cstat-no" title="statement not covered" >      videoInfo["height"] = videoAttrTLV[StreamController.VideoAttributesTypes.IMAGE_HEIGHT].readUInt16LE(0);</span>
+<span class="cstat-no" title="statement not covered" >      videoInfo["fps"] = videoAttrTLV[StreamController.VideoAttributesTypes.FRAME_RATE].readUInt8(0);</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (video[StreamController.VideoTypes.RTP_PARAM]) {</span>
+<span class="cstat-no" title="statement not covered" >      var videoRTPParamsTLV = tlv.decode(video[StreamController.VideoTypes.RTP_PARAM]);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (videoRTPParamsTLV[StreamController.RTPParamTypes.SYNCHRONIZATION_SOURCE]) {</span>
+<span class="cstat-no" title="statement not covered" >        videoInfo["ssrc"] = videoRTPParamsTLV[StreamController.RTPParamTypes.SYNCHRONIZATION_SOURCE].readUInt32LE(0);</span>
+      }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (videoRTPParamsTLV[StreamController.RTPParamTypes.PAYLOAD_TYPE]) {</span>
+<span class="cstat-no" title="statement not covered" >        videoPT = videoRTPParamsTLV[StreamController.RTPParamTypes.PAYLOAD_TYPE].readUInt8(0);</span>
+<span class="cstat-no" title="statement not covered" >        videoInfo["pt"] = videoPT;</span>
+      }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (videoRTPParamsTLV[StreamController.RTPParamTypes.MAX_BIT_RATE]) {</span>
+<span class="cstat-no" title="statement not covered" >        videoInfo["max_bit_rate"] = videoRTPParamsTLV[StreamController.RTPParamTypes.MAX_BIT_RATE].readUInt16LE(0);</span>
+      }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (videoRTPParamsTLV[StreamController.RTPParamTypes.RTCP_SEND_INTERVAL]) {</span>
+<span class="cstat-no" title="statement not covered" >        videoInfo["rtcp_interval"] = videoRTPParamsTLV[StreamController.RTPParamTypes.RTCP_SEND_INTERVAL].readUInt32LE(0);</span>
+      }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (videoRTPParamsTLV[StreamController.RTPParamTypes.MAX_MTU]) {</span>
+<span class="cstat-no" title="statement not covered" >        videoInfo["mtu"] = videoRTPParamsTLV[StreamController.RTPParamTypes.MAX_MTU].readUInt16LE(0);</span>
+      }
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    request["video"] = videoInfo;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if(objects[StreamController.SelectedStreamConfigurationTypes.AUDIO]) {</span>
+<span class="cstat-no" title="statement not covered" >    var audioInfo = {};</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var audio = tlv.decode(objects[StreamController.SelectedStreamConfigurationTypes.AUDIO]);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var codec = audio[StreamController.AudioTypes.CODEC];</span>
+<span class="cstat-no" title="statement not covered" >    var audioCodecParamsTLV = tlv.decode(audio[StreamController.AudioTypes.CODEC_PARAM]);</span>
+<span class="cstat-no" title="statement not covered" >    var audioRTPParamsTLV = tlv.decode(audio[StreamController.AudioTypes.RTP_PARAM]);</span>
+<span class="cstat-no" title="statement not covered" >    var comfortNoise = tlv.decode(audio[StreamController.AudioTypes.COMFORT_NOISE]);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    let audioCodec = codec.readUInt8(0);</span>
+<span class="cstat-no" title="statement not covered" >    if (audioCodec !== undefined) {</span>
+<span class="cstat-no" title="statement not covered" >      if (audioCodec == StreamController.AudioCodecTypes.OPUS) {</span>
+<span class="cstat-no" title="statement not covered" >        audioInfo["codec"] = "OPUS";</span>
+      } else <span class="cstat-no" title="statement not covered" >if (audioCodec == StreamController.AudioCodecTypes.AACELD) {</span>
+<span class="cstat-no" title="statement not covered" >        audioInfo["codec"] = "AAC-eld";</span>
+      } else {
+<span class="cstat-no" title="statement not covered" >        debug("Unexpected audio codec: %s", audioCodec);</span>
+<span class="cstat-no" title="statement not covered" >        audioInfo["codec"] = audioCodec;</span>
+      }
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    audioInfo["channel"] = audioCodecParamsTLV[StreamController.AudioCodecParamTypes.CHANNEL].readUInt8(0);</span>
+<span class="cstat-no" title="statement not covered" >    audioInfo["bit_rate"] = audioCodecParamsTLV[StreamController.AudioCodecParamTypes.BIT_RATE].readUInt8(0);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    let sample_rate_enum = audioCodecParamsTLV[StreamController.AudioCodecParamTypes.SAMPLE_RATE].readUInt8(0);</span>
+<span class="cstat-no" title="statement not covered" >    if (sample_rate_enum !== undefined) {</span>
+<span class="cstat-no" title="statement not covered" >      if (sample_rate_enum == StreamController.AudioCodecParamSampleRateTypes.KHZ_8) {</span>
+<span class="cstat-no" title="statement not covered" >        audioInfo["sample_rate"] = 8;</span>
+      } else <span class="cstat-no" title="statement not covered" >if (sample_rate_enum == StreamController.AudioCodecParamSampleRateTypes.KHZ_16) {</span>
+<span class="cstat-no" title="statement not covered" >        audioInfo["sample_rate"] = 16;</span>
+      } else <span class="cstat-no" title="statement not covered" >if (sample_rate_enum == StreamController.AudioCodecParamSampleRateTypes.KHZ_24) {</span>
+<span class="cstat-no" title="statement not covered" >        audioInfo["sample_rate"] = 24;</span>
+      } else {
+<span class="cstat-no" title="statement not covered" >        debug("Unexpected audio sample rate: %s", sample_rate_enum);</span>
+      }
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    audioInfo["packet_time"] = audioCodecParamsTLV[StreamController.AudioCodecParamTypes.PACKET_TIME].readUInt8(0);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var ssrc = audioRTPParamsTLV[StreamController.RTPParamTypes.SYNCHRONIZATION_SOURCE].readUInt32LE(0);</span>
+<span class="cstat-no" title="statement not covered" >    audioPT = audioRTPParamsTLV[StreamController.RTPParamTypes.PAYLOAD_TYPE].readUInt8(0);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    audioInfo["pt"] = audioPT;</span>
+<span class="cstat-no" title="statement not covered" >    audioInfo["ssrc"] = ssrc;</span>
+<span class="cstat-no" title="statement not covered" >    audioInfo["max_bit_rate"] = audioRTPParamsTLV[StreamController.RTPParamTypes.MAX_BIT_RATE].readUInt16LE(0);</span>
+<span class="cstat-no" title="statement not covered" >    audioInfo["rtcp_interval"] = audioRTPParamsTLV[StreamController.RTPParamTypes.RTCP_SEND_INTERVAL].readUInt32LE(0);</span>
+<span class="cstat-no" title="statement not covered" >    audioInfo["comfort_pt"] = audioRTPParamsTLV[StreamController.RTPParamTypes.COMFORT_NOISE_PAYLOAD_TYPE].readUInt8(0);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    request["audio"] = audioInfo;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!reconfigure &amp;&amp; self.requireProxy) {</span>
+<span class="cstat-no" title="statement not covered" >    self.videoProxy.setOutgoingPayloadType(videoPT);</span>
+<span class="cstat-no" title="statement not covered" >    if (!self.disableAudioProxy) {</span>
+<span class="cstat-no" title="statement not covered" >      self.audioProxy.setOutgoingPayloadType(audioPT);</span>
+    }
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self.cameraSource.handleStreamRequest(request);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self._updateStreamStatus(StreamController.StreamingStatus.STREAMING);</span>
+<span class="cstat-no" title="statement not covered" >  callback();</span>
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.prototype._handleStopStream = <span class="fstat-no" title="function not covered" >function(callback, silent) {</span></span>
+<span class="cstat-no" title="statement not covered" >  var self = this;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  let request = {</span>
+    "sessionID": self.sessionIdentifier,
+    "type": "stop"
+  };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!silent) {</span>
+<span class="cstat-no" title="statement not covered" >    self.cameraSource.handleStreamRequest(request);</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (self.requireProxy) {</span>
+<span class="cstat-no" title="statement not covered" >    self.videoProxy.destroy();</span>
+<span class="cstat-no" title="statement not covered" >    if (!self.disableAudioProxy) {</span>
+<span class="cstat-no" title="statement not covered" >      self.audioProxy.destroy();</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.videoProxy = undefined;</span>
+<span class="cstat-no" title="statement not covered" >    self.audioProxy = undefined;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self._updateStreamStatus(StreamController.StreamingStatus.AVAILABLE);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (callback) {</span>
+<span class="cstat-no" title="statement not covered" >    callback();</span>
+  }
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.prototype._handleSetupWrite = <span class="fstat-no" title="function not covered" >function(value, callback) {</span></span>
+<span class="cstat-no" title="statement not covered" >  var self = this;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var data = bufferShim.from(value, 'base64');</span>
+<span class="cstat-no" title="statement not covered" >  var objects = tlv.decode(data);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self.sessionIdentifier = objects[StreamController.SetupTypes.SESSION_ID];</span>
+&nbsp;
+  // Address
+<span class="cstat-no" title="statement not covered" >  var targetAddressPayload = objects[StreamController.SetupTypes.ADDRESS];</span>
+<span class="cstat-no" title="statement not covered" >  var processedAddressInfo = tlv.decode(targetAddressPayload);</span>
+<span class="cstat-no" title="statement not covered" >  var isIPv6 = processedAddressInfo[StreamController.SetupAddressInfo.ADDRESS_VER][0];</span>
+<span class="cstat-no" title="statement not covered" >  var targetAddress = processedAddressInfo[StreamController.SetupAddressInfo.ADDRESS].toString('utf8');</span>
+<span class="cstat-no" title="statement not covered" >  var targetVideoPort = processedAddressInfo[StreamController.SetupAddressInfo.VIDEO_RTP_PORT].readUInt16LE(0);</span>
+<span class="cstat-no" title="statement not covered" >  var targetAudioPort = processedAddressInfo[StreamController.SetupAddressInfo.AUDIO_RTP_PORT].readUInt16LE(0);</span>
+&nbsp;
+  // Video SRTP Params
+<span class="cstat-no" title="statement not covered" >  var videoSRTPPayload = objects[StreamController.SetupTypes.VIDEO_SRTP_PARAM];</span>
+<span class="cstat-no" title="statement not covered" >  var processedVideoInfo = tlv.decode(videoSRTPPayload);</span>
+<span class="cstat-no" title="statement not covered" >  var videoCryptoSuite = processedVideoInfo[StreamController.SetupSRTP_PARAM.CRYPTO][0];</span>
+<span class="cstat-no" title="statement not covered" >  var videoMasterKey = processedVideoInfo[StreamController.SetupSRTP_PARAM.MASTER_KEY];</span>
+<span class="cstat-no" title="statement not covered" >  var videoMasterSalt = processedVideoInfo[StreamController.SetupSRTP_PARAM.MASTER_SALT];</span>
+&nbsp;
+  // Audio SRTP Params
+<span class="cstat-no" title="statement not covered" >  var audioSRTPPayload = objects[StreamController.SetupTypes.AUDIO_SRTP_PARAM];</span>
+<span class="cstat-no" title="statement not covered" >  var processedAudioInfo = tlv.decode(audioSRTPPayload);</span>
+<span class="cstat-no" title="statement not covered" >  var audioCryptoSuite = processedAudioInfo[StreamController.SetupSRTP_PARAM.CRYPTO][0];</span>
+<span class="cstat-no" title="statement not covered" >  var audioMasterKey = processedAudioInfo[StreamController.SetupSRTP_PARAM.MASTER_KEY];</span>
+<span class="cstat-no" title="statement not covered" >  var audioMasterSalt = processedAudioInfo[StreamController.SetupSRTP_PARAM.MASTER_SALT];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  debug(</span>
+    '\nSession: ', this.sessionIdentifier,
+    '\nControllerAddress: ', targetAddress,
+    '\nVideoPort: ', targetVideoPort,
+    '\nAudioPort: ', targetAudioPort,
+    '\nVideo Crypto: ', videoCryptoSuite,
+    '\nVideo Master Key: ', videoMasterKey,
+    '\nVideo Master Salt: ', videoMasterSalt,
+    '\nAudio Crypto: ', audioCryptoSuite,
+    '\nAudio Master Key: ', audioMasterKey,
+    '\nAudio Master Salt: ', audioMasterSalt
+  );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var request = {</span>
+    "sessionID": self.sessionIdentifier,
+  };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var videoInfo = {};</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var audioInfo = {};</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (self.supportSRTP) {</span>
+<span class="cstat-no" title="statement not covered" >    videoInfo["srtp_key"] = videoMasterKey;</span>
+<span class="cstat-no" title="statement not covered" >    videoInfo["srtp_salt"] = videoMasterSalt;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    audioInfo["srtp_key"] = audioMasterKey;</span>
+<span class="cstat-no" title="statement not covered" >    audioInfo["srtp_salt"] = audioMasterSalt;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!self.requireProxy) {</span>
+<span class="cstat-no" title="statement not covered" >    request["targetAddress"] = targetAddress;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    videoInfo["port"] = targetVideoPort;</span>
+<span class="cstat-no" title="statement not covered" >    audioInfo["port"] = targetAudioPort;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    request["video"] = videoInfo;</span>
+<span class="cstat-no" title="statement not covered" >    request["audio"] = audioInfo;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.cameraSource.prepareStream(request, <span class="fstat-no" title="function not covered" >function(response) {</span></span>
+<span class="cstat-no" title="statement not covered" >      self._generateSetupResponse(self.sessionIdentifier, response, callback);</span>
+    });
+  } else {
+<span class="cstat-no" title="statement not covered" >    request["targetAddress"] = ip.address();</span>
+<span class="cstat-no" title="statement not covered" >    var promises = [];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var videoSSRCNumber = crypto.randomBytes(4).readUInt32LE(0);</span>
+<span class="cstat-no" title="statement not covered" >    self.videoProxy = new RTPProxy({</span>
+      outgoingAddress: targetAddress,
+      outgoingPort: targetVideoPort,
+      outgoingSSRC: videoSSRCNumber,
+      disabled: false
+    });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    promises.push(self.videoProxy.setup());</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (!self.disableAudioProxy) {</span>
+<span class="cstat-no" title="statement not covered" >      var audioSSRCNumber = crypto.randomBytes(4).readUInt32LE(0);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      self.audioProxy = new RTPProxy({</span>
+        outgoingAddress: targetAddress,
+        outgoingPort: targetAudioPort,
+        outgoingSSRC: audioSSRCNumber,
+        disabled: self.videoOnly
+      });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      promises.push(self.audioProxy.setup());</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >      audioInfo["port"] = targetAudioPort;</span>
+<span class="cstat-no" title="statement not covered" >      audioInfo["targetAddress"] = targetAddress;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    Promise.all(promises).then(<span class="fstat-no" title="function not covered" >function() {</span></span>
+<span class="cstat-no" title="statement not covered" >      videoInfo["proxy_rtp"] = self.videoProxy.incomingRTPPort();</span>
+<span class="cstat-no" title="statement not covered" >      videoInfo["proxy_rtcp"] = self.videoProxy.incomingRTCPPort();</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if (!self.disableAudioProxy) {</span>
+<span class="cstat-no" title="statement not covered" >        audioInfo["proxy_rtp"] = self.audioProxy.incomingRTPPort();</span>
+<span class="cstat-no" title="statement not covered" >        audioInfo["proxy_rtcp"] = self.audioProxy.incomingRTCPPort();</span>
+      }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      request["video"] = videoInfo;</span>
+<span class="cstat-no" title="statement not covered" >      request["audio"] = audioInfo;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      self.cameraSource.prepareStream(request, <span class="fstat-no" title="function not covered" >function(response) {</span></span>
+<span class="cstat-no" title="statement not covered" >        self._generateSetupResponse(self.sessionIdentifier, response, callback);</span>
+      });
+    });
+  }
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.prototype._generateSetupResponse = <span class="fstat-no" title="function not covered" >function(identifier, response, callback) {</span></span>
+<span class="cstat-no" title="statement not covered" >  var self = this;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var ipVer = 0;</span>
+<span class="cstat-no" title="statement not covered" >  var ipAddress = null;</span>
+<span class="cstat-no" title="statement not covered" >  var videoPort = bufferShim.alloc(2);</span>
+<span class="cstat-no" title="statement not covered" >  var audioPort = bufferShim.alloc(2);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var videoSSRC = bufferShim.alloc(4);</span>
+<span class="cstat-no" title="statement not covered" >  var audioSSRC = bufferShim.alloc(4);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var videoSRTP = bufferShim.from([0x01, 0x01, 0x02, 0x02, 0x00, 0x03, 0x00]);</span>
+<span class="cstat-no" title="statement not covered" >  var audioSRTP = bufferShim.from([0x01, 0x01, 0x02, 0x02, 0x00, 0x03, 0x00]);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (self.requireProxy) {</span>
+<span class="cstat-no" title="statement not covered" >    let currentAddress = ip.address();</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    ipVer = 1;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (ip.isV4Format(currentAddress)) {</span>
+<span class="cstat-no" title="statement not covered" >      ipVer = 0;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    ipAddress = bufferShim.from(currentAddress);</span>
+<span class="cstat-no" title="statement not covered" >    videoPort.writeUInt16LE(self.videoProxy.outgoingLocalPort(), 0);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (!self.disableAudioProxy) {</span>
+<span class="cstat-no" title="statement not covered" >      audioPort.writeUInt16LE(self.audioProxy.outgoingLocalPort(), 0);</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    let videoInfo = response["video"];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    let video_pt = videoInfo["proxy_pt"];</span>
+<span class="cstat-no" title="statement not covered" >    let video_serverAddr = videoInfo["proxy_server_address"];</span>
+<span class="cstat-no" title="statement not covered" >    let video_serverRTP = videoInfo["proxy_server_rtp"];</span>
+<span class="cstat-no" title="statement not covered" >    let video_serverRTCP = videoInfo["proxy_server_rtcp"];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.videoProxy.setIncomingPayloadType(video_pt);</span>
+<span class="cstat-no" title="statement not covered" >    self.videoProxy.setServerAddress(video_serverAddr);</span>
+<span class="cstat-no" title="statement not covered" >    self.videoProxy.setServerRTPPort(video_serverRTP);</span>
+<span class="cstat-no" title="statement not covered" >    self.videoProxy.setServerRTCPPort(video_serverRTCP);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    videoSSRC.writeUInt32LE(self.videoProxy.outgoingSSRC, 0);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    let audioInfo = response["audio"];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (!self.disableAudioProxy) {</span>
+<span class="cstat-no" title="statement not covered" >      let audio_pt = audioInfo["proxy_pt"];</span>
+<span class="cstat-no" title="statement not covered" >      let audio_serverAddr = audioInfo["proxy_server_address"];</span>
+<span class="cstat-no" title="statement not covered" >      let audio_serverRTP = audioInfo["proxy_server_rtp"];</span>
+<span class="cstat-no" title="statement not covered" >      let audio_serverRTCP = audioInfo["proxy_server_rtcp"];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      self.audioProxy.setIncomingPayloadType(audio_pt);</span>
+<span class="cstat-no" title="statement not covered" >      self.audioProxy.setServerAddress(audio_serverAddr);</span>
+<span class="cstat-no" title="statement not covered" >      self.audioProxy.setServerRTPPort(audio_serverRTP);</span>
+<span class="cstat-no" title="statement not covered" >      self.audioProxy.setServerRTCPPort(audio_serverRTCP);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      audioSSRC.writeUInt32LE(self.audioProxy.outgoingSSRC, 0);</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >      audioPort.writeUInt16LE(audioInfo["port"], 0);</span>
+<span class="cstat-no" title="statement not covered" >      audioSSRC.writeUInt32LE(audioInfo["ssrc"], 0);</span>
+    }
+&nbsp;
+  } else {
+<span class="cstat-no" title="statement not covered" >    let addressInfo = response["address"];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (addressInfo["type"] == "v6") {</span>
+<span class="cstat-no" title="statement not covered" >      ipVer = 1;</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >      ipVer = 0;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    ipAddress = addressInfo["address"];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    let videoInfo = response["video"];</span>
+<span class="cstat-no" title="statement not covered" >    videoPort.writeUInt16LE(videoInfo["port"], 0);</span>
+<span class="cstat-no" title="statement not covered" >    videoSSRC.writeUInt32LE(videoInfo["ssrc"], 0);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    let audioInfo = response["audio"];</span>
+<span class="cstat-no" title="statement not covered" >    audioPort.writeUInt16LE(audioInfo["port"], 0);</span>
+<span class="cstat-no" title="statement not covered" >    audioSSRC.writeUInt32LE(audioInfo["ssrc"], 0);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (self.supportSRTP) {</span>
+<span class="cstat-no" title="statement not covered" >      let videoKey = videoInfo["srtp_key"];</span>
+<span class="cstat-no" title="statement not covered" >      let videoSalt = videoInfo["srtp_salt"];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      let audioKey = audioInfo["srtp_key"];</span>
+<span class="cstat-no" title="statement not covered" >      let audioSalt = audioInfo["srtp_salt"];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      videoSRTP = tlv.encode(</span>
+        StreamController.SetupSRTP_PARAM.CRYPTO, StreamController.SRTPCryptoSuites.AES_CM_128_HMAC_SHA1_80,
+        StreamController.SetupSRTP_PARAM.MASTER_KEY, videoKey,
+        StreamController.SetupSRTP_PARAM.MASTER_SALT, videoSalt
+      );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      audioSRTP = tlv.encode(</span>
+        StreamController.SetupSRTP_PARAM.CRYPTO, StreamController.SRTPCryptoSuites.AES_CM_128_HMAC_SHA1_80,
+        StreamController.SetupSRTP_PARAM.MASTER_KEY, audioKey,
+        StreamController.SetupSRTP_PARAM.MASTER_SALT, audioSalt
+      );
+    }
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var addressTLV = tlv.encode(</span>
+    StreamController.SetupAddressInfo.ADDRESS_VER, ipVer,
+    StreamController.SetupAddressInfo.ADDRESS, ipAddress,
+    StreamController.SetupAddressInfo.VIDEO_RTP_PORT, videoPort,
+    StreamController.SetupAddressInfo.AUDIO_RTP_PORT, audioPort
+  );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var responseTLV = tlv.encode(</span>
+    StreamController.SetupTypes.SESSION_ID, identifier,
+    StreamController.SetupTypes.STATUS, StreamController.SetupStatus.SUCCESS,
+    StreamController.SetupTypes.ADDRESS, addressTLV,
+    StreamController.SetupTypes.VIDEO_SRTP_PARAM, videoSRTP,
+    StreamController.SetupTypes.AUDIO_SRTP_PARAM, audioSRTP,
+    StreamController.SetupTypes.VIDEO_SSRC, videoSSRC,
+    StreamController.SetupTypes.AUDIO_SSRC, audioSSRC
+  );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self.setupResponse = responseTLV.toString('base64');</span>
+<span class="cstat-no" title="statement not covered" >  callback();</span>
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.prototype._updateStreamStatus = <span class="fstat-no" title="function not covered" >function(status) {</span></span>
+<span class="cstat-no" title="statement not covered" >  var self = this;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self.streamStatus = status;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  self.service</span>
+    .getCharacteristic(Characteristic.StreamingStatus)
+    .setValue(tlv.encode( 0x01, self.streamStatus ).toString('base64'));
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.prototype._handleSetupRead = <span class="fstat-no" title="function not covered" >function(callback) {</span></span>
+<span class="cstat-no" title="statement not covered" >  debug('Setup Read');</span>
+<span class="cstat-no" title="statement not covered" >  callback(null, this.setupResponse);</span>
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.prototype._supportedRTPConfiguration = <span class="fstat-no" title="function not covered" >function(supportSRTP) {</span></span>
+<span class="cstat-no" title="statement not covered" >  var cryptoSuite = StreamController.SRTPCryptoSuites.AES_CM_128_HMAC_SHA1_80;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!supportSRTP) {</span>
+<span class="cstat-no" title="statement not covered" >    cryptoSuite = StreamController.SRTPCryptoSuites.NONE;</span>
+<span class="cstat-no" title="statement not covered" >    debug("Client claims it doesn't support SRTP. The stream may stops working with future iOS releases.");</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return tlv.encode(</span>
+            StreamController.RTPConfigTypes.CRYPTO, cryptoSuite
+         ).toString('base64');
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.prototype._supportedVideoStreamConfiguration = <span class="fstat-no" title="function not covered" >function(videoParams) {</span></span>
+<span class="cstat-no" title="statement not covered" >  var self = this;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  let codec = videoParams["codec"];</span>
+<span class="cstat-no" title="statement not covered" >  if (!codec) {</span>
+<span class="cstat-no" title="statement not covered" >    throw new Error('Video codec cannot be undefined');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var videoCodecParamsTLV = tlv.encode(</span>
+    StreamController.VideoCodecParamTypes.PACKETIZATION_MODE, StreamController.VideoCodecParamPacketizationModeTypes.NON_INTERLEAVED
+  );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  let profiles = codec["profiles"];</span>
+<span class="cstat-no" title="statement not covered" >  profiles.forEach(<span class="fstat-no" title="function not covered" >function(value) {</span></span>
+<span class="cstat-no" title="statement not covered" >    let tlvBuffer = tlv.encode(StreamController.VideoCodecParamTypes.PROFILE_ID, value);</span>
+<span class="cstat-no" title="statement not covered" >    videoCodecParamsTLV = Buffer.concat([videoCodecParamsTLV, tlvBuffer]);</span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  let levels = codec["levels"];</span>
+<span class="cstat-no" title="statement not covered" >  levels.forEach(<span class="fstat-no" title="function not covered" >function(value) {</span></span>
+<span class="cstat-no" title="statement not covered" >    let tlvBuffer = tlv.encode(StreamController.VideoCodecParamTypes.LEVEL, value);</span>
+<span class="cstat-no" title="statement not covered" >    videoCodecParamsTLV = Buffer.concat([videoCodecParamsTLV, tlvBuffer]);</span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  let resolutions = videoParams["resolutions"];</span>
+<span class="cstat-no" title="statement not covered" >  if (!resolutions) {</span>
+<span class="cstat-no" title="statement not covered" >    throw new Error('Video resolutions cannot be undefined');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var videoAttrsTLV = bufferShim.alloc(0);</span>
+<span class="cstat-no" title="statement not covered" >  resolutions.forEach(<span class="fstat-no" title="function not covered" >function(resolution) {</span></span>
+<span class="cstat-no" title="statement not covered" >    if (resolution.length != 3) {</span>
+<span class="cstat-no" title="statement not covered" >      throw new Error('Unexpected video resolution');</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var imageWidth = bufferShim.alloc(2);</span>
+<span class="cstat-no" title="statement not covered" >    imageWidth.writeUInt16LE(resolution[0], 0);</span>
+<span class="cstat-no" title="statement not covered" >    var imageHeight = bufferShim.alloc(2);</span>
+<span class="cstat-no" title="statement not covered" >    imageHeight.writeUInt16LE(resolution[1], 0);</span>
+<span class="cstat-no" title="statement not covered" >    var frameRate = bufferShim.alloc(1);</span>
+<span class="cstat-no" title="statement not covered" >    frameRate.writeUInt8(resolution[2]);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var videoAttrTLV = tlv.encode(</span>
+      StreamController.VideoAttributesTypes.IMAGE_WIDTH, imageWidth,
+      StreamController.VideoAttributesTypes.IMAGE_HEIGHT, imageHeight,
+      StreamController.VideoAttributesTypes.FRAME_RATE, frameRate
+    );
+<span class="cstat-no" title="statement not covered" >    var videoAttrBuffer = tlv.encode(StreamController.VideoTypes.ATTRIBUTES, videoAttrTLV);</span>
+<span class="cstat-no" title="statement not covered" >    videoAttrsTLV = Buffer.concat([videoAttrsTLV, videoAttrBuffer]);</span>
+  });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var configurationTLV = tlv.encode(</span>
+    StreamController.VideoTypes.CODEC, StreamController.VideoCodecTypes.H264,
+    StreamController.VideoTypes.CODEC_PARAM, videoCodecParamsTLV
+  );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return tlv.encode(</span>
+    0x01, Buffer.concat([configurationTLV, videoAttrsTLV])
+  ).toString('base64');
+}
+&nbsp;
+<span class="cstat-no" title="statement not covered" >StreamController.prototype._supportedAudioStreamConfiguration = <span class="fstat-no" title="function not covered" >function(audioParams) {</span></span>
+  // Only AACELD and OPUS are accepted by iOS currently, and we need to give it something it will accept
+  // for it to start the video stream.
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var self = this;</span>
+<span class="cstat-no" title="statement not covered" >  var comfortNoiseValue = 0x00;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (audioParams["comfort_noise"] === true) {</span>
+<span class="cstat-no" title="statement not covered" >    comfortNoiseValue = 0x01;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  let codecs = audioParams["codecs"];</span>
+<span class="cstat-no" title="statement not covered" >  if (!codecs) {</span>
+<span class="cstat-no" title="statement not covered" >    throw new Error('Audio codecs cannot be undefined');</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var audioConfigurationsBuffer = bufferShim.alloc(0);</span>
+<span class="cstat-no" title="statement not covered" >  var hasSupportedCodec = false;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  codecs.forEach(<span class="fstat-no" title="function not covered" >function(codecParam){</span></span>
+<span class="cstat-no" title="statement not covered" >    var codec = StreamController.AudioCodecTypes.OPUS;</span>
+<span class="cstat-no" title="statement not covered" >    var bitrate = StreamController.AudioCodecParamBitRateTypes.CONSTANT;</span>
+<span class="cstat-no" title="statement not covered" >    var samplerate = StreamController.AudioCodecParamSampleRateTypes.KHZ_24;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    let param_type = codecParam["type"];</span>
+<span class="cstat-no" title="statement not covered" >    let param_samplerate = codecParam["samplerate"];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (param_type == 'OPUS') {</span>
+<span class="cstat-no" title="statement not covered" >      hasSupportedCodec = true;</span>
+<span class="cstat-no" title="statement not covered" >      bitrate = StreamController.AudioCodecParamBitRateTypes.VARIABLE;</span>
+    } else <span class="cstat-no" title="statement not covered" >if (param_type == "AAC-eld") {</span>
+<span class="cstat-no" title="statement not covered" >      hasSupportedCodec = true;</span>
+<span class="cstat-no" title="statement not covered" >      codec = StreamController.AudioCodecTypes.AACELD;</span>
+<span class="cstat-no" title="statement not covered" >      bitrate = StreamController.AudioCodecParamBitRateTypes.VARIABLE;</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >      debug("Unsupported codec: ", param_type);</span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (param_samplerate == 8) {</span>
+<span class="cstat-no" title="statement not covered" >      samplerate = StreamController.AudioCodecParamSampleRateTypes.KHZ_8;</span>
+    } else <span class="cstat-no" title="statement not covered" >if (param_samplerate == 16) {</span>
+<span class="cstat-no" title="statement not covered" >      samplerate = StreamController.AudioCodecParamSampleRateTypes.KHZ_16;</span>
+    } else <span class="cstat-no" title="statement not covered" >if (param_samplerate == 24) {</span>
+<span class="cstat-no" title="statement not covered" >      samplerate = StreamController.AudioCodecParamSampleRateTypes.KHZ_24;</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >      debug("Unsupported sample rate: ", param_samplerate);</span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var audioParamTLV = tlv.encode(</span>
+      StreamController.AudioCodecParamTypes.CHANNEL, 1,
+      StreamController.AudioCodecParamTypes.BIT_RATE, bitrate,
+      StreamController.AudioCodecParamTypes.SAMPLE_RATE, samplerate
+    );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var audioConfiguration = tlv.encode(</span>
+      StreamController.AudioTypes.CODEC, codec,
+      StreamController.AudioTypes.CODEC_PARAM, audioParamTLV
+    );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    audioConfigurationsBuffer = Buffer.concat([audioConfigurationsBuffer, tlv.encode(0x01, audioConfiguration)]);</span>
+  });
+&nbsp;
+  // If we're not one of the supported codecs
+<span class="cstat-no" title="statement not covered" >  if(!hasSupportedCodec) {</span>
+<span class="cstat-no" title="statement not covered" >    debug("Client doesn't support any audio codec that HomeKit supports.");</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var codec = StreamController.AudioCodecTypes.OPUS;</span>
+<span class="cstat-no" title="statement not covered" >    var bitrate = StreamController.AudioCodecParamBitRateTypes.VARIABLE;</span>
+<span class="cstat-no" title="statement not covered" >    var samplerate = StreamController.AudioCodecParamSampleRateTypes.KHZ_24;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var audioParamTLV = tlv.encode(</span>
+    StreamController.AudioCodecParamTypes.CHANNEL, 1,
+    StreamController.AudioCodecParamTypes.BIT_RATE, bitrate,
+    StreamController.AudioCodecParamTypes.SAMPLE_RATE, StreamController.AudioCodecParamSampleRateTypes.KHZ_24
+    );
+&nbsp;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var audioConfiguration = tlv.encode(</span>
+      StreamController.AudioTypes.CODEC, codec,
+      StreamController.AudioTypes.CODEC_PARAM, audioParamTLV
+    );
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    audioConfigurationsBuffer = tlv.encode(0x01, audioConfiguration);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.videoOnly = true;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return Buffer.concat([audioConfigurationsBuffer, tlv.encode(0x02, comfortNoiseValue)]).toString('base64');</span>
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Jun 15 2018 22:54:08 GMT+0200 (CEST)
+</div>
+</div>
+<script src="../../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../../sorter.js"></script>
+</body>
+</html>

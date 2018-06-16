@@ -1,0 +1,1538 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for homebridge-plugin-wrapper/hap-nodejs/lib/Characteristic.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../../index.html">all files</a> / <a href="index.html">homebridge-plugin-wrapper/hap-nodejs/lib/</a> Characteristic.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">8.59% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>22/256</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/201</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/14</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">9.61% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>22/229</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict';
+&nbsp;
+var inherits = require('util').inherits;
+var EventEmitter = require('events').EventEmitter;
+var once = require('./util/once').once;
+var Decimal = require('decimal.js');
+var bufferShim = require('buffer-shims');
+&nbsp;
+module.exports = {
+  Characteristic: Characteristic
+};
+&nbsp;
+&nbsp;
+/**
+ * Characteristic represents a particular typed variable that can be assigned to a Service. For instance, a
+ * "Hue" Characteristic might store a 'float' value of type 'arcdegrees'. You could add the Hue Characteristic
+ * to a Service in order to store that value. A particular Characteristic is distinguished from others by its
+ * UUID. HomeKit provides a set of known Characteristic UUIDs defined in HomeKitTypes.js along with a
+ * corresponding concrete subclass.
+ *
+ * You can also define custom Characteristics by providing your own UUID. Custom Characteristics can be added
+ * to any native or custom Services, but Siri will likely not be able to work with these.
+ *
+ * Note that you can get the "value" of a Characteristic by accessing the "value" property directly, but this
+ * is really a "cached value". If you want to fetch the latest value, which may involve doing some work, then
+ * call getValue().
+ *
+ * @event 'get' =&gt; function(callback(err, newValue), context) { }
+ *        Emitted when someone calls getValue() on this Characteristic and desires the latest non-cached
+ *        value. If there are any listeners to this event, one of them MUST call the callback in order
+ *        for the value to ever be delivered. The `context` object is whatever was passed in by the initiator
+ *        of this event (for instance whomever called `getValue`).
+ *
+ * @event 'set' =&gt; function(newValue, callback(err), context) { }
+ *        Emitted when someone calls setValue() on this Characteristic with a desired new value. If there
+ *        are any listeners to this event, one of them MUST call the callback in order for this.value to
+ *        actually be set. The `context` object is whatever was passed in by the initiator of this change
+ *        (for instance, whomever called `setValue`).
+ *
+ * @event 'change' =&gt; function({ oldValue, newValue, context }) { }
+ *        Emitted after a change in our value has occurred. The new value will also be immediately accessible
+ *        in this.value. The event object contains the new value as well as the context object originally
+ *        passed in by the initiator of this change (if known).
+ */
+&nbsp;
+<span class="fstat-no" title="function not covered" >function Characteristic(displayName, UUID, props) {</span>
+<span class="cstat-no" title="statement not covered" >  this.displayName = displayName;</span>
+<span class="cstat-no" title="statement not covered" >  this.UUID = UUID;</span>
+<span class="cstat-no" title="statement not covered" >  this.iid = null; </span>// assigned by our containing Service
+<span class="cstat-no" title="statement not covered" >  this.value = null;</span>
+<span class="cstat-no" title="statement not covered" >  this.status = null;</span>
+<span class="cstat-no" title="statement not covered" >  this.eventOnlyCharacteristic = false;</span>
+<span class="cstat-no" title="statement not covered" >  this.props = props || {</span>
+    format: null,
+    unit: null,
+    minValue: null,
+    maxValue: null,
+    minStep: null,
+    perms: []
+  };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  this.subscriptions = 0;</span>
+}
+&nbsp;
+inherits(Characteristic, EventEmitter);
+&nbsp;
+// Known HomeKit formats
+Characteristic.Formats = {
+  BOOL: 'bool',
+  INT: 'int',
+  FLOAT: 'float',
+  STRING: 'string',
+  UINT8: 'uint8',
+  UINT16: 'uint16',
+  UINT32: 'uint32',
+  UINT64: 'uint64',
+  DATA: 'data',
+  TLV8: 'tlv8',
+  ARRAY: 'array', //Not in HAP Spec
+  DICTIONARY: 'dict' //Not in HAP Spec
+}
+&nbsp;
+// Known HomeKit unit types
+Characteristic.Units = {
+  // HomeKit only defines Celsius, for Fahrenheit, it requires iOS app to do the conversion.
+  CELSIUS: 'celsius',
+  PERCENTAGE: 'percentage',
+  ARC_DEGREE: 'arcdegrees',
+  LUX: 'lux',
+  SECONDS: 'seconds'
+}
+&nbsp;
+// Known HomeKit permission types
+Characteristic.Perms = {
+  READ: 'pr', //Kept for backwards compatability
+  PAIRED_READ: 'pr', //Added to match HAP's terminology
+  WRITE: 'pw', //Kept for backwards compatability
+  PAIRED_WRITE: 'pw', //Added to match HAP's terminology
+  NOTIFY: 'ev', //Kept for backwards compatability
+  EVENTS: 'ev', //Added to match HAP's terminology
+  ADDITIONAL_AUTHORIZATION: 'aa',
+  TIMED_WRITE: 'tw', //Not currently supported by IP
+  HIDDEN: 'hd'
+}
+&nbsp;
+/**
+ * Copies the given properties to our props member variable,
+ * and returns 'this' for chaining.
+ *
+ * @param 'props' {
+ *   format: &lt;one of Characteristic.Formats&gt;,
+ *   unit: &lt;one of Characteristic.Units&gt;,
+ *   perms: array of [Characteristic.Perms] like [Characteristic.Perms.READ, Characteristic.Perms.WRITE]
+ *   ev: &lt;Event Notifications Enabled Boolean&gt;, (Optional)
+ *   description: &lt;String of description&gt;, (Optional)
+ *   minValue: &lt;minimum value for numeric characteristics&gt;, (Optional)
+ *   maxValue: &lt;maximum value for numeric characteristics&gt;, (Optional)
+ *   minStep: &lt;smallest allowed increment for numeric characteristics&gt;, (Optional)
+ *   maxLen: &lt;max length of string up to 256&gt;, (Optional default: 64)
+ *   maxDataLen: &lt;max length of data&gt;, (Optional default: 2097152)
+ *   valid-values: &lt;array of numbers&gt;, (Optional)
+ *   valid-values-range: &lt;array of two numbers for start and end range&gt; (Optional)
+ * }
+ */
+&nbsp;
+Characteristic.prototype.setProps = <span class="fstat-no" title="function not covered" >function(props) {</span>
+<span class="cstat-no" title="statement not covered" >  for (var key in (props || {}))</span>
+<span class="cstat-no" title="statement not covered" >    if (Object.prototype.hasOwnProperty.call(props, key))</span>
+<span class="cstat-no" title="statement not covered" >      this.props[key] = props[key];</span>
+<span class="cstat-no" title="statement not covered" >  return this;</span>
+}
+&nbsp;
+&nbsp;
+Characteristic.prototype.subscribe = <span class="fstat-no" title="function not covered" >function () {</span>
+<span class="cstat-no" title="statement not covered" >  if (this.subscriptions === 0) {</span>
+<span class="cstat-no" title="statement not covered" >    this.emit('subscribe');</span>
+  }
+<span class="cstat-no" title="statement not covered" >  this.subscriptions++;</span>
+}
+&nbsp;
+Characteristic.prototype.unsubscribe = <span class="fstat-no" title="function not covered" >function() {</span>
+<span class="cstat-no" title="statement not covered" >  var wasOne = this.subscriptions === 1;</span>
+<span class="cstat-no" title="statement not covered" >  this.subscriptions--;</span>
+<span class="cstat-no" title="statement not covered" >  this.subscriptions = Math.max(this.subscriptions, 0);</span>
+<span class="cstat-no" title="statement not covered" >  if (wasOne) {</span>
+<span class="cstat-no" title="statement not covered" >    this.emit('unsubscribe');</span>
+  }
+}
+&nbsp;
+Characteristic.prototype.getValue = <span class="fstat-no" title="function not covered" >function(callback, context, connectionID) {</span>
+  // Handle special event only characteristics.
+<span class="cstat-no" title="statement not covered" >  if (this.eventOnlyCharacteristic === true) {</span>
+<span class="cstat-no" title="statement not covered" >    if (callback) {</span>
+<span class="cstat-no" title="statement not covered" >      callback(null, null);</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (this.listeners('get').length &gt; 0) {</span>
+&nbsp;
+    // allow a listener to handle the fetching of this value, and wait for completion
+<span class="cstat-no" title="statement not covered" >    this.emit('get', once(<span class="fstat-no" title="function not covered" >function(err, newValue) {</span></span>
+<span class="cstat-no" title="statement not covered" >      this.status = err;</span>
+<span class="cstat-no" title="statement not covered" >      if (err) {</span>
+        // pass the error along to our callback
+<span class="cstat-no" title="statement not covered" >        if (callback) <span class="cstat-no" title="statement not covered" >callback(err);</span></span>
+      }
+      else {
+<span class="cstat-no" title="statement not covered" >        newValue = this.validateValue(newValue); </span>//validateValue returns a value that has be cooerced into a valid value.
+<span class="cstat-no" title="statement not covered" >        if (newValue === undefined || newValue === null)</span>
+<span class="cstat-no" title="statement not covered" >          newValue = this.getDefaultValue();</span>
+&nbsp;
+        // getting the value was a success; we can pass it along and also update our cached value
+<span class="cstat-no" title="statement not covered" >        var oldValue = this.value;</span>
+<span class="cstat-no" title="statement not covered" >        this.value = newValue;</span>
+<span class="cstat-no" title="statement not covered" >        if (callback) <span class="cstat-no" title="statement not covered" >callback(null, newValue);</span></span>
+&nbsp;
+        // emit a change event if necessary
+<span class="cstat-no" title="statement not covered" >        if (oldValue !== newValue)</span>
+<span class="cstat-no" title="statement not covered" >          this.emit('change', { oldValue:oldValue, newValue:newValue, context:context });</span>
+      }
+&nbsp;
+    }.bind(this)), context, connectionID);
+  }
+  else {
+&nbsp;
+    // no one is listening to the 'get' event, so just return the cached value
+<span class="cstat-no" title="statement not covered" >    if (callback)</span>
+<span class="cstat-no" title="statement not covered" >      callback(this.status, this.value);</span>
+  }
+}
+&nbsp;
+Characteristic.prototype.validateValue = <span class="fstat-no" title="function not covered" >function(newValue) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" > var isNumericType = false;</span>
+<span class="cstat-no" title="statement not covered" > var minValue_resolved = 0;</span>
+<span class="cstat-no" title="statement not covered" > var maxValue_resolved = 0;</span>
+<span class="cstat-no" title="statement not covered" > var minStep_resolved = undefined;</span>
+<span class="cstat-no" title="statement not covered" > var stepDecimals = 0;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  switch(this.props.format) {</span>
+    case 'int':
+<span class="cstat-no" title="statement not covered" >      minStep_resolved=1;</span>
+<span class="cstat-no" title="statement not covered" >      minValue_resolved=-2147483648;</span>
+<span class="cstat-no" title="statement not covered" >      maxValue_resolved=2147483647;</span>
+<span class="cstat-no" title="statement not covered" >      isNumericType=true;</span>
+<span class="cstat-no" title="statement not covered" >      break;</span>
+    case 'float':
+<span class="cstat-no" title="statement not covered" >      minStep_resolved=undefined;</span>
+<span class="cstat-no" title="statement not covered" >      minValue_resolved=undefined;</span>
+<span class="cstat-no" title="statement not covered" >      maxValue_resolved=undefined;</span>
+<span class="cstat-no" title="statement not covered" >      isNumericType=true;</span>
+<span class="cstat-no" title="statement not covered" >      break;</span>
+    case 'uint8':
+<span class="cstat-no" title="statement not covered" >      minStep_resolved=1;</span>
+<span class="cstat-no" title="statement not covered" >      minValue_resolved=0;</span>
+<span class="cstat-no" title="statement not covered" >      maxValue_resolved=255;</span>
+<span class="cstat-no" title="statement not covered" >      isNumericType=true;</span>
+<span class="cstat-no" title="statement not covered" >      break;</span>
+    case 'uint16':
+<span class="cstat-no" title="statement not covered" >      minStep_resolved=1;</span>
+<span class="cstat-no" title="statement not covered" >      minValue_resolved=0;</span>
+<span class="cstat-no" title="statement not covered" >      maxValue_resolved=65535;</span>
+<span class="cstat-no" title="statement not covered" >      isNumericType=true;</span>
+<span class="cstat-no" title="statement not covered" >      break;</span>
+    case 'uint32':
+<span class="cstat-no" title="statement not covered" >      minStep_resolved=1;</span>
+<span class="cstat-no" title="statement not covered" >      minValue_resolved=0;</span>
+<span class="cstat-no" title="statement not covered" >      maxValue_resolved=4294967295;</span>
+<span class="cstat-no" title="statement not covered" >      isNumericType=true;</span>
+<span class="cstat-no" title="statement not covered" >      break;</span>
+    case 'uint64':
+<span class="cstat-no" title="statement not covered" >      minStep_resolved=1;</span>
+<span class="cstat-no" title="statement not covered" >      minValue_resolved=0;</span>
+<span class="cstat-no" title="statement not covered" >      maxValue_resolved=18446744073709551615;</span>
+<span class="cstat-no" title="statement not covered" >      isNumericType=true;</span>
+<span class="cstat-no" title="statement not covered" >      break;</span>
+    //All of the following datatypes return from this switch.
+     case 'bool':
+<span class="cstat-no" title="statement not covered" >      return (newValue == true); </span>//We don't need to make sure this returns true or false
+<span class="cstat-no" title="statement not covered" >      break;</span>
+    case 'string':
+<span class="cstat-no" title="statement not covered" >      var myString = newValue || ''; </span>//If null or undefined or anything odd, make it a blank string
+<span class="cstat-no" title="statement not covered" >      myString = String(myString);</span>
+<span class="cstat-no" title="statement not covered" >      var maxLength = this.props.maxLen;</span>
+<span class="cstat-no" title="statement not covered" >      if (maxLength === undefined) <span class="cstat-no" title="statement not covered" >maxLength=64; </span></span>//Default Max Length is 64.
+<span class="cstat-no" title="statement not covered" >      if (myString.length&gt;maxLength) <span class="cstat-no" title="statement not covered" >myString = myString.substring(0,maxLength); </span></span>//Truncate strings that are too long
+<span class="cstat-no" title="statement not covered" >      return myString; </span>//We don't need to do any validation after having truncated the string
+<span class="cstat-no" title="statement not covered" >      break;</span>
+    case 'data':
+<span class="cstat-no" title="statement not covered" >      var maxLength = this.props.maxDataLen;</span>
+<span class="cstat-no" title="statement not covered" >      if (maxLength===undefined) <span class="cstat-no" title="statement not covered" >maxLength=2097152; </span></span>//Default Max Length is 2097152.
+      //if (newValue.length&gt;maxLength) //I don't know the best way to handle this since it's unknown binary data.
+      //I suspect that it will crash HomeKit for this bridge if the length is too long.
+<span class="cstat-no" title="statement not covered" >      return newValue;</span>
+<span class="cstat-no" title="statement not covered" >      break;</span>
+    case 'tlv8':
+      //Should we parse this to make sure the tlv8 is valid?
+<span class="cstat-no" title="statement not covered" >      break;</span>
+    default: //Datatype out of HAP Spec encountered. We'll assume the developer knows what they're doing.
+<span class="cstat-no" title="statement not covered" >      return newValue;</span>
+    };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (isNumericType) {</span>
+<span class="cstat-no" title="statement not covered" >    if (isNaN(newValue)) <span class="cstat-no" title="statement not covered" >return this.value; </span></span>//This is not a number so we'll just pass out the last value.
+<span class="cstat-no" title="statement not covered" >    if (newValue === false) <span class="cstat-no" title="statement not covered" >return 0;</span></span>
+<span class="cstat-no" title="statement not covered" >    if (newValue === true) <span class="cstat-no" title="statement not covered" >return 1;</span></span>
+<span class="cstat-no" title="statement not covered" >    if ((!isNaN(this.props.maxValue))&amp;&amp;(this.props.maxValue!==null)) <span class="cstat-no" title="statement not covered" >maxValue_resolved=this.props.maxValue;</span></span>
+<span class="cstat-no" title="statement not covered" >    if ((!isNaN(this.props.minValue))&amp;&amp;(this.props.minValue!==null)) <span class="cstat-no" title="statement not covered" >minValue_resolved=this.props.minValue;</span></span>
+<span class="cstat-no" title="statement not covered" >    if ((!isNaN(this.props.minStep))&amp;&amp;(this.props.minStep!==null)) <span class="cstat-no" title="statement not covered" >minStep_resolved=this.props.minStep;</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (newValue&lt;minValue_resolved) <span class="cstat-no" title="statement not covered" >newValue = minValue_resolved; </span></span>//Fails Minimum Value Test
+<span class="cstat-no" title="statement not covered" >    if (newValue&gt;maxValue_resolved) <span class="cstat-no" title="statement not covered" >newValue = maxValue_resolved; </span></span>//Fails Maximum Value Test
+<span class="cstat-no" title="statement not covered" >    if (minStep_resolved!==undefined) {</span>
+      //Determine how many decimals we need to display
+<span class="cstat-no" title="statement not covered" >      if (Math.floor(minStep_resolved) === minStep_resolved)</span>
+<span class="cstat-no" title="statement not covered" >        stepDecimals = 0;</span>
+      else
+<span class="cstat-no" title="statement not covered" >        stepDecimals = minStep_resolved.toString().split(".")[1].length || 0;</span>
+&nbsp;
+      //Use Decimal to detemine the lowest value within the step.
+<span class="cstat-no" title="statement not covered" >      try {</span>
+<span class="cstat-no" title="statement not covered" >        var decimalVal = new Decimal(newValue);</span>
+<span class="cstat-no" title="statement not covered" >        var decimalDiff = decimalVal.mod(minStep_resolved);</span>
+<span class="cstat-no" title="statement not covered" >        decimalVal = decimalVal.minus(decimalDiff);</span>
+<span class="cstat-no" title="statement not covered" >        if (stepDecimals === 0) {</span>
+<span class="cstat-no" title="statement not covered" >          newValue = parseInt(decimalVal.toFixed(0));</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >          newValue = parseFloat(decimalVal.toFixed(stepDecimals)); </span>//Convert it to a fixed decimal
+        }
+      } catch (e) {
+<span class="cstat-no" title="statement not covered" >        return this.value; </span>//If we had an error, return the current value.
+      }
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (this['valid-values']!==undefined)</span>
+<span class="cstat-no" title="statement not covered" >      if (!this['valid-values'].includes(newValue)) <span class="cstat-no" title="statement not covered" >return this.value; </span></span>//Fails Valid Values Test
+<span class="cstat-no" title="statement not covered" >    if (this['valid-values-range']!==undefined) { //This is another way Apple has to handle min/max</span>
+<span class="cstat-no" title="statement not covered" >      if (newValue&lt;this['valid-values-range'][0]) <span class="cstat-no" title="statement not covered" >newValue=this['valid-values-range'][0];</span></span>
+<span class="cstat-no" title="statement not covered" >      if (newValue&gt;this['valid-values-range'][1]) <span class="cstat-no" title="statement not covered" >newValue=this['valid-values-range'][1];</span></span>
+    }
+  }
+<span class="cstat-no" title="statement not covered" >  return newValue;</span>
+}
+&nbsp;
+Characteristic.prototype.setValue = <span class="fstat-no" title="function not covered" >function(newValue, callback, context, connectionID) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if ( newValue instanceof Error ) {</span>
+<span class="cstat-no" title="statement not covered" >    this.status = newValue</span>
+  } else {
+<span class="cstat-no" title="statement not covered" >    this.status = null;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  newValue = this.validateValue(newValue); </span>//validateValue returns a value that has be cooerced into a valid value.
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (this.listeners('set').length &gt; 0) {</span>
+&nbsp;
+    // allow a listener to handle the setting of this value, and wait for completion
+<span class="cstat-no" title="statement not covered" >    this.emit('set', newValue, once(<span class="fstat-no" title="function not covered" >function(err) {</span></span>
+<span class="cstat-no" title="statement not covered" >      this.status = err;</span>
+<span class="cstat-no" title="statement not covered" >      if (err) {</span>
+        // pass the error along to our callback
+<span class="cstat-no" title="statement not covered" >        if (callback) <span class="cstat-no" title="statement not covered" >callback(err);</span></span>
+      }
+      else {
+<span class="cstat-no" title="statement not covered" >        if (newValue === undefined || newValue === null)</span>
+<span class="cstat-no" title="statement not covered" >          newValue = this.getDefaultValue();</span>
+        // setting the value was a success; so we can cache it now
+<span class="cstat-no" title="statement not covered" >        var oldValue = this.value;</span>
+<span class="cstat-no" title="statement not covered" >        this.value = newValue;</span>
+<span class="cstat-no" title="statement not covered" >        if (callback) <span class="cstat-no" title="statement not covered" >callback();</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (this.eventOnlyCharacteristic === true || oldValue !== newValue)</span>
+<span class="cstat-no" title="statement not covered" >          this.emit('change', { oldValue:oldValue, newValue:newValue, context:context });</span>
+      }
+&nbsp;
+    }.bind(this)), context, connectionID);
+&nbsp;
+  }
+  else {
+<span class="cstat-no" title="statement not covered" >    if (newValue === undefined || newValue === null)</span>
+<span class="cstat-no" title="statement not covered" >      newValue = this.getDefaultValue();</span>
+    // no one is listening to the 'set' event, so just assign the value blindly
+<span class="cstat-no" title="statement not covered" >    var oldValue = this.value;</span>
+<span class="cstat-no" title="statement not covered" >    this.value = newValue;</span>
+<span class="cstat-no" title="statement not covered" >    if (callback) <span class="cstat-no" title="statement not covered" >callback();</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (this.eventOnlyCharacteristic === true || oldValue !== newValue)</span>
+<span class="cstat-no" title="statement not covered" >      this.emit('change', { oldValue:oldValue, newValue:newValue, context:context });</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return this; </span>// for chaining
+}
+&nbsp;
+Characteristic.prototype.updateValue = <span class="fstat-no" title="function not covered" >function(newValue, callback, context) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if ( newValue instanceof Error ) {</span>
+<span class="cstat-no" title="statement not covered" >    this.status = newValue</span>
+  } else {
+<span class="cstat-no" title="statement not covered" >    this.status = null;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  newValue = this.validateValue(newValue); </span>//validateValue returns a value that has be cooerced into a valid value.
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (newValue === undefined || newValue === null)</span>
+<span class="cstat-no" title="statement not covered" >    newValue = this.getDefaultValue();</span>
+    // no one is listening to the 'set' event, so just assign the value blindly
+<span class="cstat-no" title="statement not covered" >  var oldValue = this.value;</span>
+<span class="cstat-no" title="statement not covered" >  this.value = newValue;</span>
+<span class="cstat-no" title="statement not covered" >  if (callback) <span class="cstat-no" title="statement not covered" >callback();</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (this.eventOnlyCharacteristic === true || oldValue !== newValue)</span>
+<span class="cstat-no" title="statement not covered" >    this.emit('change', { oldValue:oldValue, newValue:newValue, context:context });</span>
+<span class="cstat-no" title="statement not covered" >  return this; </span>// for chaining
+}
+&nbsp;
+Characteristic.prototype.getDefaultValue = <span class="fstat-no" title="function not covered" >function() {</span>
+<span class="cstat-no" title="statement not covered" >  switch (this.props.format) {</span>
+    case Characteristic.Formats.BOOL: <span class="cstat-no" title="statement not covered" >return false;</span>
+    case Characteristic.Formats.STRING: <span class="cstat-no" title="statement not covered" >return "";</span>
+    case Characteristic.Formats.DATA: <span class="cstat-no" title="statement not covered" >return null; </span>// who knows!
+    case Characteristic.Formats.TLV8: <span class="cstat-no" title="statement not covered" >return null; </span>// who knows!
+    case Characteristic.Formats.DICTIONARY: <span class="cstat-no" title="statement not covered" >return {};</span>
+    case Characteristic.Formats.ARRAY: <span class="cstat-no" title="statement not covered" >return [];</span>
+    default: <span class="cstat-no" title="statement not covered" >return this.props.minValue || 0;</span>
+  }
+}
+&nbsp;
+Characteristic.prototype._assignID = <span class="fstat-no" title="function not covered" >function(identifierCache, accessoryName, serviceUUID, serviceSubtype) {</span>
+&nbsp;
+  // generate our IID based on our UUID
+<span class="cstat-no" title="statement not covered" >  this.iid = identifierCache.getIID(accessoryName, serviceUUID, serviceSubtype, this.UUID);</span>
+}
+&nbsp;
+/**
+ * Returns a JSON representation of this Accessory suitable for delivering to HAP clients.
+ */
+Characteristic.prototype.toHAP = <span class="fstat-no" title="function not covered" >function(opt) {</span>
+&nbsp;
+  // ensure our value fits within our constraints if present
+<span class="cstat-no" title="statement not covered" >  var value = this.value;</span>
+<span class="cstat-no" title="statement not covered" >  if (this.props.minValue != null &amp;&amp; value &lt; this.props.minValue) <span class="cstat-no" title="statement not covered" >value = this.props.minValue;</span></span>
+<span class="cstat-no" title="statement not covered" >  if (this.props.maxValue != null &amp;&amp; value &gt; this.props.maxValue) <span class="cstat-no" title="statement not covered" >value = this.props.maxValue;</span></span>
+<span class="cstat-no" title="statement not covered" >  if (this.props.format != null) {</span>
+<span class="cstat-no" title="statement not covered" >    if (this.props.format === Characteristic.Formats.INT)</span>
+<span class="cstat-no" title="statement not covered" >      value = parseInt(value);</span>
+    else <span class="cstat-no" title="statement not covered" >if (this.props.format === Characteristic.Formats.UINT8)</span>
+<span class="cstat-no" title="statement not covered" >      value = parseInt(value);</span>
+    else <span class="cstat-no" title="statement not covered" >if (this.props.format === Characteristic.Formats.UINT16)</span>
+<span class="cstat-no" title="statement not covered" >      value = parseInt(value);</span>
+    else <span class="cstat-no" title="statement not covered" >if (this.props.format === Characteristic.Formats.UINT32)</span>
+<span class="cstat-no" title="statement not covered" >      value = parseInt(value);</span>
+    else <span class="cstat-no" title="statement not covered" >if (this.props.format === Characteristic.Formats.UINT64)</span>
+<span class="cstat-no" title="statement not covered" >      value = parseInt(value);</span>
+    else <span class="cstat-no" title="statement not covered" >if (this.props.format === Characteristic.Formats.FLOAT) {</span>
+<span class="cstat-no" title="statement not covered" >      value = parseFloat(value);</span>
+<span class="cstat-no" title="statement not covered" >      if (this.props.minStep != null) {</span>
+<span class="cstat-no" title="statement not covered" >        var pow = Math.pow(10, decimalPlaces(this.props.minStep));</span>
+<span class="cstat-no" title="statement not covered" >        value = Math.round(value * pow) / pow;</span>
+      }
+    }
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (this.eventOnlyCharacteristic === true) {</span>
+<span class="cstat-no" title="statement not covered" >    value = null;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var hap = {</span>
+    iid: this.iid,
+    type: this.UUID,
+    perms: this.props.perms,
+    format: this.props.format,
+    value: value,
+    description: this.displayName
+&nbsp;
+    // These properties used to be sent but do not seem to be used:
+    //
+    // events: false,
+    // bonjour: false
+  };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (this.props.validValues != null &amp;&amp; this.props.validValues.length &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >    hap['valid-values'] = this.props.validValues;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (this.props.validValueRanges != null &amp;&amp; this.props.validValueRanges.length &gt; 0 &amp;&amp; !(this.props.validValueRanges.length &amp; 1)) {</span>
+<span class="cstat-no" title="statement not covered" >    hap['valid-values-range'] = this.props.validValueRanges;</span>
+  }
+&nbsp;
+  // extra properties
+<span class="cstat-no" title="statement not covered" >  if (this.props.unit != null) <span class="cstat-no" title="statement not covered" >hap.unit = this.props.unit;</span></span>
+<span class="cstat-no" title="statement not covered" >  if (this.props.maxValue != null) <span class="cstat-no" title="statement not covered" >hap.maxValue = this.props.maxValue;</span></span>
+<span class="cstat-no" title="statement not covered" >  if (this.props.minValue != null) <span class="cstat-no" title="statement not covered" >hap.minValue = this.props.minValue;</span></span>
+<span class="cstat-no" title="statement not covered" >  if (this.props.minStep != null) <span class="cstat-no" title="statement not covered" >hap.minStep = this.props.minStep;</span></span>
+&nbsp;
+  // add maxLen if string length is &gt; 64 bytes and trim to max 256 bytes
+<span class="cstat-no" title="statement not covered" >  if (this.props.format === Characteristic.Formats.STRING) {</span>
+<span class="cstat-no" title="statement not covered" >    var str = bufferShim.from(value, 'utf8'),</span>
+        len = str.byteLength;
+<span class="cstat-no" title="statement not covered" >    if (len &gt; 256) { // 256 bytes is the max allowed length</span>
+<span class="cstat-no" title="statement not covered" >      hap.value = str.toString('utf8', 0, 256);</span>
+<span class="cstat-no" title="statement not covered" >      hap.maxLen = 256;</span>
+    } else <span class="cstat-no" title="statement not covered" >if (len &gt; 64) { // values below can be ommited</span>
+<span class="cstat-no" title="statement not covered" >      hap.maxLen = len;</span>
+    }
+  }
+&nbsp;
+  // if we're not readable, omit the "value" property - otherwise iOS will complain about non-compliance
+<span class="cstat-no" title="statement not covered" >  if (this.props.perms.indexOf(Characteristic.Perms.READ) == -1)</span>
+<span class="cstat-no" title="statement not covered" >    delete hap.value;</span>
+&nbsp;
+  // delete the "value" property anyway if we were asked to
+<span class="cstat-no" title="statement not covered" >  if (opt &amp;&amp; opt.omitValues)</span>
+<span class="cstat-no" title="statement not covered" >    delete hap.value;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return hap;</span>
+}
+&nbsp;
+// Mike Samuel
+// http://stackoverflow.com/questions/10454518/javascript-how-to-retrieve-the-number-of-decimals-of-a-string-number
+<span class="fstat-no" title="function not covered" >function decimalPlaces(num) {</span>
+<span class="cstat-no" title="statement not covered" >  var match = (''+num).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);</span>
+<span class="cstat-no" title="statement not covered" >  if (!match) { <span class="cstat-no" title="statement not covered" >return 0; </span>}</span>
+<span class="cstat-no" title="statement not covered" >  return Math.max(</span>
+       0,
+       // Number of digits right of decimal point.
+       (match[1] ? match[1].length : 0)
+       // Adjust for scientific notation.
+       - (match[2] ? +match[2] : 0));
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Jun 15 2018 22:54:08 GMT+0200 (CEST)
+</div>
+</div>
+<script src="../../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../../sorter.js"></script>
+</body>
+</html>

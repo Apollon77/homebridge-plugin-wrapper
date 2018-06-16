@@ -1,0 +1,42 @@
+{
+  "name": "homebridge-plugin-wrapper",
+  "version": "0.4.0",
+  "description": "Wrapper for Homebridge and NodeJS-HAP with reduced dependecies",
+  "author": {
+    "name": "Ingo Fischer",
+    "email": "<ingo@fischer-ka.de>"
+  },
+  "contributors": [],
+  "homepage": "",
+  "license": "MIT",
+  "keywords": [
+    "Homekit", "Plugin", "Wrapper"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Apollon77/homebridge-plugin-wrapper"
+  },
+  "dependencies": {
+      "mock-require": "^3.0.2",
+      "node-persist": "^0.0.11",
+      "decimal.js": "^7.2.3",
+      "buffer-shims": "^1.0.0"
+  },
+  "devDependencies": {
+    "mocha": "^5.0.0",
+    "chai": "^4.1.2",
+    "istanbul": "*",
+    "sinon": "^5.0.0",
+    "nock": "^9.0.2"
+  },
+  "engines": {
+    "node": ">=4.3.2"
+  },
+  "bugs": {
+    "url": "https://github.com/Apollon77/homebridge-plugin-wrapper/issues"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "node node_modules/mocha/bin/mocha --exit"
+  }
+}

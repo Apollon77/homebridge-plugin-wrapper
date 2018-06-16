@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for homebridge-plugin-wrapper/hap-nodejs/lib/camera/RTPProxy.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../../prettify.css" />
+    <link rel="stylesheet" href="../../../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../../../index.html">all files</a> / <a href="index.html">homebridge-plugin-wrapper/hap-nodejs/lib/camera/</a> RTPProxy.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">1.91% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>3/157</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/56</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/38</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">1.91% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>3/157</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict';
+&nbsp;
+const dgram = require('dgram');
+const EventEmitter = require('events').EventEmitter;
+&nbsp;
+class RTPProxy extends EventEmitter {
+  constructor<span class="fstat-no" title="function not covered" >(options) {</span>
+<span class="cstat-no" title="statement not covered" >    super();</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    self.type = options.isIPV6 ? 'udp6' : 'udp4';</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.options = options;</span>
+<span class="cstat-no" title="statement not covered" >    self.startingPort = 10000;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.outgoingAddress = options.outgoingAddress;</span>
+<span class="cstat-no" title="statement not covered" >    self.outgoingPort = options.outgoingPort;</span>
+<span class="cstat-no" title="statement not covered" >    self.incomingPayloadType = 0;</span>
+<span class="cstat-no" title="statement not covered" >    self.outgoingSSRC = options.outgoingSSRC;</span>
+<span class="cstat-no" title="statement not covered" >    self.disabled = options.disabled;</span>
+<span class="cstat-no" title="statement not covered" >    self.incomingSSRC = null;</span>
+<span class="cstat-no" title="statement not covered" >    self.outgoingPayloadType = null;</span>
+  }
+&nbsp;
+  setup<span class="fstat-no" title="function not covered" >() {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    return self.createSocketPair(self.type)</span>
+      .then(<span class="fstat-no" title="function not covered" >function(sockets) {</span>
+<span class="cstat-no" title="statement not covered" >        self.incomingRTPSocket = sockets[0];</span>
+<span class="cstat-no" title="statement not covered" >        self.incomingRTCPSocket = sockets[1];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      return self.createSocket(self.type);</span>
+    }).then(<span class="fstat-no" title="function not covered" >function(socket) {</span>
+<span class="cstat-no" title="statement not covered" >        self.outgoingSocket = socket;</span>
+<span class="cstat-no" title="statement not covered" >        self.onBound();</span>
+    });
+  }
+&nbsp;
+  destroy<span class="fstat-no" title="function not covered" >() {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    if (self.incomingRTPSocket) {</span>
+<span class="cstat-no" title="statement not covered" >      self.incomingRTPSocket.close();</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (self.incomingRTCPSocket) {</span>
+<span class="cstat-no" title="statement not covered" >      self.incomingRTCPSocket.close();</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (self.outgoingSocket) {</span>
+<span class="cstat-no" title="statement not covered" >      self.outgoingSocket.close();</span>
+    }
+  }
+&nbsp;
+  incomingRTPPort<span class="fstat-no" title="function not covered" >() {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    return self.incomingRTPSocket.address().port;</span>
+  }
+&nbsp;
+  incomingRTCPPort<span class="fstat-no" title="function not covered" >() {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    return self.incomingRTCPSocket.address().port;</span>
+  }
+&nbsp;
+  outgoingLocalPort<span class="fstat-no" title="function not covered" >() {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    return self.outgoingSocket.address().port;</span>
+  }
+&nbsp;
+  setServerAddress<span class="fstat-no" title="function not covered" >(address) {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    self.serverAddress = address;</span>
+  }
+&nbsp;
+  setServerRTPPort<span class="fstat-no" title="function not covered" >(port) {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    self.serverRTPPort = port;</span>
+  }
+&nbsp;
+  setServerRTCPPort<span class="fstat-no" title="function not covered" >(port) {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    self.serverRTCPPort = port;</span>
+  }
+&nbsp;
+  setIncomingPayloadType<span class="fstat-no" title="function not covered" >(pt) {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    self.incomingPayloadType = pt;</span>
+  }
+&nbsp;
+  setOutgoingPayloadType<span class="fstat-no" title="function not covered" >(pt) {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    self.outgoingPayloadType = pt;</span>
+  }
+&nbsp;
+  sendOut<span class="fstat-no" title="function not covered" >(msg) {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+    // Just drop it if we're not setup yet, I guess.
+<span class="cstat-no" title="statement not covered" >    if(!self.outgoingAddress || !self.outgoingPort)</span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.outgoingSocket.send(msg, self.outgoingPort, self.outgoingAddress);</span>
+  }
+&nbsp;
+  sendBack<span class="fstat-no" title="function not covered" >(msg) {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+    // Just drop it if we're not setup yet, I guess.
+<span class="cstat-no" title="statement not covered" >    if(!self.serverAddress || !self.serverRTCPPort)</span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.outgoingSocket.send(msg, self.serverRTCPPort, self.serverAddress);</span>
+  }
+&nbsp;
+  onBound<span class="fstat-no" title="function not covered" >() {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    if(self.disabled)</span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.incomingRTPSocket.on('message', <span class="fstat-no" title="function not covered" >function(msg, rinfo) {</span></span>
+<span class="cstat-no" title="statement not covered" >        self.rtpMessage(msg);</span>
+        });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.incomingRTCPSocket.on('message', <span class="fstat-no" title="function not covered" >function(msg, rinfo) {</span></span>
+<span class="cstat-no" title="statement not covered" >        self.rtcpMessage(msg);</span>
+        });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    self.outgoingSocket.on('message', <span class="fstat-no" title="function not covered" >function(msg, rinfo) {</span></span>
+<span class="cstat-no" title="statement not covered" >        self.rtcpReply(msg);</span>
+        });
+  }
+&nbsp;
+  rtpMessage<span class="fstat-no" title="function not covered" >(msg) {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if(msg.length &lt; 12) {</span>
+      // Not a proper RTP packet. Just forward it.
+<span class="cstat-no" title="statement not covered" >      self.sendOut(msg);</span>
+<span class="cstat-no" title="statement not covered" >      return;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    let mpt = msg.readUInt8(1);</span>
+<span class="cstat-no" title="statement not covered" >    let pt = mpt &amp; 0x7F;</span>
+<span class="cstat-no" title="statement not covered" >    if(pt == self.incomingPayloadType) {</span>
+<span class="cstat-no" title="statement not covered" >      mpt = (mpt &amp; 0x80) | self.outgoingPayloadType;</span>
+<span class="cstat-no" title="statement not covered" >      msg.writeUInt8(mpt, 1);</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if(self.incomingSSRC === null)</span>
+<span class="cstat-no" title="statement not covered" >      self.incomingSSRC = msg.readUInt32BE(4);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    msg.writeUInt32BE(self.outgoingSSRC, 8);</span>
+<span class="cstat-no" title="statement not covered" >    self.sendOut(msg);</span>
+  }
+&nbsp;
+  processRTCPMessage<span class="fstat-no" title="function not covered" >(msg, transform) {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    let rtcpPackets = [];</span>
+<span class="cstat-no" title="statement not covered" >    let offset = 0;</span>
+<span class="cstat-no" title="statement not covered" >    while((offset + 4) &lt;= msg.length) {</span>
+<span class="cstat-no" title="statement not covered" >      let pt = msg.readUInt8(offset + 1);</span>
+<span class="cstat-no" title="statement not covered" >      let len = msg.readUInt16BE(offset + 2) * 4;</span>
+<span class="cstat-no" title="statement not covered" >      if((offset + 4 + len) &gt; msg.length)</span>
+<span class="cstat-no" title="statement not covered" >        break;</span>
+<span class="cstat-no" title="statement not covered" >      let packet = msg.slice(offset, offset + 4 + len);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      packet = transform(pt, packet);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if(packet)</span>
+<span class="cstat-no" title="statement not covered" >        rtcpPackets.push(packet);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      offset += 4 + len;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if(rtcpPackets.length &gt; 0)</span>
+<span class="cstat-no" title="statement not covered" >      return Buffer.concat(rtcpPackets);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return null;</span>
+  }
+&nbsp;
+  rtcpMessage<span class="fstat-no" title="function not covered" >(msg) {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    let processed = self.processRTCPMessage(msg, <span class="fstat-no" title="function not covered" >function(pt, packet) {</span></span>
+<span class="cstat-no" title="statement not covered" >      if(pt != 200 || packet.length &lt; 8)</span>
+<span class="cstat-no" title="statement not covered" >        return packet;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      if(self.incomingSSRC === null)</span>
+<span class="cstat-no" title="statement not covered" >        self.incomingSSRC = packet.readUInt32BE(4);</span>
+<span class="cstat-no" title="statement not covered" >      packet.writeUInt32BE(self.outgoingSSRC, 4);</span>
+<span class="cstat-no" title="statement not covered" >      return packet;</span>
+    });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if(processed)</span>
+<span class="cstat-no" title="statement not covered" >      self.sendOut(processed);</span>
+  }
+&nbsp;
+  rtcpReply<span class="fstat-no" title="function not covered" >(msg) {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    let processed = self.processRTCPMessage(msg, <span class="fstat-no" title="function not covered" >function(pt, packet) {</span></span>
+<span class="cstat-no" title="statement not covered" >      if(pt != 201 || packet.length &lt; 12)</span>
+<span class="cstat-no" title="statement not covered" >        return packet;</span>
+&nbsp;
+      // Assume source 1 is the one we want to edit.
+<span class="cstat-no" title="statement not covered" >      packet.writeUInt32BE(self.incomingSSRC, 8);</span>
+<span class="cstat-no" title="statement not covered" >      return packet;</span>
+    });
+&nbsp;
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if(processed)</span>
+<span class="cstat-no" title="statement not covered" >      self.sendOut(processed);</span>
+  }
+&nbsp;
+  createSocket<span class="fstat-no" title="function not covered" >(type) {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    return new Promise(<span class="fstat-no" title="function not covered" >function(resolve, reject) {</span></span>
+<span class="cstat-no" title="statement not covered" >      let retry = <span class="fstat-no" title="function not covered" >function() {</span></span>
+<span class="cstat-no" title="statement not covered" >        let socket = dgram.createSocket(type);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        let bindErrorHandler = <span class="fstat-no" title="function not covered" >function() {</span></span>
+<span class="cstat-no" title="statement not covered" >          if(self.startingPort == 65535)</span>
+<span class="cstat-no" title="statement not covered" >            self.startingPort = 10000;</span>
+          else
+<span class="cstat-no" title="statement not covered" >            ++self.startingPort;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          socket.close();</span>
+<span class="cstat-no" title="statement not covered" >          retry();</span>
+        };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        socket.once('error', bindErrorHandler);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        socket.on('listening', <span class="fstat-no" title="function not covered" >function() {</span></span>
+<span class="cstat-no" title="statement not covered" >          resolve(socket);</span>
+        });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        socket.bind(self.startingPort);</span>
+      };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      retry();</span>
+    });
+  }
+&nbsp;
+  createSocketPair<span class="fstat-no" title="function not covered" >(type) {</span>
+<span class="cstat-no" title="statement not covered" >    let self = this;</span>
+<span class="cstat-no" title="statement not covered" >    return new Promise(<span class="fstat-no" title="function not covered" >function(resolve, reject) {</span></span>
+<span class="cstat-no" title="statement not covered" >      let retry = <span class="fstat-no" title="function not covered" >function() {</span></span>
+<span class="cstat-no" title="statement not covered" >        let socket1 = dgram.createSocket(type);</span>
+<span class="cstat-no" title="statement not covered" >        let socket2 = dgram.createSocket(type);</span>
+<span class="cstat-no" title="statement not covered" >        let state = {socket1: 0, socket2: 0};</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        let recheck = <span class="fstat-no" title="function not covered" >function() {</span></span>
+<span class="cstat-no" title="statement not covered" >          if(state.socket1 == 0 || state.socket2 == 0)</span>
+<span class="cstat-no" title="statement not covered" >            return;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          if(state.socket1 == 2 &amp;&amp; state.socket2 == 2) {</span>
+<span class="cstat-no" title="statement not covered" >            resolve([socket1, socket2]);</span>
+<span class="cstat-no" title="statement not covered" >            return;</span>
+          }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          if(self.startingPort == 65534)</span>
+<span class="cstat-no" title="statement not covered" >            self.startingPort = 10000;</span>
+          else
+<span class="cstat-no" title="statement not covered" >            ++self.startingPort;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          socket1.close();</span>
+<span class="cstat-no" title="statement not covered" >          socket2.close();</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >          retry(self.startingPort);</span>
+        }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        socket1.once('error', <span class="fstat-no" title="function not covered" >function() {</span></span>
+<span class="cstat-no" title="statement not covered" >          state.socket1 = 1;</span>
+<span class="cstat-no" title="statement not covered" >          recheck();</span>
+        });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        socket2.once('error', <span class="fstat-no" title="function not covered" >function() {</span></span>
+<span class="cstat-no" title="statement not covered" >          state.socket2 = 1;</span>
+<span class="cstat-no" title="statement not covered" >          recheck();</span>
+        });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        socket1.once('listening', <span class="fstat-no" title="function not covered" >function() {</span></span>
+<span class="cstat-no" title="statement not covered" >          state.socket1 = 2;</span>
+<span class="cstat-no" title="statement not covered" >          recheck();</span>
+        });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        socket2.once('listening', <span class="fstat-no" title="function not covered" >function() {</span></span>
+<span class="cstat-no" title="statement not covered" >          state.socket2 = 2;</span>
+<span class="cstat-no" title="statement not covered" >          recheck();</span>
+        });
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        socket1.bind(self.startingPort);</span>
+<span class="cstat-no" title="statement not covered" >        socket2.bind(self.startingPort + 1);</span>
+      }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >      retry();</span>
+    });
+  }
+}
+&nbsp;
+module.exports = RTPProxy;
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Jun 15 2018 22:54:08 GMT+0200 (CEST)
+</div>
+</div>
+<script src="../../../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../../../sorter.js"></script>
+</body>
+</html>

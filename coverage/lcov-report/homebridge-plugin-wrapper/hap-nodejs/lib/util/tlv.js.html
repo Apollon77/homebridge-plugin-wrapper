@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for homebridge-plugin-wrapper/hap-nodejs/lib/util/tlv.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../../prettify.css" />
+    <link rel="stylesheet" href="../../../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../../../index.html">all files</a> / <a href="index.html">homebridge-plugin-wrapper/hap-nodejs/lib/util/</a> tlv.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">9.52% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>4/42</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/12</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/2</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">9.52% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>4/42</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict';
+&nbsp;
+var bufferShim = require('buffer-shims');
+&nbsp;
+/**
+ * Type Length Value encoding/decoding, used by HAP as a wire format.
+ * https://en.wikipedia.org/wiki/Type-length-value
+ */
+&nbsp;
+module.exports = {
+    encode: encode,
+    decode: decode
+};
+&nbsp;
+<span class="fstat-no" title="function not covered" >function encode(type, data /*, type, data, type, data... */) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var encodedTLVBuffer = bufferShim.alloc(0);</span>
+&nbsp;
+    // coerce data to Buffer if needed
+<span class="cstat-no" title="statement not covered" >    if (typeof data === 'number')</span>
+<span class="cstat-no" title="statement not covered" >      data = bufferShim.from([data]);</span>
+    else <span class="cstat-no" title="statement not covered" >if (typeof data === 'string')</span>
+<span class="cstat-no" title="statement not covered" >      data = bufferShim.from(data);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (data.length &lt;= 255) {</span>
+<span class="cstat-no" title="statement not covered" >        encodedTLVBuffer = Buffer.concat([bufferShim.from([type,data.length]),data]);</span>
+    } else {
+<span class="cstat-no" title="statement not covered" >        var leftLength = data.length;</span>
+<span class="cstat-no" title="statement not covered" >        var tempBuffer = bufferShim.alloc(0);</span>
+<span class="cstat-no" title="statement not covered" >        var currentStart = 0;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        for (; leftLength &gt; 0;) {</span>
+<span class="cstat-no" title="statement not covered" >            if (leftLength &gt;= 255) {</span>
+<span class="cstat-no" title="statement not covered" >                tempBuffer = Buffer.concat([tempBuffer,bufferShim.from([type,0xFF]),data.slice(currentStart, currentStart + 255)]);</span>
+<span class="cstat-no" title="statement not covered" >                leftLength -= 255;</span>
+<span class="cstat-no" title="statement not covered" >                currentStart = currentStart + 255;</span>
+            } else {
+<span class="cstat-no" title="statement not covered" >                tempBuffer = Buffer.concat([tempBuffer,bufferShim.from([type,leftLength]),data.slice(currentStart, currentStart + leftLength)]);</span>
+<span class="cstat-no" title="statement not covered" >                leftLength -= leftLength;</span>
+            }
+        }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        encodedTLVBuffer = tempBuffer;</span>
+    }
+&nbsp;
+    // do we have more to encode?
+<span class="cstat-no" title="statement not covered" >    if (arguments.length &gt; 2) {</span>
+&nbsp;
+      // chop off the first two arguments which we already processed, and process the rest recursively
+<span class="cstat-no" title="statement not covered" >      var remainingArguments = Array.prototype.slice.call(arguments, 2);</span>
+<span class="cstat-no" title="statement not covered" >      var remainingTLVBuffer = encode.apply(this, remainingArguments);</span>
+&nbsp;
+      // append the remaining encoded arguments directly to the buffer
+<span class="cstat-no" title="statement not covered" >      encodedTLVBuffer = Buffer.concat([encodedTLVBuffer, remainingTLVBuffer]);</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return encodedTLVBuffer;</span>
+}
+&nbsp;
+<span class="fstat-no" title="function not covered" >function decode(data) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var objects = {};</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    var leftLength = data.length;</span>
+<span class="cstat-no" title="statement not covered" >    var currentIndex = 0;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    for (; leftLength &gt; 0;) {</span>
+<span class="cstat-no" title="statement not covered" >        var type = data[currentIndex];</span>
+<span class="cstat-no" title="statement not covered" >        var length = data[currentIndex+1];</span>
+<span class="cstat-no" title="statement not covered" >        currentIndex += 2;</span>
+<span class="cstat-no" title="statement not covered" >        leftLength -= 2;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        var newData = data.slice(currentIndex, currentIndex+length);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        if (objects[type]) {</span>
+<span class="cstat-no" title="statement not covered" >            objects[type] = Buffer.concat([objects[type],newData]);</span>
+        } else {
+<span class="cstat-no" title="statement not covered" >            objects[type] = newData;</span>
+        }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >        currentIndex += length;</span>
+<span class="cstat-no" title="statement not covered" >        leftLength -= length;</span>
+    }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    return objects;</span>
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Jun 15 2018 22:54:08 GMT+0200 (CEST)
+</div>
+</div>
+<script src="../../../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../../../sorter.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+os:
+  - linux
+  - osx
+language: node_js
+node_js:
+  - '6'
+  - '8'
+  - '10'
+before_install:
+  - npm install homebridge-http-webhooks
+  - npm install homebridge-sun-position
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - g++-4.8

@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for homebridge-plugin-wrapper/hap-nodejs/lib/Service.js</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../../index.html">all files</a> / <a href="index.html">homebridge-plugin-wrapper/hap-nodejs/lib/</a> Service.js
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">16.92% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>22/130</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/60</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/18</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">17.05% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>22/129</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">'use strict';
+&nbsp;
+var inherits = require('util').inherits;
+var clone = require('./util/clone').clone;
+var EventEmitter = require('events').EventEmitter;
+var Characteristic = require('./Characteristic').Characteristic;
+&nbsp;
+module.exports = {
+  Service: Service
+};
+&nbsp;
+/**
+ * Service represents a set of grouped values necessary to provide a logical function. For instance, a
+ * "Door Lock Mechanism" service might contain two values, one for the "desired lock state" and one for the
+ * "current lock state". A particular Service is distinguished from others by its "type", which is a UUID.
+ * HomeKit provides a set of known Service UUIDs defined in HomeKitTypes.js along with a corresponding
+ * concrete subclass that you can instantiate directly to setup the necessary values. These natively-supported
+ * Services are expected to contain a particular set of Characteristics.
+ *
+ * Unlike Characteristics, where you cannot have two Characteristics with the same UUID in the same Service,
+ * you can actually have multiple Services with the same UUID in a single Accessory. For instance, imagine
+ * a Garage Door Opener with both a "security light" and a "backlight" for the display. Each light could be
+ * a "Lightbulb" Service with the same UUID. To account for this situation, we define an extra "subtype"
+ * property on Service, that can be a string or other string-convertible object that uniquely identifies the
+ * Service among its peers in an Accessory. For instance, you might have `service1.subtype = 'security_light'`
+ * for one and `service2.subtype = 'backlight'` for the other.
+ *
+ * You can also define custom Services by providing your own UUID for the type that you generate yourself.
+ * Custom Services can contain an arbitrary set of Characteristics, but Siri will likely not be able to
+ * work with these.
+ *
+ * @event 'characteristic-change' =&gt; function({characteristic, oldValue, newValue, context}) { }
+ *        Emitted after a change in the value of one of our Characteristics has occurred.
+ */
+&nbsp;
+<span class="fstat-no" title="function not covered" >function Service(displayName, UUID, subtype) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (!UUID) <span class="cstat-no" title="statement not covered" >throw new Error("Services must be created with a valid UUID.");</span></span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  this.displayName = displayName;</span>
+<span class="cstat-no" title="statement not covered" >  this.UUID = UUID;</span>
+<span class="cstat-no" title="statement not covered" >  this.subtype = subtype;</span>
+<span class="cstat-no" title="statement not covered" >  this.iid = null; </span>// assigned later by our containing Accessory
+<span class="cstat-no" title="statement not covered" >  this.characteristics = [];</span>
+<span class="cstat-no" title="statement not covered" >  this.optionalCharacteristics = [];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  this.isHiddenService = false;</span>
+<span class="cstat-no" title="statement not covered" >  this.isPrimaryService = false;</span>
+<span class="cstat-no" title="statement not covered" >  this.linkedServices = [];</span>
+&nbsp;
+  // every service has an optional Characteristic.Name property - we'll set it to our displayName
+  // if one was given
+  // if you don't provide a display name, some HomeKit apps may choose to hide the device.
+<span class="cstat-no" title="statement not covered" >  if (displayName) {</span>
+    // create the characteristic if necessary
+<span class="cstat-no" title="statement not covered" >    var nameCharacteristic =</span>
+      this.getCharacteristic(Characteristic.Name) ||
+      this.addCharacteristic(Characteristic.Name);
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    nameCharacteristic.setValue(displayName);</span>
+  }
+}
+&nbsp;
+inherits(Service, EventEmitter);
+&nbsp;
+Service.prototype.addCharacteristic = <span class="fstat-no" title="function not covered" >function (characteristic) {</span>
+  // characteristic might be a constructor like `Characteristic.Brightness` instead of an instance
+  // of Characteristic. Coerce if necessary.
+<span class="cstat-no" title="statement not covered" >  if (typeof characteristic === 'function') {</span>
+<span class="cstat-no" title="statement not covered" >    characteristic = new (Function.prototype.bind.apply(characteristic, arguments));</span>
+  }
+  // check for UUID conflict
+<span class="cstat-no" title="statement not covered" >  for (var index in this.characteristics) {</span>
+<span class="cstat-no" title="statement not covered" >    var existing = this.characteristics[index];</span>
+<span class="cstat-no" title="statement not covered" >    if (existing.UUID === characteristic.UUID) {</span>
+<span class="cstat-no" title="statement not covered" >      if (characteristic.UUID === '00000052-0000-1000-8000-0026BB765291') {</span>
+        //This is a special workaround for the Firmware Revision characteristic.
+<span class="cstat-no" title="statement not covered" >        return existing;</span>
+      }
+<span class="cstat-no" title="statement not covered" >      throw new Error("Cannot add a Characteristic with the same UUID as another Characteristic in this Service: " + existing.UUID);</span>
+    }
+  }
+&nbsp;
+  // listen for changes in characteristics and bubble them up
+<span class="cstat-no" title="statement not covered" >  characteristic.on('change', <span class="fstat-no" title="function not covered" >function (change) {</span></span>
+    // make a new object with the relevant characteristic added, and bubble it up
+<span class="cstat-no" title="statement not covered" >    this.emit('characteristic-change', clone(change, { characteristic: characteristic }));</span>
+  }.bind(this));
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  this.characteristics.push(characteristic);</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  this.emit('service-configurationChange', clone({ service: this }));</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return characteristic;</span>
+}
+&nbsp;
+//Defines this service as hidden
+Service.prototype.setHiddenService = <span class="fstat-no" title="function not covered" >function (isHidden) {</span>
+<span class="cstat-no" title="statement not covered" >  this.isHiddenService = isHidden;</span>
+<span class="cstat-no" title="statement not covered" >  this.emit('service-configurationChange', clone({ service: this }));</span>
+}
+&nbsp;
+//Allows setting other services that link to this one.
+Service.prototype.addLinkedService = <span class="fstat-no" title="function not covered" >function (newLinkedService) {</span>
+  //TODO: Add a check if the service is on the same accessory.
+<span class="cstat-no" title="statement not covered" >  if (!this.linkedServices.includes(newLinkedService))</span>
+<span class="cstat-no" title="statement not covered" >    this.linkedServices.push(newLinkedService);</span>
+<span class="cstat-no" title="statement not covered" >  this.emit('service-configurationChange', clone({ service: this }));</span>
+}
+&nbsp;
+Service.prototype.removeLinkedService = <span class="fstat-no" title="function not covered" >function (oldLinkedService) {</span>
+  //TODO: Add a check if the service is on the same accessory.
+<span class="cstat-no" title="statement not covered" >  if (this.linkedServices.includes(oldLinkedService))</span>
+<span class="cstat-no" title="statement not covered" >    this.linkedServices.splice(this.linkedServices.indexOf(oldLinkedService), 1);</span>
+<span class="cstat-no" title="statement not covered" >  this.emit('service-configurationChange', clone({ service: this }));</span>
+}
+&nbsp;
+Service.prototype.removeCharacteristic = <span class="fstat-no" title="function not covered" >function (characteristic) {</span>
+<span class="cstat-no" title="statement not covered" >  var targetCharacteristicIndex;</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  for (var index in this.characteristics) {</span>
+<span class="cstat-no" title="statement not covered" >    var existingCharacteristic = this.characteristics[index];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    if (existingCharacteristic === characteristic) {</span>
+<span class="cstat-no" title="statement not covered" >      targetCharacteristicIndex = index;</span>
+<span class="cstat-no" title="statement not covered" >      break;</span>
+    }
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (targetCharacteristicIndex) {</span>
+<span class="cstat-no" title="statement not covered" >    this.characteristics.splice(targetCharacteristicIndex, 1);</span>
+<span class="cstat-no" title="statement not covered" >    characteristic.removeAllListeners();</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >    this.emit('service-configurationChange', clone({ service: this }));</span>
+  }
+}
+&nbsp;
+Service.prototype.getCharacteristic = <span class="fstat-no" title="function not covered" >function (name) {</span>
+  // returns a characteristic object from the service
+  // If  Service.prototype.getCharacteristic(Characteristic.Type)  does not find the characteristic,
+  // but the type is in optionalCharacteristics, it adds the characteristic.type to the service and returns it.
+<span class="cstat-no" title="statement not covered" >  var index, characteristic;</span>
+<span class="cstat-no" title="statement not covered" >  for (index in this.characteristics) {</span>
+<span class="cstat-no" title="statement not covered" >    characteristic = this.characteristics[index];</span>
+<span class="cstat-no" title="statement not covered" >    if (typeof name === 'string' &amp;&amp; characteristic.displayName === name) {</span>
+<span class="cstat-no" title="statement not covered" >      return characteristic;</span>
+    }
+    else <span class="cstat-no" title="statement not covered" >if (typeof name === 'function' &amp;&amp; ((characteristic instanceof name) || (name.UUID === characteristic.UUID))) {</span>
+<span class="cstat-no" title="statement not covered" >      return characteristic;</span>
+    }
+  }
+<span class="cstat-no" title="statement not covered" >  if (typeof name === 'function') {</span>
+<span class="cstat-no" title="statement not covered" >    for (index in this.optionalCharacteristics) {</span>
+<span class="cstat-no" title="statement not covered" >      characteristic = this.optionalCharacteristics[index];</span>
+<span class="cstat-no" title="statement not covered" >      if ((characteristic instanceof name) || (name.UUID === characteristic.UUID)) {</span>
+<span class="cstat-no" title="statement not covered" >        return this.addCharacteristic(name);</span>
+      }
+    }
+    //Not found in optional Characteristics. Adding anyway, but warning about it if it isn't the Name.
+<span class="cstat-no" title="statement not covered" >    if (name !== Characteristic.Name) {</span>
+<span class="cstat-no" title="statement not covered" >      console.warn("HAP Warning: Characteristic %s not in required or optional characteristics for service %s. Adding anyway.", name.UUID, this.UUID);</span>
+<span class="cstat-no" title="statement not covered" >      return this.addCharacteristic(name);</span>
+    }
+  }
+};
+&nbsp;
+Service.prototype.testCharacteristic = <span class="fstat-no" title="function not covered" >function (name) {</span>
+  // checks for the existence of a characteristic object in the service
+<span class="cstat-no" title="statement not covered" >  var index, characteristic;</span>
+<span class="cstat-no" title="statement not covered" >  for (index in this.characteristics) {</span>
+<span class="cstat-no" title="statement not covered" >    characteristic = this.characteristics[index];</span>
+<span class="cstat-no" title="statement not covered" >    if (typeof name === 'string' &amp;&amp; characteristic.displayName === name) {</span>
+<span class="cstat-no" title="statement not covered" >      return true;</span>
+    }
+    else <span class="cstat-no" title="statement not covered" >if (typeof name === 'function' &amp;&amp; ((characteristic instanceof name) || (name.UUID === characteristic.UUID))) {</span>
+<span class="cstat-no" title="statement not covered" >      return true;</span>
+    }
+  }
+<span class="cstat-no" title="statement not covered" >  return false;</span>
+}
+&nbsp;
+Service.prototype.setCharacteristic = <span class="fstat-no" title="function not covered" >function (name, value) {</span>
+<span class="cstat-no" title="statement not covered" >  this.getCharacteristic(name).setValue(value);</span>
+<span class="cstat-no" title="statement not covered" >  return this; </span>// for chaining
+}
+&nbsp;
+// A function to only updating the remote value, but not firiring the 'set' event.
+Service.prototype.updateCharacteristic = <span class="fstat-no" title="function not covered" >function (name, value) {</span>
+<span class="cstat-no" title="statement not covered" >  this.getCharacteristic(name).updateValue(value);</span>
+<span class="cstat-no" title="statement not covered" >  return this;</span>
+}
+&nbsp;
+Service.prototype.addOptionalCharacteristic = <span class="fstat-no" title="function not covered" >function (characteristic) {</span>
+  // characteristic might be a constructor like `Characteristic.Brightness` instead of an instance
+  // of Characteristic. Coerce if necessary.
+<span class="cstat-no" title="statement not covered" >  if (typeof characteristic === 'function')</span>
+<span class="cstat-no" title="statement not covered" >    characteristic = new characteristic();</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  this.optionalCharacteristics.push(characteristic);</span>
+}
+&nbsp;
+Service.prototype.getCharacteristicByIID = <span class="fstat-no" title="function not covered" >function (iid) {</span>
+<span class="cstat-no" title="statement not covered" >  for (var index in this.characteristics) {</span>
+<span class="cstat-no" title="statement not covered" >    var characteristic = this.characteristics[index];</span>
+<span class="cstat-no" title="statement not covered" >    if (characteristic.iid === iid)</span>
+<span class="cstat-no" title="statement not covered" >      return characteristic;</span>
+  }
+}
+&nbsp;
+Service.prototype._assignIDs = <span class="fstat-no" title="function not covered" >function (identifierCache, accessoryName, baseIID) {</span>
+<span class="cstat-no" title="statement not covered" >  if (baseIID === undefined) {</span>
+<span class="cstat-no" title="statement not covered" >    baseIID = 0;</span>
+  }
+  // the Accessory Information service must have a (reserved by IdentifierCache) ID of 1
+<span class="cstat-no" title="statement not covered" >  if (this.UUID === '0000003E-0000-1000-8000-0026BB765291') {</span>
+<span class="cstat-no" title="statement not covered" >    this.iid = 1;</span>
+  }
+  else {
+    // assign our own ID based on our UUID
+<span class="cstat-no" title="statement not covered" >    this.iid = baseIID + identifierCache.getIID(accessoryName, this.UUID, this.subtype);</span>
+  }
+&nbsp;
+  // assign IIDs to our Characteristics
+<span class="cstat-no" title="statement not covered" >  for (var index in this.characteristics) {</span>
+<span class="cstat-no" title="statement not covered" >    var characteristic = this.characteristics[index];</span>
+<span class="cstat-no" title="statement not covered" >    characteristic._assignID(identifierCache, accessoryName, this.UUID, this.subtype);</span>
+  }
+}
+&nbsp;
+/**
+ * Returns a JSON representation of this Accessory suitable for delivering to HAP clients.
+ */
+Service.prototype.toHAP = <span class="fstat-no" title="function not covered" >function (opt) {</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var characteristicsHAP = [];</span>
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  for (var index in this.characteristics) {</span>
+<span class="cstat-no" title="statement not covered" >    var characteristic = this.characteristics[index];</span>
+<span class="cstat-no" title="statement not covered" >    characteristicsHAP.push(characteristic.toHAP(opt));</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  var hap = {</span>
+    iid: this.iid,
+    type: this.UUID,
+    characteristics: characteristicsHAP
+  };
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (this.isPrimaryService !== undefined) {</span>
+<span class="cstat-no" title="statement not covered" >    hap['primary'] = this.isPrimaryService;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (this.isHiddenService !== undefined) {</span>
+<span class="cstat-no" title="statement not covered" >    hap['hidden'] = this.isHiddenService;</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  if (this.linkedServices.length &gt; 0) {</span>
+<span class="cstat-no" title="statement not covered" >    hap['linked'] = [];</span>
+<span class="cstat-no" title="statement not covered" >    for (var index in this.linkedServices) {</span>
+<span class="cstat-no" title="statement not covered" >      var otherService = this.linkedServices[index];</span>
+<span class="cstat-no" title="statement not covered" >      hap['linked'].push(otherService.iid);</span>
+    }
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  return hap;</span>
+}
+&nbsp;
+Service.prototype._setupCharacteristic = <span class="fstat-no" title="function not covered" >function (characteristic) {</span>
+  // listen for changes in characteristics and bubble them up
+<span class="cstat-no" title="statement not covered" >  characteristic.on('change', <span class="fstat-no" title="function not covered" >function (change) {</span></span>
+    // make a new object with the relevant characteristic added, and bubble it up
+<span class="cstat-no" title="statement not covered" >    this.emit('characteristic-change', clone(change, { characteristic: characteristic }));</span>
+  }.bind(this));
+}
+&nbsp;
+Service.prototype._sideloadCharacteristics = <span class="fstat-no" title="function not covered" >function (targetCharacteristics) {</span>
+<span class="cstat-no" title="statement not covered" >  for (var index in targetCharacteristics) {</span>
+<span class="cstat-no" title="statement not covered" >    var target = targetCharacteristics[index];</span>
+<span class="cstat-no" title="statement not covered" >    this._setupCharacteristic(target);</span>
+  }
+&nbsp;
+<span class="cstat-no" title="statement not covered" >  this.characteristics = targetCharacteristics.slice();</span>
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Jun 15 2018 22:54:08 GMT+0200 (CEST)
+</div>
+</div>
+<script src="../../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../../sorter.js"></script>
+</body>
+</html>
