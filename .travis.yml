@@ -6,7 +6,7 @@ node_js:
   - '6'
   - '8'
   - '10'
-before_install:
+before_script:
   - npm install homebridge-http-webhooks
   - npm install homebridge-sun-position
 addons:

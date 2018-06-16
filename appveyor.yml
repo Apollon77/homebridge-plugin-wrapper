@@ -17,6 +17,7 @@ install:
   - bonjoursdksetup.exe /quiet
   - del bonjoursdksetup.exe
   - 'set BONJOUR_SDK_HOME=C:\Program Files\Bonjour SDK'
+  - npm install
   - npm install homebridge-http-webhooks
   - npm install homebridge-sun-position
 test_script:
