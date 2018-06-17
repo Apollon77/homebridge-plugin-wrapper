@@ -31,6 +31,7 @@ var EventEmitter = require('events').EventEmitter;
 var User = require(__dirname + '/homebridge/user').User;
 var hap = require('./hap-nodejs');
 var Server = require(__dirname + '/homebridge/server').Server;
+var hapTypes = require(__dirname + '/hap-nodejs/accessories/types');
 var Service = hap.Service;
 var Accessory = hap.Accessory;
 
@@ -102,7 +103,7 @@ function HomebridgeWrapper(config) {
     });
 
     Server.prototype._createBridge = function() {
-        that.logger.debug('Homebridge Wrapper  Bridge create'); //OK
+        that.logger.debug('Homebridge Wrapper Bridge create'); //OK
         // pull out our custom Bridge settings from config.json, if any
         var bridgeConfig = this._config.bridge || {};
 
@@ -180,6 +181,10 @@ HomebridgeWrapper.prototype.getServiceByUUID = function getServiceByUUID(accesso
 
 HomebridgeWrapper.prototype.getCharacteristicByUUID = function getCharacteristicByUUID(accessoryUUID, serviceUUID, characteristicUUID) {
     return this.getAccessoryByUUID(accessoryUUID).getCharacteristicByUUID(serviceUUID, characteristicUUID);
+};
+
+HomebridgeWrapper.prototype.getHapTypes = function getHapTypes() {
+    return hapTypes;
 };
 
 module.exports = HomebridgeWrapper;
