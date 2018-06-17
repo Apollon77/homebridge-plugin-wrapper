@@ -8,12 +8,12 @@ var mock = require('mock-require');
 var inherits = require('util').inherits;
 var EventEmitter = require('events').EventEmitter;
 
-var User = require(__dirname + '/homebridge/user').User;
-var hap = require('./hap-nodejs');
-var Server = require(__dirname + '/homebridge/server').Server;
-var hapTypes = require(__dirname + '/hap-nodejs/accessories/types');
-var Service = hap.Service;
-var Accessory = hap.Accessory;
+var User;
+var hap;
+var Server;
+var hapTypes;
+var Service;
+var Accessory;
 
 function override(child, fn) {
     child.prototype[fn.name] = fn;
@@ -41,6 +41,12 @@ function HomebridgeWrapper(config) {
             'red': function(msg) {return msg;},
         }
     });
+    User = require(__dirname + '/homebridge/user').User;
+    hap = require('./hap-nodejs');
+    Server = require(__dirname + '/homebridge/server').Server;
+    hapTypes = require(__dirname + '/hap-nodejs/accessories/types');
+    Service = hap.Service;
+    Accessory = hap.Accessory;
 
     this.logger = config.logger;
     this.wrapperConfig = config.wrapperConfig;
