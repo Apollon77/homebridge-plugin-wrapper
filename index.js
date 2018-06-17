@@ -183,8 +183,7 @@ HomebridgeWrapper.prototype.getCharacteristicByUUID = function getCharacteristic
     return this.getAccessoryByUUID(accessoryUUID).getCharacteristicByUUID(serviceUUID, characteristicUUID);
 };
 
-HomebridgeWrapper.prototype.getHapTypes = function getHapTypes() {
-    return hapTypes;
+module.exports = {
+    Wrapper: HomebridgeWrapper,
+    HapTypes: hapTypes
 };
-
-module.exports = HomebridgeWrapper;

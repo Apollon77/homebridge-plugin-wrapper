@@ -5,7 +5,7 @@ var expect = require('chai').expect;
 var request = require('request');
 var http = require('http');
 
-var HomebridgeWrapper = require('../index.js');
+var HomebridgeWrapper = require('../index.js').Wrapper;
 var homebridgeWrapper;
 
 var allValues = {};
