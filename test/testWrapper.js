@@ -208,6 +208,8 @@ describe('Homebridge Wrapper tests ...', function() {
         expect(Object.keys(allValues).length).to.be.equal(237);
         expect(Object.keys(allChars).length).to.be.equal(237);
         expect(allValues['Switch name 1/Switch name 1/On']).to.be.false;
+        expect(allValues['Sun/0000003E-0000-1000-8000-0026BB765291/Model']).to.be.equal('Sun Position');
+        expect(allValues['Sun/Sun/Altitude']).to.exit;
 
         done();
     });
