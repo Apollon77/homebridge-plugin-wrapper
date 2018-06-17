@@ -281,4 +281,11 @@ describe('Homebridge Wrapper tests ...', function() {
         }, 1000);
     });
 
+    it('Test Hap-types', function (done) {
+        this.timeout(10000); // because of first install from npm
+
+        expect(HomebridgeWrapper.HapTypes).to.exist;
+        done();
+    });
+
 });
