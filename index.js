@@ -4,26 +4,6 @@
 /*jslint esversion: 6 */
 
 var mock = require('mock-require');
-mock('hap-nodejs', './hap-nodejs');
-mock('hap-nodejs/accessories/types.js', './hap-nodejs/accessories/types.js');
-mock('hap-nodejs/lib/util/once', './hap-nodejs/lib/util/once');
-mock('qrcode-terminal', {
-    generate: function() {}
-});
-mock('ed25519-hap', {
-    MakeKeypair: function(seed) { return {privateKey: '', publicKey: ''};}
-});
-mock('ip', {});
-mock('chalk', {
-    'gray': function(msg) {return msg;},
-    'yellow': function(msg) {return msg;},
-    'cyan': function(msg) {return msg;},
-    'white': function(msg) {return msg;},
-    'bold': {
-        'red': function(msg) {return msg;},
-    }
-});
-
 
 var inherits = require('util').inherits;
 var EventEmitter = require('events').EventEmitter;
@@ -42,6 +22,26 @@ function override(child, fn) {
 
 
 function HomebridgeWrapper(config) {
+    mock('hap-nodejs', './hap-nodejs');
+    mock('hap-nodejs/accessories/types.js', './hap-nodejs/accessories/types.js');
+    mock('hap-nodejs/lib/util/once', './hap-nodejs/lib/util/once');
+    mock('qrcode-terminal', {
+        generate: function() {}
+    });
+    mock('ed25519-hap', {
+        MakeKeypair: function(seed) { return {privateKey: '', publicKey: ''};}
+    });
+    mock('ip', {});
+    mock('chalk', {
+        'gray': function(msg) {return msg;},
+        'yellow': function(msg) {return msg;},
+        'cyan': function(msg) {return msg;},
+        'white': function(msg) {return msg;},
+        'bold': {
+            'red': function(msg) {return msg;},
+        }
+    });
+
     this.logger = config.logger;
     this.wrapperConfig = config.wrapperConfig;
 
