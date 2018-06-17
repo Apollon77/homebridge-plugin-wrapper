@@ -33,7 +33,7 @@ describe('Homebridge Wrapper tests ...', function() {
 
         var config = {
             logger: {info: console.log, debug: console.log},
-            homebridgeConfigPath: "./", // /Users/ingof/.homebridge/
+            homebridgeConfigPath: "./",
             wrapperConfig: {
                 "accessories": [
             		{

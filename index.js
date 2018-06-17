@@ -151,6 +151,14 @@ function HomebridgeWrapper(config) {
           return accessory;
       }
     };
+
+    WrapperBridge.prototype.getBridgedAccessoryByName = function (name) {
+      for (var index in this.bridgedAccessories) {
+        var accessory = this.bridgedAccessories[index];
+        if (accessory.displayName === name)
+          return accessory;
+      }
+    };
 }
 
 inherits(HomebridgeWrapper, EventEmitter);
@@ -174,10 +182,25 @@ HomebridgeWrapper.prototype.finish = function finish() {
         // Save cached accessories to persist storage.
         this.server._updateCachedAccessories();
     }
+    this.removeAllListeners();
+    this.server = null;
 };
 
+HomebridgeWrapper.prototype.getAccessoryByName = function getAccessoryByName(name) {
+    return this.server.getBridge().getBridgedAccessoryByName(name);
+};
+
+HomebridgeWrapper.prototype.getServiceByName = function getServiceByName(accessoryName, serviceName) {
+    return this.getAccessoryByName(accessoryName).getService(serviceName);
+};
+
+HomebridgeWrapper.prototype.getCharacteristicByName = function getCharacteristicByName(accessoryName, serviceName, characteristicName) {
+    return this.getAccessoryByName(accessoryName).getService(serviceName).getCharacteristic(characteristicName);
+};
+
+
 HomebridgeWrapper.prototype.getAccessoryByUUID = function getAccessoryByUUID(uuid) {
-    return server.getBridge().getBridgedAccessoryByUUID(uuid);
+    return this.server.getBridge().getBridgedAccessoryByUUID(uuid);
 };
 
 HomebridgeWrapper.prototype.getServiceByUUID = function getServiceByUUID(accessoryUUID, serviceUUID) {
