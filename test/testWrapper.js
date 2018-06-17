@@ -171,8 +171,8 @@ describe('Homebridge Wrapper tests ...', function() {
         homebridgeWrapper = new HomebridgeWrapper(config);
 
         homebridgeWrapper.on('characteristic-value-change', function(data) {
-            console.log('Char change event: ' + data.accessory.displayName + '/' + data.service.displayName + '/' + data.characteristic.displayName + ' : ' + data.oldValue + ' --> ' + data.newValue);
-            allValues[data.accessory.displayName + '/' + data.service.displayName + '/' + data.characteristic.displayName] = data.newValue;
+            console.log('Char change event: ' + (data.accessory.displayName?data.accessory.displayName:data.accessory.UUID) + '/' + (data.service.displayName?data.service.displayName:data.service.UUID) + '/' + (data.characteristic.displayName?data.characteristic.displayName:data.characteristic.UUID) + ' : ' + data.oldValue + ' --> ' + data.newValue);
+            allValues[(data.accessory.displayName?data.accessory.displayName:data.accessory.UUID) + '/' + (data.service.displayName?data.service.displayName:data.service.UUID) + '/' + (data.characteristic.displayName?data.characteristic.displayName:data.characteristic.UUID)] = data.newValue;
         });
 
         homebridgeWrapper.on('addAccessory', function(accessory) {
@@ -184,7 +184,7 @@ describe('Homebridge Wrapper tests ...', function() {
                 function iterateCharArray(chars) {
                     for (var chindex in chars) {
                         var char = chars[chindex];
-                        allChars[accessory.displayName + '/' + service.displayName + '/' + char.displayName] = char;
+                        allChars[(accessory.displayName?accessory.displayName:accessory.UUID) + '/' + (service.displayName?service.displayName:service.UUID) + '/' + (char.displayName?char.displayName:char.UUID)] = char;
                     }
                 }
 
