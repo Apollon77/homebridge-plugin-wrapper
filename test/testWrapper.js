@@ -284,7 +284,8 @@ describe('Homebridge Wrapper tests ...', function() {
     it('Test Hap-types', function (done) {
         this.timeout(10000); // because of first install from npm
 
-        expect(HomebridgeWrapper.HapTypes).to.exist;
+        var types = require('../index.js').HapTypes;
+        expect(types.OTHER_TCTYPE).to.be.equal(1);
         done();
     });
 

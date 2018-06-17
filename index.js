@@ -8,10 +8,10 @@ var mock = require('mock-require');
 var inherits = require('util').inherits;
 var EventEmitter = require('events').EventEmitter;
 
+var hapTypes = require(__dirname + '/hap-nodejs/accessories/types');
 var User;
 var hap;
 var Server;
-var hapTypes;
 var Service;
 var Accessory;
 
@@ -190,5 +190,5 @@ HomebridgeWrapper.prototype.getCharacteristicByUUID = function getCharacteristic
 
 module.exports = {
     Wrapper: HomebridgeWrapper,
-    HapTypes: require(__dirname + '/hap-nodejs/accessories/types')
+    HapTypes: hapTypes
 };
