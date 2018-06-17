@@ -44,7 +44,6 @@ function HomebridgeWrapper(config) {
     User = require(__dirname + '/homebridge/user').User;
     hap = require('./hap-nodejs');
     Server = require(__dirname + '/homebridge/server').Server;
-    hapTypes = require(__dirname + '/hap-nodejs/accessories/types');
     Service = hap.Service;
     Accessory = hap.Accessory;
 
@@ -191,5 +190,5 @@ HomebridgeWrapper.prototype.getCharacteristicByUUID = function getCharacteristic
 
 module.exports = {
     Wrapper: HomebridgeWrapper,
-    HapTypes: hapTypes
+    HapTypes: require(__dirname + '/hap-nodejs/accessories/types')
 };
