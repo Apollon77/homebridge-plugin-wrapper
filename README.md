@@ -15,7 +15,7 @@ HAP-NodeJS and only minimal dependecies. Especially the whole MDNS and
 Encryption stuff is not included because using the Wrapper is not publishing
 the bridge (because not needed).
 
-The wrapper also uses the great "moch-require" module to further minimize
+The wrapper also uses the great "mock-require" module to further minimize
 dependencies for modules that are not needed in this usage.
 *But this has a side-effect!! The following modules are not usable in your projects currently:*
 * qrcode-terminal
@@ -40,6 +40,12 @@ After that you can register to the following events:
 To really start you call *init* method and at the end *finish* to clean up.
 
 The example contains code how to get and set values.
+
+## What's changed on Homebridge/HAP-NodeJS?
+* Homeebridge: version.js to return the version of the files "static" instead of a dynamic lookup
+* HAP-NodeJS: HAPServer.js only has minimal functions because not needed
+* HAP-NodeJS: Advertiser.js only has minimal functions because not needed
+* Mocked away: qrcode-terminal, ed25519-hap, ip, chalk
 
 ## Todo
 * More/Better Documentation :-) (open Issue if you need it)
