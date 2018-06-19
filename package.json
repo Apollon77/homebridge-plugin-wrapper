@@ -1,6 +1,6 @@
 {
   "name": "homebridge-plugin-wrapper",
-  "version": "0.4.6",
+  "version": "0.4.7",
   "description": "Wrapper for Homebridge and NodeJS-HAP with reduced dependecies",
   "author": {
     "name": "Ingo Fischer",
@@ -21,7 +21,9 @@
       "node-persist": "^0.0.11",
       "decimal.js": "^7.2.3",
       "buffer-shims": "^1.0.0",
-      "debug": "^2.2.0"
+      "debug": "^2.2.0",
+      "chalk": "^1.1.0",
+      "ip": "^1.1.3"
   },
   "devDependencies": {
     "mocha": "^5.0.0",

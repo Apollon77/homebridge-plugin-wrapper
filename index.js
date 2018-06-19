@@ -31,16 +31,6 @@ function HomebridgeWrapper(config) {
     mock('ed25519-hap', {
         MakeKeypair: function(seed) { return {privateKey: '', publicKey: ''};}
     });
-    mock('ip', {});
-    mock('chalk', {
-        'gray': function(msg) {return msg;},
-        'yellow': function(msg) {return msg;},
-        'cyan': function(msg) {return msg;},
-        'white': function(msg) {return msg;},
-        'bold': {
-            'red': function(msg) {return msg;},
-        }
-    });
     User = require(__dirname + '/homebridge/user').User;
     hap = require('./hap-nodejs');
     Server = require(__dirname + '/homebridge/server').Server;

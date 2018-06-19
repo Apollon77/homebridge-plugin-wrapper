@@ -20,8 +20,6 @@ dependencies for modules that are not needed in this usage.
 *But this has a side-effect!! The following modules are not usable in your projects currently:*
 * qrcode-terminal
 * ed25519-hap
-* ip
-* chalk
 If you have a problem with this please contact me via an issue and we can try to find a solution.
 
 ## Example?
@@ -45,11 +43,18 @@ The example contains code how to get and set values.
 * Homeebridge: version.js to return the version of the files "static" instead of a dynamic lookup
 * HAP-NodeJS: HAPServer.js only has minimal functions because not needed
 * HAP-NodeJS: Advertiser.js only has minimal functions because not needed
-* Mocked away: qrcode-terminal, ed25519-hap, ip, chalk
+* Mocked away: qrcode-terminal, ed25519-hap
 
 ## Todo
 * More/Better Documentation :-) (open Issue if you need it)
 
+# Changelog
+
+## 0.4.7
+* add modules ip and chalk as dependecies and remove from mocked
+
+## < 0.4.6
+* initial versions
 
 ## Credits
 This Wrapper is based on the outstanding work and code from the following projects:
