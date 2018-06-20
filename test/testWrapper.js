@@ -256,7 +256,7 @@ describe('Homebridge Wrapper tests ...', function() {
     });
 
     it('Tests Homebridge Wrapper: Test Change from inside 2', function (done) {
-        this.timeout(10000); // because of first install from npm
+        this.timeout(50000); // because of first install from npm
 
         lastHTTPRequest = null;
         request('http://localhost:61828/?accessoryId=switch1&state=false', function (error, response, body) {
