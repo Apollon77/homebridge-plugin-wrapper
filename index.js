@@ -41,6 +41,7 @@ function HomebridgeWrapper(config) {
     this.wrapperConfig = config.wrapperConfig;
     this.characteristicPollingInterval = config.characteristicPollingInterval;
     this.characteristicPollingTimeouts = {};
+    this.characteristicValues = {};
 
     if (!this.wrapperConfig.bridge) {
         this.wrapperConfig.bridge = {
@@ -84,7 +85,10 @@ function HomebridgeWrapper(config) {
                 }
                 that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = setTimeout(function() {
                     characteristic.getValue(function(err, value) {
-                        that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
+                        if (value !== that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]) {
+                            that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
+                            that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
+                        }
                         handleCharacteristicPolling(characteristic);
                     });
                 }, that.characteristicPollingInterval);
@@ -93,10 +97,12 @@ function HomebridgeWrapper(config) {
 
         function registerEventsForCharacteristic(accessory, service, characteristic) {
             characteristic.on('change', function(data) {
+                that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
                 that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
                 handleCharacteristicPolling(characteristic);
             });
             characteristic.getValue(function(err, value) {
+                that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
                 that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
             });
             handleCharacteristicPolling(characteristic);
