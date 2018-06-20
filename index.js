@@ -78,7 +78,7 @@ function HomebridgeWrapper(config) {
 
         that.emit('addAccessory', accessory);
 
-        function handleCharacteristicPolling(characteristic) {
+        function handleCharacteristicPolling(accessory, service, characteristic) {
             if (that.characteristicPollingInterval) {
                 if (that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]) {
                     clearTimeout(that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]);
@@ -89,7 +89,7 @@ function HomebridgeWrapper(config) {
                             that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
                             that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
                         }
-                        handleCharacteristicPolling(characteristic);
+                        handleCharacteristicPolling(accessory, service, characteristic);
                     });
                 }, that.characteristicPollingInterval);
             }
@@ -99,13 +99,13 @@ function HomebridgeWrapper(config) {
             characteristic.on('change', function(data) {
                 that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = data.newValue;
                 that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
-                handleCharacteristicPolling(characteristic);
+                handleCharacteristicPolling(accessory, service, characteristic);
             });
             characteristic.getValue(function(err, value) {
                 that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
                 that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
             });
-            handleCharacteristicPolling(characteristic);
+            handleCharacteristicPolling(accessory, service, characteristic);
         }
 
         for (var index in accessory.services) {
