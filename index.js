@@ -97,7 +97,7 @@ function HomebridgeWrapper(config) {
 
         function registerEventsForCharacteristic(accessory, service, characteristic) {
             characteristic.on('change', function(data) {
-                that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
+                that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = data.newValue;
                 that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
                 handleCharacteristicPolling(characteristic);
             });
