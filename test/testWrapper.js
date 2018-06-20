@@ -34,6 +34,7 @@ describe('Homebridge Wrapper tests ...', function() {
         var config = {
             logger: {info: console.log, debug: console.log},
             homebridgeConfigPath: "./",
+            characteristicPollingInterval: 30000,
             wrapperConfig: {
                 "accessories": [
             		{
@@ -266,7 +267,7 @@ describe('Homebridge Wrapper tests ...', function() {
                 expect(lastHTTPRequest).to.be.null;
                 expect(allValues['Switch name 1/Switch name 1/On']).to.be.false;
                 done();
-            }, 2000);
+            }, 40000);
         });
 
     });

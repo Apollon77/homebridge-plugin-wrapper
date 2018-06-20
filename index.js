@@ -39,6 +39,8 @@ function HomebridgeWrapper(config) {
 
     this.logger = config.logger;
     this.wrapperConfig = config.wrapperConfig;
+    this.characteristicPollingInterval = config.characteristicPollingInterval;
+    this.characteristicPollingTimeouts = {};
 
     if (!this.wrapperConfig.bridge) {
         this.wrapperConfig.bridge = {
@@ -71,17 +73,33 @@ function HomebridgeWrapper(config) {
         // Вызов метода родительского класса
         // Calling the method of the parent class
         accessory = addBridgedAccessory.inherited.call(this, accessory, deferUpdate);
-        that.logger.debug('Homebridge Wrapper Bridge addBridgedAccessory '+JSON.stringify(accessory)); //OK
+        that.logger.debug('Homebridge Wrapper Bridge addBridgedAccessory ' + JSON.stringify(accessory)); //OK
 
         that.emit('addAccessory', accessory);
+
+        function handleCharacteristicPolling(characteristic) {
+            if (that.characteristicPollingInterval) {
+                if (that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]) {
+                    clearTimeout(that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]);
+                }
+                that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = setTimeout(function() {
+                    characteristic.getValue(function(err, value) {
+                        that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
+                        handleCharacteristicPolling(characteristic);
+                    });
+                }, that.characteristicPollingInterval);
+            }
+        }
 
         function registerEventsForCharacteristic(accessory, service, characteristic) {
             characteristic.on('change', function(data) {
                 that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
+                handleCharacteristicPolling(characteristic);
             });
             characteristic.getValue(function(err, value) {
                 that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
             });
+            handleCharacteristicPolling(characteristic);
         }
 
         for (var index in accessory.services) {
@@ -174,6 +192,11 @@ HomebridgeWrapper.prototype.finish = function finish() {
     }
     this.removeAllListeners();
     this.server = null;
+    if (this.characteristicPollingInterval) {
+        for (var id in this.characteristicPollingTimeouts) {
+            clearTimeout(this.characteristicPollingTimeouts[id]);
+        }
+    }
 };
 
 HomebridgeWrapper.prototype.getAccessoryByName = function getAccessoryByName(name) {
