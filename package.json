@@ -1,6 +1,6 @@
 {
   "name": "homebridge-plugin-wrapper",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Wrapper for Homebridge and NodeJS-HAP with reduced dependecies",
   "author": {
     "name": "Ingo Fischer",

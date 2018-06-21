@@ -29,7 +29,13 @@ Then you can start the example via **node example.js** and it outputs all availa
 The example file also contain an example how to get and set a value.
 
 ## How to use it?
-Basically you create an object instance and providing a configuration object to the constructor. The configuration needs to have a "logger" object with *info* and *debug* functions, a directory to store Homebridge Persist-Files in "homebridgeConfigPath" and finally the Homebridge configuration in "wrapperConfig". See the example file.
+Basically you create an object instance and providing a configuration object to the constructor. The configuration needs to have:
+* logger: an object with *info* and *debug* functions
+* homebridgeConfigPath: a directory to store Homebridge Persist-Files
+* wrapperConfig: the Homebridge configuration in "wrapperConfig".
+* characteristicPollingInterval: a number in ms in which intervall all values will be read to always stay up to date. This can be used if plugins do not send updates from itself
+
+See the example file.
 
 After that you can register to the following events:
 * characteristic-value-change: This Event will be triggered as soon as a value of one of the characteristics change and also initially to get the initial value. The event contains one object with keys for "accessory", "service", "characteristic" objects, "oldValue" and "newValue". See example.
@@ -49,6 +55,10 @@ The example contains code how to get and set values.
 * More/Better Documentation :-) (open Issue if you need it)
 
 # Changelog
+
+## 0.5.1
+* add option to poll values in defined intervals
+* add semver as dep
 
 ## 0.4.7
 * add modules ip and chalk as dependecies and remove from mocked
