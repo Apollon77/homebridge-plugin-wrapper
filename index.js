@@ -7,6 +7,8 @@ var mock = require('mock-require');
 
 var inherits = require('util').inherits;
 var EventEmitter = require('events').EventEmitter;
+var fs = require('fs');
+var path = require('path');
 
 var hapTypes = require(__dirname + '/hap-nodejs/accessories/types');
 var User;
@@ -54,6 +56,13 @@ function HomebridgeWrapper(config) {
 
     var that = this;
 
+    try {
+        // some Plugins want to have config file
+        fs.writeFileSync(config.homebridgeConfigPath + path.sep + 'config.json', JSON.stringify(this.wrapperConfig));
+    }
+    catch (e) {
+        that.logger.warn(' Error writing ' + config.homebridgeConfigPath + path.sep + 'config.json - Some Plugins may need that.');
+    }
     User.setStoragePath(config.homebridgeConfigPath);
 
     function WrapperBridge(displayName, serialNumber) {

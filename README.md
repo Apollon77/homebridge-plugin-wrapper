@@ -56,6 +56,9 @@ The example contains code how to get and set values.
 
 # Changelog
 
+## 0.5.2
+* also store config.json with adapter config in the given config directory because some plugins need it there
+
 ## 0.5.1
 * add option to poll values in defined intervals
 * add semver as dep

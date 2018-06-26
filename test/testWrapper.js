@@ -4,6 +4,7 @@
 var expect = require('chai').expect;
 var request = require('request');
 var http = require('http');
+var fs = require('fs');
 
 var HomebridgeWrapper = require('../index.js').Wrapper;
 var homebridgeWrapper;
@@ -211,6 +212,8 @@ describe('Homebridge Wrapper tests ...', function() {
         expect(allValues['Switch name 1/Switch name 1/On']).to.be.false;
         expect(allValues['Sun/0000003E-0000-1000-8000-0026BB765291/Model']).to.be.equal('Sun Position');
         expect(allValues['Sun/Sun/Altitude']).to.exist;
+
+        expect(fs.existsSync('./config.json')).to.be.true;
 
         done();
     });
