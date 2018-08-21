@@ -22,6 +22,21 @@ function override(child, fn) {
     fn.inherited = child.super_.prototype[fn.name];
 }
 
+function customStringify(v, func, intent) {
+    const cache = new Map();
+    return JSON.stringify(v, function (key, value) {
+        if (typeof value === 'object' && value !== null) {
+            if (cache.get(value)) {
+                // Circular reference found, discard key
+                return;
+            }
+            // Store value in our map
+            cache.set(value, true);
+        }
+        return value;
+    }, intent);
+}
+
 
 function HomebridgeWrapper(config) {
     mock('hap-nodejs', './hap-nodejs');
@@ -73,7 +88,7 @@ function HomebridgeWrapper(config) {
     inherits(WrapperBridge, hap.Bridge);
 
     override(WrapperBridge, function publish(info, allowInsecureRequest) {
-        that.logger.info('Homebridge Wrapper Bridge publish ' + JSON.stringify(info));
+        that.logger.info('Homebridge Wrapper Bridge publish ' + customStringify(info));
         // Вызов метода родительского класса
         // Calling the method of the parent class
         publish.inherited.call(this, info, allowInsecureRequest);
@@ -83,7 +98,7 @@ function HomebridgeWrapper(config) {
         // Вызов метода родительского класса
         // Calling the method of the parent class
         accessory = addBridgedAccessory.inherited.call(this, accessory, deferUpdate);
-        that.logger.debug('Homebridge Wrapper Bridge addBridgedAccessory ' + JSON.stringify(accessory)); //OK
+        that.logger.debug('Homebridge Wrapper Bridge addBridgedAccessory ' + customStringify(accessory)); //OK
 
         that.emit('addAccessory', accessory);
 
@@ -192,7 +207,8 @@ HomebridgeWrapper.prototype.init = function init() {
     hap.init(User.persistPath()); // TODO !!
 
     var serverOpts = {
-        config: this.wrapperConfig
+        config: this.wrapperConfig,
+        hideQRCode: true
     };
     this.server = new Server(insecureAccess, serverOpts);
 

@@ -56,6 +56,11 @@ The example contains code how to get and set values.
 
 # Changelog
 
+## 0.5.3 (2018-08-21)
+* change logging to prevent crashed on circular structures
+* sync to homebridge 0.4.44 (Github version from 2018-08-21)
+* sync to HAP-Nodejs 0.4.47 (GitHub version from 2018-08-21)
+
 ## 0.5.2
 * also store config.json with adapter config in the given config directory because some plugins need it there
 

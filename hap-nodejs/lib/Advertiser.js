@@ -16,7 +16,7 @@ module.exports = {
  * mdns payload).
  */
 
-function Advertiser(accessoryInfo) {
+function Advertiser(accessoryInfo, mdnsConfig) {
   this.accessoryInfo = accessoryInfo;
   this._advertisement = false;
 

@@ -29,7 +29,7 @@ function toTitleCase(str) {
   return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
 }
 
-function Server(insecureAccess, opts) {
+function Server(opts) {
   opts = opts || {};
 
   // Setup Accessory Cache Storage
@@ -57,6 +57,7 @@ function Server(insecureAccess, opts) {
   this._plugins = this._loadPlugins(); // plugins[name] = Plugin instance
   this._cachedPlatformAccessories = this._loadCachedPlatformAccessories();
   this._bridge = this._createBridge();
+  this._hideQRCode = opts.hideQRCode || false;
 
   this._activeDynamicPlugins = {};
   this._configurablePlatformPlugins = {};
@@ -73,7 +74,7 @@ function Server(insecureAccess, opts) {
   // accessories. However you can set this to true to allow all requests without authentication,
   // which can be useful for easy hacking. Note that this will expose all functions of your
   // bridged accessories, like changing charactersitics (i.e. flipping your lights on and off).
-  this._allowInsecureAccess = insecureAccess || false;
+  this._allowInsecureAccess = opts.insecureAccess || false;
 }
 
 Server.prototype.run = function() {
@@ -116,7 +117,8 @@ Server.prototype._publish = function() {
     username: bridgeConfig.username || "CC:22:3D:E3:CE:30",
     port: bridgeConfig.port || 0,
     pincode: bridgeConfig.pin || "031-45-154",
-    category: Accessory.Categories.BRIDGE
+    category: Accessory.Categories.BRIDGE,
+    mdns: this._config.mdns
   };
 
   if (bridgeConfig.setupID && bridgeConfig.setupID.length === 4) {
@@ -525,7 +527,8 @@ Server.prototype._handlePublishCameraAccessories = function(accessories) {
     hapAccessory.publish({
       username: advertiseAddress,
       pincode: accessoryPin,
-      category: accessory.category
+      category: accessory.category,
+      mdns: this._config.mdns
     }, this._allowInsecureAccess);
   }
 }
@@ -625,7 +628,10 @@ Server.prototype._handleNewConfig = function(type, name, replace, config) {
 }
 
 Server.prototype._printPin = function(pin) {
-  console.log("Or enter this code with your HomeKit app on your iOS device to pair with Homebridge:");
+  if(!this._hideQRCode)
+    console.log("Or enter this code with your HomeKit app on your iOS device to pair with Homebridge:");
+  else
+    console.log("Enter this code with your HomeKit app on your iOS device to pair with Homebridge:");  
   console.log(chalk.black.bgWhite("                       "));
   console.log(chalk.black.bgWhite("    ┌────────────┐     "));
   console.log(chalk.black.bgWhite("    │ " + pin + " │     "));
@@ -637,6 +643,8 @@ Server.prototype._printSetupInfo = function() {
   console.log("Setup Payload:");
   console.log(this._bridge.setupURI());
 
-  console.log("Scan this code with your HomeKit app on your iOS device to pair with Homebridge:");
-  qrcode.generate(this._bridge.setupURI());
+  if(!this._hideQRCode) {
+    console.log("Scan this code with your HomeKit app on your iOS device to pair with Homebridge:");
+    qrcode.generate(this._bridge.setupURI());
+  }
 }
