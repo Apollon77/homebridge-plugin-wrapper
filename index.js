@@ -210,7 +210,7 @@ HomebridgeWrapper.prototype.init = function init() {
         config: this.wrapperConfig,
         hideQRCode: true
     };
-    this.server = new Server(insecureAccess, serverOpts);
+    this.server = new Server(serverOpts);
 
     this.server.run();
 };
