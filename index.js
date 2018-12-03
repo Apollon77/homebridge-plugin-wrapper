@@ -59,6 +59,7 @@ function HomebridgeWrapper(config) {
     this.characteristicPollingInterval = config.characteristicPollingInterval;
     this.characteristicPollingTimeouts = {};
     this.characteristicValues = {};
+    this.insecureAccess = config.insecureAccess;
 
     if (!this.wrapperConfig.bridge) {
         this.wrapperConfig.bridge = {
@@ -202,13 +203,13 @@ function HomebridgeWrapper(config) {
 inherits(HomebridgeWrapper, EventEmitter);
 
 HomebridgeWrapper.prototype.init = function init() {
-    var insecureAccess = false;
     // Initialize HAP-NodeJS with a custom persist directory
     hap.init(User.persistPath()); // TODO !!
 
     var serverOpts = {
         config: this.wrapperConfig,
-        hideQRCode: true
+        hideQRCode: true,
+        insecureAccess: this.insecureAccess
     };
     this.server = new Server(serverOpts);
 

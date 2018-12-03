@@ -56,6 +56,10 @@ The example contains code how to get and set values.
 
 # Changelog
 
+## 1.0.0 (2018-12-04)
+* allow to set "insecureAccess" as option and hand this over when initializing Homebridge
+* sync to homebridge 0.4.45 (Github version from 2018-12-03)
+
 ## 0.5.4 (2018-08-21)
 * change logging to prevent crashed on circular structures
 * sync to homebridge 0.4.44 (Github version from 2018-08-21)
