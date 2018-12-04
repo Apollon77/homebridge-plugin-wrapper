@@ -1,4 +1,7 @@
 # homebridge-plugin-wrapper
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/Apollon77/homebridge-plugin-wrapper.svg)](https://greenkeeper.io/)
+
 A wrapper to use Homebridge plugins without big dependecies in own projects
 
 ## Why a Homebridge Wrapper?
