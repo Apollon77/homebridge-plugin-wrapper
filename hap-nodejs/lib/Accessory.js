@@ -16,6 +16,8 @@ var IdentifierCache = require('./model/IdentifierCache').IdentifierCache;
 var bufferShim = require('buffer-shims');
 // var RelayServer = require("./util/relayserver").RelayServer;
 
+const MAX_ACCESSORIES = 149; // Maximum number of bridged accessories per bridge.
+
 module.exports = {
   Accessory: Accessory
 };
@@ -116,7 +118,9 @@ Accessory.Categories = {
   AIRPORT: 27,
   SPRINKLER: 28,
   FAUCET: 29,
-  SHOWER_HEAD: 30
+  SHOWER_HEAD: 30,
+  TELEVISION: 31,
+  TARGET_CONTROLLER: 32 // Remote Control
 }
 
 Accessory.prototype._identificationRequest = function(paired, callback) {
@@ -262,6 +266,11 @@ Accessory.prototype.addBridgedAccessory = function(accessory, deferUpdate) {
     var existing = this.bridgedAccessories[index];
     if (existing.UUID === accessory.UUID)
       throw new Error("Cannot add a bridged Accessory with the same UUID as another bridged Accessory: " + existing.UUID);
+  }
+
+  // A bridge too far...
+  if (this.bridgedAccessories.length >= MAX_ACCESSORIES) {
+    throw new Error("Cannot Bridge more than " + MAX_ACCESSORIES + " Accessories");
   }
 
   // listen for changes in ANY characteristics of ANY services on this Accessory
@@ -696,7 +705,9 @@ Accessory.prototype._handleUnpair = function(username, callback) {
   this._accessoryInfo.save();
 
   // update our advertisement so it can pick up on the paired status of AccessoryInfo
-  this._advertiser.updateAdvertisement();
+  if (this._advertiser) {
+    this._advertiser.updateAdvertisement();
+  }
 
   callback();
 }
@@ -888,7 +899,7 @@ Accessory.prototype._handleSetCharacteristics = function(data, events, callback,
           response[statusKey] = 0;
 
           if (includeValue)
-            response['v'] = characteristic.value;
+            response['value'] = characteristic.value;
 
           characteristics.push(response);
         }

@@ -1,6 +1,6 @@
 {
   "name": "homebridge-plugin-wrapper",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Wrapper for Homebridge and NodeJS-HAP with reduced dependecies",
   "author": {
     "name": "Ingo Fischer",
@@ -17,12 +17,12 @@
     "url": "https://github.com/Apollon77/homebridge-plugin-wrapper"
   },
   "dependencies": {
-      "mock-require": "^3.0.2",
+      "mock-require": "^3.0.3",
       "node-persist": "^0.0.11",
       "decimal.js": "^7.2.3",
       "buffer-shims": "^1.0.0",
       "debug": "^2.2.0",
-      "chalk": "^1.1.0",
+      "chalk": "^1.1.1",
       "ip": "^1.1.3",
       "semver": "5.0.3"
   },
@@ -30,8 +30,8 @@
     "mocha": "^5.2.0",
     "chai": "^4.2.0",
     "istanbul": "*",
-    "sinon": "^7.1.1",
-    "nock": "^10.0.3"
+    "sinon": "^7.3.2",
+    "nock": "^10.0.6"
   },
   "engines": {
     "node": ">=4.3.2"

@@ -49,19 +49,23 @@ function Server(opts) {
     this._handleUnregisterPlatformAccessories(accessories);
   }.bind(this));
 
-  this._api.on('publishCameraAccessories', function(accessories) {
-    this._handlePublishCameraAccessories(accessories);
+  this._api.on('publishExternalAccessories', function(accessories) {
+    this._handlePublishExternalAccessories(accessories);
   }.bind(this));
 
   this._config = opts.config || this._loadConfig();
   this._plugins = this._loadPlugins(); // plugins[name] = Plugin instance
   this._cachedPlatformAccessories = this._loadCachedPlatformAccessories();
   this._bridge = this._createBridge();
+  this._cleanCachedAccessories = opts.cleanCachedAccessories || false;
   this._hideQRCode = opts.hideQRCode || false;
+
+  this._externalPorts = this._config.ports;
+  this._nextExternalPort = undefined;
 
   this._activeDynamicPlugins = {};
   this._configurablePlatformPlugins = {};
-  this._publishedCameras = {};
+  this._publishedAccessories = {};
   this._setupManager = new BridgeSetupManager();
   this._setupManager.on('newConfig', this._handleNewConfig.bind(this));
 
@@ -214,6 +218,13 @@ Server.prototype._loadConfig = function() {
     throw err;
   }
 
+  if (config.ports !== undefined) {
+    if (config.ports.start > config.ports.end) {
+      log.error("Invalid port pool configuration. End should be greater than or equal to start.");
+      config.ports = undefined;
+    }
+  }
+
   var accessoryCount = (config.accessories && config.accessories.length) || 0;
 
   var username = config.bridge.username;
@@ -255,7 +266,7 @@ Server.prototype._computeActivePluginList = function() {
   }
 
   var activePlugins = {};
-  
+
   for (var i=0; i<this._config.plugins.length; i++) {
     var pluginName = this._config.plugins[i];
     activePlugins[pluginName] = true;
@@ -355,6 +366,7 @@ Server.prototype._loadDynamicPlatforms = function() {
 }
 
 Server.prototype._configCachedPlatformAccessories = function() {
+  var verifiedAccessories = [];
   for (var index in this._cachedPlatformAccessories) {
     var accessory = this._cachedPlatformAccessories[index];
 
@@ -374,11 +386,16 @@ Server.prototype._configCachedPlatformAccessories = function() {
       platformInstance.configureAccessory(accessory);
     } else {
       console.log("Failed to find plugin to handle accessory " + accessory.displayName);
+      if (this._cleanCachedAccessories) {
+        console.log("Removing orphaned accessory " + accessory.displayName);
+        continue;
+      }
     }
-
+    verifiedAccessories.push(accessory);
     accessory._prepareAssociatedHAPAccessory();
     this._bridge.addBridgedAccessory(accessory._associatedHAPAccessory);
   }
+  this._cachedPlatformAccessories = verifiedAccessories;
 }
 
 Server.prototype._loadPlatformAccessories = function(platformInstance, log, platformType) {
@@ -501,26 +518,45 @@ Server.prototype._handleUnregisterPlatformAccessories = function(accessories) {
   this._updateCachedAccessories();
 }
 
-Server.prototype._handlePublishCameraAccessories = function(accessories) {
+Server.prototype._handlePublishExternalAccessories = function(accessories) {
   var accessoryPin = (this._config.bridge || {}).pin || "031-45-154";
 
   for (var index in accessories) {
     var accessory = accessories[index];
+    var accessoryPort = 0;
+
+    if (this._externalPorts) {
+      var minPortNumber = this._externalPorts.start;
+
+      if (this._nextExternalPort > this._externalPorts.end) {
+        log.info("External port pool ran out of ports. Fallback to random assign.");
+        accessoryPort = 0;
+      } else {
+        if (this._nextExternalPort !== undefined) {
+          accessoryPort = this._nextExternalPort;
+          this._nextExternalPort += 1;
+        } else {
+          accessoryPort = minPortNumber;
+          this._nextExternalPort = minPortNumber + 1;
+        }
+      }
+    }
 
     accessory._prepareAssociatedHAPAccessory();
     var hapAccessory = accessory._associatedHAPAccessory;
     var advertiseAddress = mac.generate(accessory.UUID);
 
-    if (this._publishedCameras[advertiseAddress]) {
-      throw new Error("Camera accessory " + accessory.displayName + " experienced an address collision.");
+    if (this._publishedAccessories[advertiseAddress]) {
+      throw new Error("Accessory " + accessory.displayName + " experienced an address collision.");
     } else {
-      this._publishedCameras[advertiseAddress] = accessory;
+      this._publishedAccessories[advertiseAddress] = accessory;
     }
 
     (function(name){
       hapAccessory.on('listening', function(port) {
-  
+
           log.info("%s is running on port %s.", name, port);
+          log.info("Please add [%s] manually in Home app. Setup Code: %s", name, accessoryPin);
       })
     })(accessory.displayName);
 
@@ -528,6 +564,7 @@ Server.prototype._handlePublishCameraAccessories = function(accessories) {
       username: advertiseAddress,
       pincode: accessoryPin,
       category: accessory.category,
+      port: accessoryPort,
       mdns: this._config.mdns
     }, this._allowInsecureAccess);
   }
@@ -548,8 +585,8 @@ Server.prototype._teardown = function() {
   var self = this;
   self._updateCachedAccessories();
   self._bridge.unpublish();
-  Object.keys(self._publishedCameras).forEach(function (advertiseAddress) {
-    self._publishedCameras[advertiseAddress]._associatedHAPAccessory.unpublish();
+  Object.keys(self._publishedAccessories).forEach(function (advertiseAddress) {
+    self._publishedAccessories[advertiseAddress]._associatedHAPAccessory.unpublish();
   });
 }
 
@@ -631,7 +668,7 @@ Server.prototype._printPin = function(pin) {
   if(!this._hideQRCode)
     console.log("Or enter this code with your HomeKit app on your iOS device to pair with Homebridge:");
   else
-    console.log("Enter this code with your HomeKit app on your iOS device to pair with Homebridge:");  
+    console.log("Enter this code with your HomeKit app on your iOS device to pair with Homebridge:");
   console.log(chalk.black.bgWhite("                       "));
   console.log(chalk.black.bgWhite("    ┌────────────┐     "));
   console.log(chalk.black.bgWhite("    │ " + pin + " │     "));

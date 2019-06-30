@@ -45,8 +45,12 @@ function HomebridgeWrapper(config) {
     mock('qrcode-terminal', {
         generate: function() {}
     });
-    mock('ed25519-hap', {
-        MakeKeypair: function(seed) { return {privateKey: '', publicKey: ''};}
+    mock('tweetnacl', {
+        sign: {
+            keyPair: function () {
+                return {secretKey: '', publicKey: ''};
+            }
+        }
     });
     User = require(__dirname + '/homebridge/user').User;
     hap = require('./hap-nodejs');

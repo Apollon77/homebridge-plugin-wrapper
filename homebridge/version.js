@@ -6,5 +6,5 @@ var path = require('path');
 module.exports = getVersion();
 
 function getVersion() {
-  return '0.4.45';
+  return '0.4.50';
 }
