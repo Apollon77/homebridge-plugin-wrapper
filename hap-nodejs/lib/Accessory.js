@@ -16,7 +16,7 @@ var IdentifierCache = require('./model/IdentifierCache').IdentifierCache;
 var bufferShim = require('buffer-shims');
 // var RelayServer = require("./util/relayserver").RelayServer;
 
-const MAX_ACCESSORIES = 149; // Maximum number of bridged accessories per bridge.
+const MAX_ACCESSORIES = 1000000; // Maximum number of bridged accessories per bridge. // ADOPTED for Wrapper!!
 
 module.exports = {
   Accessory: Accessory

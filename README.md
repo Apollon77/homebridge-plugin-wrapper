@@ -56,6 +56,9 @@ The example contains code how to get and set values.
 
 # Changelog
 
+## 1.1.1 (2019-07-08)
+* set a very high limit on allowed accessories because irrelevant 
+
 ## 1.1.0 (2019-06-30)
 * sync to homebridge 0.4.50 (Github version from 2019-06-03)
 
