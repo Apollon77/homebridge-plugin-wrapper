@@ -130,6 +130,7 @@ function HomebridgeWrapper(config) {
                             that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
                             that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
                         }
+                        that.emit('characteristic-value-update', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
                         handleCharacteristicPolling(accessory, service, characteristic);
                     });
                 }, pollingInterval);
@@ -140,6 +141,7 @@ function HomebridgeWrapper(config) {
             characteristic.on('change', function(data) {
                 that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = data.newValue;
                 that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
+                that.emit('characteristic-value-update', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
                 handleCharacteristicPolling(accessory, service, characteristic);
             });
             characteristic.getValue(function(err, value) {
