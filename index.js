@@ -61,6 +61,7 @@ function HomebridgeWrapper(config) {
     this.logger = config.logger;
     this.wrapperConfig = config.wrapperConfig;
     this.characteristicPollingInterval = config.characteristicPollingInterval;
+    this.characteristicPollingList = config.characteristicPollingList;
     this.characteristicPollingTimeouts = {};
     this.characteristicValues = {};
     this.insecureAccess = config.insecureAccess;
@@ -111,7 +112,15 @@ function HomebridgeWrapper(config) {
         that.emit('addAccessory', accessory);
 
         function handleCharacteristicPolling(accessory, service, characteristic) {
-            if (that.characteristicPollingInterval) {
+            var pollingInterval;
+            if (that.characteristicPollingList && (characteristic.displayName in that.characteristicPollingList)) {
+               pollingInterval = that.characteristicPollingList[characteristic.displayName];
+            } else {
+               pollingInterval = that.characteristicPollingInterval;
+            }
+            that.logger.debug('Interval: char=' + characteristic.displayName + ' ; interval= ' + customStringify(pollingInterval));
+            if (pollingInterval) {
+                that.logger.debug('POLLING: char=' + characteristic.displayName + ' ; interval= ' + customStringify(pollingInterval));
                 if (that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]) {
                     clearTimeout(that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]);
                 }
@@ -121,9 +130,10 @@ function HomebridgeWrapper(config) {
                             that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
                             that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
                         }
+                        that.emit('characteristic-value-update', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
                         handleCharacteristicPolling(accessory, service, characteristic);
                     });
-                }, that.characteristicPollingInterval);
+                }, pollingInterval);
             }
         }
 
@@ -131,6 +141,7 @@ function HomebridgeWrapper(config) {
             characteristic.on('change', function(data) {
                 that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = data.newValue;
                 that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
+                that.emit('characteristic-value-update', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
                 handleCharacteristicPolling(accessory, service, characteristic);
             });
             characteristic.getValue(function(err, value) {
@@ -231,7 +242,7 @@ HomebridgeWrapper.prototype.finish = function finish() {
     }
     this.removeAllListeners();
     this.server = null;
-    if (this.characteristicPollingInterval) {
+    if (this.characteristicPollingInterval || this.characteristicPollingList) {
         for (var id in this.characteristicPollingTimeouts) {
             clearTimeout(this.characteristicPollingTimeouts[id]);
         }
