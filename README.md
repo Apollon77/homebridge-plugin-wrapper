@@ -59,12 +59,17 @@ The example contains code how to get and set values.
 * Homeebridge: version.js to return the version of the files "static" instead of a dynamic lookup
 * HAP-NodeJS: HAPServer.js only has minimal functions because not needed
 * HAP-NodeJS: Advertiser.js only has minimal functions because not needed
-* Mocked away: qrcode-terminal, ed25519-hap
+* Mocked away: qrcode-terminal, and some more
 
 ## Todo
 * More/Better Documentation :-) (open Issue if you need it)
 
 # Changelog
+
+## __WORK IN PROGRESS__
+* Update to homebridge 1.1.1 with HAP-NodeJS 0.7.7
+* characteristicPollingList: Option to poll only specific characteristics instead of all
+* event characteristic-value-update: notify even when value does not change. Useful for downstream APIs that timeout without regular updates.
 
 ## 1.1.1 (2019-07-08)
 * set a very high limit on allowed accessories because irrelevant 
