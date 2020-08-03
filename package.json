@@ -1,7 +1,7 @@
 {
   "name": "homebridge-plugin-wrapper",
   "version": "1.1.1",
-  "description": "Wrapper for Homebridge and NodeJS-HAP with reduced dependecies",
+  "description": "Wrapper for Homebridge and NodeJS-HAP with reduced dependencies that allows to intercept plugin values and also send to them",
   "author": {
     "name": "Ingo Fischer",
     "email": "<ingo@fischer-ka.de>"
@@ -17,6 +17,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/Apollon77/homebridge-plugin-wrapper"
+  },
+  "engines": {
+    "node": ">=10.17.0"
   },
   "dependencies": {
     "mock-require": "^3.0.3",
@@ -37,9 +40,6 @@
     "nock": "^13.0.3",
     "homebridge-sun-position": "^0.2.1",
     "homebridge-http-webhooks": "^0.1.4"
-  },
-  "engines": {
-    "node": ">=4.3.2"
   },
   "bugs": {
     "url": "https://github.com/Apollon77/homebridge-plugin-wrapper/issues"

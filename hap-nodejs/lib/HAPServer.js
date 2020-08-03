@@ -198,14 +198,16 @@ var HAPServer = /** @class */ (function (_super) {
         _this.accessoryInfo = accessoryInfo;
         _this.unsuccessfulPairAttempts = 0; // after 100 unsuccessful attempts the server won't accept any further attempts. Will currently be reset on a reboot
         _this.listen = function (port) {
-
+            _this._httpServer.listen(port);
         };
         _this.stop = function () {
-
+            _this._httpServer.stop();
             clearInterval(_this._keepAliveTimerID);
         };
         _this._onKeepAliveTimerTick = function () {
-
+            // send out a "keepalive" event which all connections automatically sign up for once pairVerify is
+            // completed. The event contains no actual data, so iOS devices will simply ignore it.
+            _this.notifyClients('keepalive', { characteristics: [] });
         };
         /**
          * Notifies connected clients who have subscribed to a particular event.
@@ -214,7 +216,8 @@ var HAPServer = /** @class */ (function (_super) {
          * @param data {object} - the object containing the event data; will be JSON.stringify'd automatically
          */
         _this.notifyClients = function (event, data, excludeEvents) {
-
+            // encode notification data as JSON, set content-type, and hand it off to the server.
+            _this._httpServer.sendEvent(event, JSON.stringify(data), "application/hap+json", excludeEvents);
         };
         _this._onListening = function (port) {
             _this.emit("listening" /* LISTENING */, port);
@@ -841,7 +844,12 @@ var HAPServer = /** @class */ (function (_super) {
         _this.accessoryInfo = accessoryInfo;
         _this.allowInsecureRequest = false;
         // internal server that does all the actual communication
-
+        _this._httpServer = new eventedhttp_1.EventedHTTPServer();
+        _this._httpServer.on("listening" /* LISTENING */, _this._onListening);
+        _this._httpServer.on("request" /* REQUEST */, _this._onRequest);
+        _this._httpServer.on("encrypt" /* ENCRYPT */, _this._onEncrypt);
+        _this._httpServer.on("decrypt" /* DECRYPT */, _this._onDecrypt);
+        _this._httpServer.on("session-close" /* SESSION_CLOSE */, _this._onSessionClose);
         // so iOS is very reluctant to actually disconnect HAP connections (as in, sending a FIN packet).
         // For instance, if you turn off wifi on your phone, it will not close the connection, instead
         // it will leave it open and hope that it's still valid when it returns to the network. And Node,
@@ -851,9 +859,6 @@ var HAPServer = /** @class */ (function (_super) {
         // when Node attempts to write to the socket, it discovers that it's been disconnected after
         // an additional one-minute timeout (this timeout appears to be hardcoded).
         _this._keepAliveTimerID = setInterval(_this._onKeepAliveTimerTick, 1000 * 60 * 10); // send keepalive every 10 minutes
-
-        _this.emit("listening" /* LISTENING */, 1234);
-
         return _this;
     }
     HAPServer.handlers = {

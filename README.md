@@ -1,6 +1,16 @@
 # homebridge-plugin-wrapper
 A wrapper to use Homebridge plugins without big dependecies in own projects
 
+[![NPM version](http://img.shields.io/npm/v/homebridge-plugin-wrapper.svg)](https://www.npmjs.com/package/homebridge-plugin-wrapper)
+[![Downloads](https://img.shields.io/npm/dm/homebridge-plugin-wrapper.svg)](https://www.npmjs.com/package/homebridge-plugin-wrapper)
+
+**Tests:**
+Linux/Mac/Windows:
+[![Travis-CI](http://img.shields.io/travis/Apollon77/homebridge-plugin-wrapper/master.svg)](https://travis-ci.org/Apollon77/homebridge-plugin-wrapper)
+Windows: [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/Apollon77/homebridge-plugin-wrapper?branch=master&svg=true)](https://ci.appveyor.com/project/Apollon77/homebridge-plugin-wrapper/)
+
+[![NPM](https://nodei.co/npm/homebridge-plugin-wrapper.png?downloads=true)](https://nodei.co/npm/homebridge-plugin-wrapper/)
+
 ## Why a Homebridge Wrapper?
 Homebridge is a great project with currently 1200 available plugins and many
 active developers that provide integrations for many IoT devices.

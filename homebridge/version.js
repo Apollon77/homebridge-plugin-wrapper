@@ -12,11 +12,11 @@ function loadPackageJson() {
     return JSON.parse(fs_1.default.readFileSync(packageJSONPath, { encoding: "utf8" }));
 }
 function getVersion() {
-    return '1.1.1';
+    return loadPackageJson().version;
 }
 exports.default = getVersion;
 function getRequiredNodeVersion() {
-    return '>=10.17.0';
+    return loadPackageJson().engines.node;
 }
 exports.getRequiredNodeVersion = getRequiredNodeVersion;
 //# sourceMappingURL=version.js.map

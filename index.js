@@ -34,9 +34,22 @@ function customStringify(v, func, intent) {
 
 
 function HomebridgeWrapper(config) {
+    var that = this;
+
     mock('hap-nodejs', './hap-nodejs');
     mock('hap-nodejs/accessories/types.js', './hap-nodejs/accessories/types.js');
     mock('hap-nodejs/lib/util/once', './hap-nodejs/lib/util/once');
+    mock(path.join(__dirname, '/hap-nodejs/lib/util/eventedhttp.js'), {
+        EventedHTTPServer: function() {
+            this.listen = function () {};
+            this.stop = function () {};
+            this.sendEvent = function () {};
+            this.on = function () {};
+
+            that.logger.debug('Fake EventedHTTPServer initialized');
+            return this;
+        }
+    });
     mock('qrcode-terminal', {
         generate: function() {}
     });
@@ -48,9 +61,25 @@ function HomebridgeWrapper(config) {
         }
     });
     mock('fast-srp-hap', {});
-    User = require(__dirname + '/homebridge/user').User;
+    mock('bonjour-hap', function() {
+        return {
+            publish: function() {
+                return {
+                    updateTxt: function() {},
+                    stop: function() {},
+                    destroy: function() {},
+                    updateTxt: function() {},
+                }
+            },
+            destroy: function() {}
+        }
+    });
+    mock(path.join(__dirname, '/homebridge/version.js'), path.join(__dirname, '/homebridge-version.js'));
+
+
+    User = require(path.join(__dirname + '/homebridge/user')).User;
     hap = require('./hap-nodejs');
-    Server = require(__dirname + '/homebridge/server').Server;
+    Server = require(path.join(__dirname, '/homebridge/server')).Server;
     Service = hap.Service;
     Accessory = hap.Accessory;
 
@@ -70,8 +99,6 @@ function HomebridgeWrapper(config) {
             "pin": "0"
         };
     }
-
-    var that = this;
 
     try {
         if (!fs.existsSync(config.homebridgeConfigPath)) {
@@ -163,38 +190,6 @@ function HomebridgeWrapper(config) {
 
     inherits(WrapperBridge, hap.Bridge);
 
-    Server.prototype._createBridge = function() {
-        that.logger.debug('Homebridge Wrapper Bridge create'); //OK
-        // pull out our custom Bridge settings from config.json, if any
-        var bridgeConfig = this.config.bridge || {};
-
-        // Create our Bridge which will host all loaded Accessories
-        return new WrapperBridge(bridgeConfig.name || 'Homebridge', hap.uuid.generate("HomeBridge"));
-    };
-
-    Server.prototype.printSetupInfo = function(pin) {
-    };
-
-    Service.prototype.getCharacteristicByUUID = function (uuid) {
-      for (var index in this.characteristics) {
-        var characteristic = this.characteristics[index];
-        if (characteristic.uuid === uuid)
-          return characteristic;
-      }
-    };
-
-    Accessory.prototype.getServiceByUUID = function (uuid) {
-      for (var index in this.services) {
-        var service = this.services[index];
-        if (services.uuid === uuid)
-          return service;
-      }
-    };
-
-    Accessory.prototype.getCharacteristicByUUID = function (serviceUUID, characteristicUUID) {
-      return this.getServiceByUUID(serviceUUID).getCharacteristicByUUID(characteristicUUID);
-    };
-
     WrapperBridge.prototype.getBridgedAccessoryByUUID = function (uuid) {
       for (var index in this.bridgedAccessories) {
         var accessory = this.bridgedAccessories[index];
@@ -212,6 +207,38 @@ function HomebridgeWrapper(config) {
     };
 
     this.WrapperBridge = WrapperBridge;
+
+    Server.prototype._createBridge = function() {
+        that.logger.debug('Homebridge Wrapper Bridge create'); //OK
+        // pull out our custom Bridge settings from config.json, if any
+        var bridgeConfig = this.config.bridge || {};
+
+        // Create our Bridge which will host all loaded Accessories
+        return new WrapperBridge(bridgeConfig.name || 'Homebridge', hap.uuid.generate("HomeBridge"));
+    };
+
+    Server.prototype.printSetupInfo = function(pin) {
+    };
+
+    Service.prototype.getCharacteristicByUUID = function (uuid) {
+        for (var index in this.characteristics) {
+            var characteristic = this.characteristics[index];
+            if (characteristic.uuid === uuid)
+                return characteristic;
+        }
+    };
+
+    Accessory.prototype.getServiceByUUID = function (uuid) {
+        for (var index in this.services) {
+            var service = this.services[index];
+            if (services.uuid === uuid)
+                return service;
+        }
+    };
+
+    Accessory.prototype.getCharacteristicByUUID = function (serviceUUID, characteristicUUID) {
+        return this.getServiceByUUID(serviceUUID).getCharacteristicByUUID(characteristicUUID);
+    };
 }
 
 inherits(HomebridgeWrapper, EventEmitter);

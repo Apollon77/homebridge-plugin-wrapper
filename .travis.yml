@@ -4,9 +4,10 @@ os:
   - windows
 language: node_js
 node_js:
-  - '6'
-  - '8'
   - '10'
+  - '12'
+  - '14'
+  - 'node'
 before_script:
   - npm install homebridge-http-webhooks
   - npm install homebridge-sun-position
