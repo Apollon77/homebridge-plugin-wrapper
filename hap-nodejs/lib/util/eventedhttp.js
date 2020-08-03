@@ -1,18 +1,56 @@
-'use strict';
-
-var debug = require('debug')('EventedHTTPServer');
-var EventEmitter = require('events').EventEmitter;
-var inherits = require('util').inherits;
-var net = require('net');
-var http = require('http');
-var uuid = require('./uuid');
-var bufferShim = require('buffer-shims');
-
-module.exports = {
-  EventedHTTPServer: EventedHTTPServer
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
 };
-
-
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Session = exports.HAPSessionEvents = exports.EventedHTTPServer = exports.EventedHTTPServerEvents = void 0;
+var net_1 = __importDefault(require("net"));
+var http_1 = __importDefault(require("http"));
+var debug_1 = __importDefault(require("debug"));
+var uuid = __importStar(require("./uuid"));
+var EventEmitter_1 = require("../EventEmitter");
+var debug = debug_1.default('HAP-NodeJS:EventedHTTPServer');
+var EventedHTTPServerEvents;
+(function (EventedHTTPServerEvents) {
+    EventedHTTPServerEvents["LISTENING"] = "listening";
+    EventedHTTPServerEvents["REQUEST"] = "request";
+    EventedHTTPServerEvents["DECRYPT"] = "decrypt";
+    EventedHTTPServerEvents["ENCRYPT"] = "encrypt";
+    EventedHTTPServerEvents["CLOSE"] = "close";
+    EventedHTTPServerEvents["SESSION_CLOSE"] = "session-close";
+})(EventedHTTPServerEvents = exports.EventedHTTPServerEvents || (exports.EventedHTTPServerEvents = {}));
 /**
  * EventedHTTPServer provides an HTTP-like server that supports HAP "extensions" for security and events.
  *
@@ -48,59 +86,142 @@ module.exports = {
  *        Fired when we wish to send data to the client device. If necessary, set the 'data' property of the
  *        'encrypted' argument to be the encrypted data and it will be sent instead.
  */
-
-function EventedHTTPServer() {
-  this._tcpServer = net.createServer();
-  this._connections = []; // track all open connections (for sending events)
-}
-
-inherits(EventedHTTPServer, EventEmitter);
-
-EventedHTTPServer.prototype.listen = function(targetPort) {
-  this._tcpServer.listen(targetPort);
-
-  this._tcpServer.on('listening', function() {
-    var port = this._tcpServer.address().port;
-    debug("Server listening on port %s", port);
-    this.emit('listening', port);
-  }.bind(this));
-
-  this._tcpServer.on('connection', this._onConnection.bind(this));
-}
-
-EventedHTTPServer.prototype.stop = function() {
-  this._tcpServer.close();
-  this._connections = [];
-}
-
-EventedHTTPServer.prototype.sendEvent = function(event, data, contentType, exclude) {
-  for (var index in this._connections) {
-    var connection = this._connections[index];
-    connection.sendEvent(event, data, contentType, exclude);
-  }
-}
-
-// Called by net.Server when a new client connects. We will set up a new EventedHTTPServerConnection to manage the
-// lifetime of this connection.
-EventedHTTPServer.prototype._onConnection = function(socket) {
-  var connection = new EventedHTTPServerConnection(socket);
-
-  // pass on session events to our listeners directly
-  connection.on('request', function(request, response, session, events) { this.emit('request', request, response, session, events); }.bind(this));
-  connection.on('encrypt', function(data, encrypted, session) { this.emit('encrypt', data, encrypted, session); }.bind(this));
-  connection.on('decrypt', function(data, decrypted, session) { this.emit('decrypt', data, decrypted, session); }.bind(this));
-  connection.on('close', function(events) { this._handleConnectionClose(connection, events); }.bind(this));
-  this._connections.push(connection);
-}
-
-EventedHTTPServer.prototype._handleConnectionClose = function(connection, events) {
-  this.emit('session-close', connection.sessionID, events);
-
-  // remove it from our array of connections for events
-  this._connections.splice(this._connections.indexOf(connection), 1);
-}
-
-
+var EventedHTTPServer = /** @class */ (function (_super) {
+    __extends(EventedHTTPServer, _super);
+    function EventedHTTPServer() {
+        var _this = _super.call(this) || this;
+        /**
+         * Session dictionary indexed by username/identifier. The username uniquely identifies every person added to the home.
+         * So there can be multiple sessions open for a single username (multiple devices connected to the same Apple ID).
+         */
+        _this.sessions = {};
+        _this.listen = function (targetPort) {
+            _this._tcpServer.listen(targetPort);
+            _this._tcpServer.on('listening', function () {
+                var address = _this._tcpServer.address();
+                if (address && typeof address !== 'string') {
+                    var port = address.port;
+                    debug("Server listening on port %s", port);
+                    _this.emit("listening" /* LISTENING */, port);
+                }
+            });
+            _this._tcpServer.on('connection', _this._onConnection);
+        };
+        _this.stop = function () {
+            _this._tcpServer.close();
+            _this._connections.forEach(function (connection) {
+                connection.close();
+            });
+            _this._connections = [];
+        };
+        _this.sendEvent = function (event, data, contentType, exclude) {
+            for (var index in _this._connections) {
+                var connection = _this._connections[index];
+                connection.sendEvent(event, data, contentType, exclude);
+            }
+        };
+        // Called by net.Server when a new client connects. We will set up a new EventedHTTPServerConnection to manage the
+        // lifetime of this connection.
+        _this._onConnection = function (socket) {
+            var connection = new EventedHTTPServerConnection(_this, socket);
+            // pass on session events to our listeners directly
+            connection.on("request" /* REQUEST */, function (request, response, session, events) { _this.emit("request" /* REQUEST */, request, response, session, events); });
+            connection.on("encrypt" /* ENCRYPT */, function (data, encrypted, session) { _this.emit("encrypt" /* ENCRYPT */, data, encrypted, session); });
+            connection.on("decrypt" /* DECRYPT */, function (data, decrypted, session) { _this.emit("decrypt" /* DECRYPT */, data, decrypted, session); });
+            connection.on("close" /* CLOSE */, function (events) { _this._handleConnectionClose(connection, events); });
+            _this._connections.push(connection);
+        };
+        _this._handleConnectionClose = function (connection, events) {
+            _this.emit("session-close" /* SESSION_CLOSE */, connection.sessionID, events);
+            // remove it from our array of connections for events
+            _this._connections.splice(_this._connections.indexOf(connection), 1);
+        };
+        _this._tcpServer = net_1.default.createServer();
+        _this._connections = []; // track all open connections (for sending events)
+        return _this;
+    }
+    return EventedHTTPServer;
+}(EventEmitter_1.EventEmitter));
+exports.EventedHTTPServer = EventedHTTPServer;
+var HAPSessionEvents;
+(function (HAPSessionEvents) {
+    HAPSessionEvents["CLOSED"] = "closed";
+})(HAPSessionEvents = exports.HAPSessionEvents || (exports.HAPSessionEvents = {}));
+var Session = /** @class */ (function (_super) {
+    __extends(Session, _super);
+    function Session(connection) {
+        var _this = _super.call(this) || this;
+        _this.authenticated = false;
+        /**
+         * establishSession gets called after a pair verify.
+         * establishSession does not get called after the first pairing gets added, as any HomeKit controller will initiate a
+         * pair verify after the pair setup procedure.
+         */
+        _this.establishSession = function (username) {
+            _this.authenticated = true;
+            _this.username = username;
+            var sessions = _this._server.sessions[username];
+            if (!sessions) {
+                sessions = [];
+                _this._server.sessions[username] = sessions;
+            }
+            if (sessions.includes(_this)) {
+                return; // ensure this doesn't get added more than one time
+            }
+            sessions.push(_this);
+        };
+        // called when socket of this session is destroyed
+        _this._connectionDestroyed = function () {
+            delete Session.sessionsBySessionID[_this.sessionID];
+            if (_this.username) {
+                var sessions = _this._server.sessions[_this.username];
+                if (sessions) {
+                    var index = sessions.indexOf(_this);
+                    if (index >= 0) {
+                        sessions[index].authenticated = false;
+                        sessions.splice(index, 1);
+                    }
+                    if (!sessions.length)
+                        delete _this._server.sessions[_this.username];
+                }
+            }
+            _this.emit("closed" /* CLOSED */);
+        };
+        _this._server = connection.server;
+        _this._connection = connection;
+        _this.sessionID = connection.sessionID;
+        Session.sessionsBySessionID[_this.sessionID] = _this;
+        return _this;
+    }
+    Session.getSession = function (sessionID) {
+        return this.sessionsBySessionID[sessionID];
+    };
+    /*
+      Session dictionary indexed by sessionID. SessionID is a custom generated id by HAP-NodeJS unique to every open connection.
+      SessionID gets passed to get/set handlers for characteristics. We mainly need this dictionary in order
+      to access the sharedSecret in the HAPEncryption object from the SetupDataStreamTransport characteristic set handler.
+     */
+    Session.sessionsBySessionID = {};
+    Session.destroyExistingConnectionsAfterUnpair = function (initiator, username) {
+        var sessions = initiator._server.sessions[username];
+        if (sessions) {
+            sessions.forEach(function (session) {
+                session.authenticated = false;
+                if (initiator.sessionID === session.sessionID) {
+                    // the session which initiated the unpair removed it's own username, wait until the unpair request is finished
+                    // until we kill his connection
+                    session._connection._killSocketAfterWrite = true;
+                }
+                else {
+                    // as HomeKit requires it, destroy any active session which got unpaired
+                    session._connection._clientSocket.destroy();
+                }
+            });
+        }
+    };
+    return Session;
+}(EventEmitter_1.EventEmitter));
+exports.Session = Session;
 /**
  * Manages a single iOS-initiated HTTP connection during its lifetime.
  *
@@ -109,225 +230,215 @@ EventedHTTPServer.prototype._handleConnectionClose = function(connection, events
  * @event 'encrypt' => function(data, {encrypted.data}, session) { }
  * @event 'close' => function() { }
  */
-
-function EventedHTTPServerConnection(clientSocket) {
-  this.sessionID = uuid.generate(clientSocket.remoteAddress + ':' + clientSocket.remotePort);
-
-  this._remoteAddress = clientSocket.remoteAddress; // cache because it becomes undefined in 'onClientSocketClose'
-  this._pendingClientSocketData = bufferShim.alloc(0); // data received from client before HTTP proxy is fully setup
-  this._fullySetup = false; // true when we are finished establishing connections
-  this._writingResponse = false; // true while we are composing an HTTP response (so events can wait)
-  this._pendingEventData = bufferShim.alloc(0); // event data waiting to be sent until after an in-progress HTTP response is being written
-
-  // clientSocket is the socket connected to the actual iOS device
-  this._clientSocket = clientSocket;
-  this._clientSocket.on('data', this._onClientSocketData.bind(this));
-  this._clientSocket.on('close', this._onClientSocketClose.bind(this));
-  this._clientSocket.on('error', this._onClientSocketError.bind(this)); // we MUST register for this event, otherwise the error will bubble up to the top and crash the node process entirely.
-
-  // serverSocket is our connection to our own internal httpServer
-  this._serverSocket = null; // created after httpServer 'listening' event
-
-  // create our internal HTTP server for this connection that we will proxy data to and from
-  this._httpServer = http.createServer();
-
-  this._httpServer.timeout = 0; // clients expect to hold connections open as long as they want
-  this._httpServer.keepAliveTimeout = 0; // workaround for https://github.com/nodejs/node/issues/13391
-  this._httpServer.on('listening', this._onHttpServerListening.bind(this));
-  this._httpServer.on('request', this._onHttpServerRequest.bind(this));
-  this._httpServer.on('error', this._onHttpServerError.bind(this));
-  this._httpServer.listen(0);
-
-  // an arbitrary dict that users of this class can store values in to associate with this particular connection
-  this._session = {
-    sessionID: this.sessionID
-  };
-
-  // a collection of event names subscribed to by this connection
-  this._events = {}; // this._events[eventName] = true (value is arbitrary, but must be truthy)
-
-  debug("[%s] New connection from client", this._remoteAddress);
-}
-
-inherits(EventedHTTPServerConnection, EventEmitter);
-
-EventedHTTPServerConnection.prototype.sendEvent = function(event, data, contentType, excludeEvents) {
-
-  // has this connection subscribed to the given event? if not, nothing to do!
-  if (!this._events[event]) {
-    return;
-  }
-
-  // does this connection's 'events' object match the excludeEvents object? if so, don't send the event.
-  if (excludeEvents === this._events) {
-    debug("[%s] Muting event '%s' notification for this connection since it originated here.", this._remoteAddress, event);
-    return;
-  }
-
-  debug("[%s] Sending HTTP event '%s' with data: %s", this._remoteAddress, event, data.toString('utf8'));
-
-  // ensure data is a Buffer
-  data = bufferShim.from(data);
-
-  // format this payload as an HTTP response
-  var linebreak = bufferShim.from("0D0A","hex");
-  data = Buffer.concat([
-    bufferShim.from('EVENT/1.0 200 OK'), linebreak,
-    bufferShim.from('Content-Type: ' + contentType), linebreak,
-    bufferShim.from('Content-Length: ' + data.length), linebreak,
-    linebreak,
-    data
-  ]);
-
-  // give listeners an opportunity to encrypt this data before sending it to the client
-  var encrypted = { data: null };
-  this.emit('encrypt', data, encrypted, this._session);
-  if (encrypted.data) data = encrypted.data;
-
-  // if we're in the middle of writing an HTTP response already, put this event in the queue for when
-  // we're done. otherwise send it immediately.
-  if (this._writingResponse)
-    this._pendingEventData = Buffer.concat([this._pendingEventData, data]);
-  else
-    this._clientSocket.write(data);
-}
-
-EventedHTTPServerConnection.prototype._sendPendingEvents = function() {
-
-  // an existing HTTP response was finished, so let's flush our pending event buffer if necessary!
-  if (this._pendingEventData.length > 0) {
-    debug("[%s] Writing pending HTTP event data", this._remoteAddress);
-    this._clientSocket.write(this._pendingEventData);
-  }
-
-  // clear the buffer
-  this._pendingEventData = bufferShim.alloc(0);
-}
-
-// Called only once right after constructor finishes
-EventedHTTPServerConnection.prototype._onHttpServerListening = function() {
-  this._httpPort = this._httpServer.address().port;
-  debug("[%s] HTTP server listening on port %s", this._remoteAddress, this._httpPort);
-
-  // closes before this are due to retrying listening, which don't need to be handled
-  this._httpServer.on('close', this._onHttpServerClose.bind(this));
-
-  // now we can establish a connection to this running HTTP server for proxying data
-  this._serverSocket = net.createConnection(this._httpPort);
-  this._serverSocket.on('connect', this._onServerSocketConnect.bind(this));
-  this._serverSocket.on('data', this._onServerSocketData.bind(this));
-  this._serverSocket.on('close', this._onServerSocketClose.bind(this));
-  this._serverSocket.on('error', this._onServerSocketError.bind(this)); // we MUST register for this event, otherwise the error will bubble up to the top and crash the node process entirely.
-}
-
-// Called only once right after onHttpServerListening
-EventedHTTPServerConnection.prototype._onServerSocketConnect = function() {
-
-  // we are now fully set up:
-  //  - clientSocket is connected to the iOS device
-  //  - serverSocket is connected to the httpServer
-  //  - ready to proxy data!
-  this._fullySetup = true;
-
-  // start by flushing any pending buffered data received from the client while we were setting up
-  if (this._pendingClientSocketData.length > 0) {
-    this._serverSocket.write(this._pendingClientSocketData);
-    this._pendingClientSocketData = null;
-  }
-}
-
-// Received data from client (iOS)
-EventedHTTPServerConnection.prototype._onClientSocketData = function(data) {
-
-  // give listeners an opportunity to decrypt this data before processing it as HTTP
-  var decrypted = { data: null };
-  this.emit('decrypt', data, decrypted, this._session);
-  if (decrypted.data) data = decrypted.data;
-
-  if (this._fullySetup) {
-    // proxy it along to the HTTP server
-    this._serverSocket.write(data);
-  }
-  else {
-    // we're not setup yet, so add this data to our buffer
-    this._pendingClientSocketData = Buffer.concat([this._pendingClientSocketData, data]);
-  }
-}
-
-// Received data from HTTP Server
-EventedHTTPServerConnection.prototype._onServerSocketData = function(data) {
-
-  // give listeners an opportunity to encrypt this data before sending it to the client
-  var encrypted = { data: null };
-  this.emit('encrypt', data, encrypted, this._session);
-  if (encrypted.data) data = encrypted.data;
-
-  // proxy it along to the client (iOS)
-  this._clientSocket.write(data);
-}
-
-// Our internal HTTP Server has been closed (happens after we call this._httpServer.close() below)
-EventedHTTPServerConnection.prototype._onServerSocketClose = function() {
-  debug("[%s] HTTP connection was closed", this._remoteAddress);
-
-  // make sure the iOS side is closed as well
-  this._clientSocket.destroy();
-
-  // we only support a single long-lived connection to our internal HTTP server. Since it's closed,
-  // we'll need to shut it down entirely.
-  this._httpServer.close();
-}
-
-// Our internal HTTP Server has been closed (happens after we call this._httpServer.close() below)
-EventedHTTPServerConnection.prototype._onServerSocketError = function(err) {
-  debug("[%s] HTTP connection error: ", this._remoteAddress, err.message);
-
-  // _onServerSocketClose will be called next
-}
-
-EventedHTTPServerConnection.prototype._onHttpServerRequest = function(request, response) {
-  debug("[%s] HTTP request: %s", this._remoteAddress, request.url);
-
-  this._writingResponse = true;
-
-  // sign up to know when the response is ended, so we can safely send EVENT responses
-  response.on('finish', function() {
-
-    debug("[%s] HTTP Response is finished", this._remoteAddress);
-    this._writingResponse = false;
-    this._sendPendingEvents();
-
-  }.bind(this));
-
-  // pass it along to listeners
-  this.emit('request', request, response, this._session, this._events);
-}
-
-EventedHTTPServerConnection.prototype._onHttpServerClose = function() {
-  debug("[%s] HTTP server was closed", this._remoteAddress);
-
-  // notify listeners that we are completely closed
-  this.emit('close', this._events);
-}
-
-EventedHTTPServerConnection.prototype._onHttpServerError = function(err) {
-  debug("[%s] HTTP server error: %s", this._remoteAddress, err.message);
-
-  if (err.code === 'EADDRINUSE') {
-    this._httpServer.close();
-    this._httpServer.listen(0);
-  }
-}
-
-EventedHTTPServerConnection.prototype._onClientSocketClose = function() {
-  debug("[%s] Client connection closed", this._remoteAddress);
-
-  // shutdown the other side
-  this._serverSocket.destroy();
-}
-
-EventedHTTPServerConnection.prototype._onClientSocketError = function(err) {
-  debug("[%s] Client connection error: %s", this._remoteAddress, err.message);
-
-  // _onClientSocketClose will be called next
-}
+var EventedHTTPServerConnection = /** @class */ (function (_super) {
+    __extends(EventedHTTPServerConnection, _super);
+    function EventedHTTPServerConnection(server, clientSocket) {
+        var _this = _super.call(this) || this;
+        _this.sendEvent = function (event, data, contentType, excludeEvents) {
+            // has this connection subscribed to the given event? if not, nothing to do!
+            if (!_this._events[event]) {
+                return;
+            }
+            // does this connection's 'events' object match the excludeEvents object? if so, don't send the event.
+            if (excludeEvents === _this._events) {
+                debug("[%s] Muting event '%s' notification for this connection since it originated here.", _this._remoteAddress, event);
+                return;
+            }
+            debug("[%s] Sending HTTP event '%s' with data: %s", _this._remoteAddress, event, data.toString('utf8'));
+            // ensure data is a Buffer
+            if (typeof data === 'string') {
+                data = Buffer.from(data);
+            }
+            // format this payload as an HTTP response
+            var linebreak = Buffer.from("0D0A", "hex");
+            data = Buffer.concat([
+                Buffer.from('EVENT/1.0 200 OK'), linebreak,
+                Buffer.from('Content-Type: ' + contentType), linebreak,
+                Buffer.from('Content-Length: ' + data.length), linebreak,
+                linebreak,
+                data
+            ]);
+            // if we're in the middle of writing an HTTP response already, put this event in the queue for when
+            // we're done. otherwise send it immediately.
+            if (_this._writingResponse) {
+                _this._pendingEventData.push(data);
+            }
+            else {
+                // give listeners an opportunity to encrypt this data before sending it to the client
+                var encrypted = { data: null };
+                _this.emit("encrypt" /* ENCRYPT */, data, encrypted, _this._session);
+                if (encrypted.data) {
+                    // @ts-ignore
+                    data = encrypted.data;
+                }
+                _this._clientSocket.write(data);
+            }
+        };
+        _this.close = function () {
+            _this._clientSocket.end();
+        };
+        _this._sendPendingEvents = function () {
+            if (_this._pendingEventData.length === 0) {
+                return;
+            }
+            // an existing HTTP response was finished, so let's flush our pending event buffer if necessary!
+            debug("[%s] Writing pending HTTP event data", _this._remoteAddress);
+            _this._pendingEventData.forEach(function (event) {
+                var encrypted = { data: null };
+                _this.emit("encrypt" /* ENCRYPT */, event, encrypted, _this._session);
+                if (encrypted.data) {
+                    // @ts-ignore
+                    event = encrypted.data;
+                }
+                _this._clientSocket.write(event);
+            });
+            // clear the queue
+            _this._pendingEventData = [];
+        };
+        // Called only once right after constructor finishes
+        _this._onHttpServerListening = function () {
+            _this._httpPort = _this._httpServer.address().port;
+            debug("[%s] HTTP server listening on port %s", _this._remoteAddress, _this._httpPort);
+            // closes before this are due to retrying listening, which don't need to be handled
+            _this._httpServer.on('close', _this._onHttpServerClose);
+            // now we can establish a connection to this running HTTP server for proxying data
+            _this._serverSocket = net_1.default.createConnection(_this._httpPort);
+            _this._serverSocket.on('connect', _this._onServerSocketConnect);
+            _this._serverSocket.on('data', _this._onServerSocketData);
+            _this._serverSocket.on('close', _this._onServerSocketClose);
+            _this._serverSocket.on('error', _this._onServerSocketError); // we MUST register for this event, otherwise the error will bubble up to the top and crash the node process entirely.
+        };
+        // Called only once right after onHttpServerListening
+        _this._onServerSocketConnect = function () {
+            // we are now fully set up:
+            //  - clientSocket is connected to the iOS device
+            //  - serverSocket is connected to the httpServer
+            //  - ready to proxy data!
+            _this._fullySetup = true;
+            // start by flushing any pending buffered data received from the client while we were setting up
+            if (_this._pendingClientSocketData && _this._pendingClientSocketData.length > 0) {
+                _this._serverSocket && _this._serverSocket.write(_this._pendingClientSocketData);
+                _this._pendingClientSocketData = null;
+            }
+        };
+        // Received data from client (iOS)
+        _this._onClientSocketData = function (data) {
+            // _writingResponse is reverted to false in _onHttpServerRequest(...) after response was written
+            _this._writingResponse = true;
+            // give listeners an opportunity to decrypt this data before processing it as HTTP
+            var decrypted = { data: null, error: null };
+            _this.emit("decrypt" /* DECRYPT */, data, decrypted, _this._session);
+            if (decrypted.error) {
+                // decryption and/or verification failed, disconnect the client
+                debug("[%s] Error occurred trying to decrypt incoming packet: %s", _this._remoteAddress, decrypted.error.message);
+                _this.close();
+            }
+            else {
+                if (decrypted.data) {
+                    data = decrypted.data;
+                }
+                if (_this._fullySetup) {
+                    // proxy it along to the HTTP server
+                    _this._serverSocket && _this._serverSocket.write(data);
+                }
+                else {
+                    // we're not setup yet, so add this data to our buffer
+                    _this._pendingClientSocketData = Buffer.concat([_this._pendingClientSocketData, data]);
+                }
+            }
+        };
+        // Received data from HTTP Server
+        _this._onServerSocketData = function (data) {
+            // give listeners an opportunity to encrypt this data before sending it to the client
+            var encrypted = { data: null };
+            _this.emit("encrypt" /* ENCRYPT */, data, encrypted, _this._session);
+            if (encrypted.data)
+                data = encrypted.data;
+            // proxy it along to the client (iOS)
+            _this._clientSocket.write(data);
+            if (_this._killSocketAfterWrite) {
+                setTimeout(function () {
+                    _this._clientSocket.destroy();
+                }, 10);
+            }
+        };
+        // Our internal HTTP Server has been closed (happens after we call this._httpServer.close() below)
+        _this._onServerSocketClose = function () {
+            debug("[%s] HTTP connection was closed", _this._remoteAddress);
+            // make sure the iOS side is closed as well
+            _this._clientSocket.destroy();
+            // we only support a single long-lived connection to our internal HTTP server. Since it's closed,
+            // we'll need to shut it down entirely.
+            _this._httpServer.close();
+        };
+        // Our internal HTTP Server has been closed (happens after we call this._httpServer.close() below)
+        _this._onServerSocketError = function (err) {
+            debug("[%s] HTTP connection error: ", _this._remoteAddress, err.message);
+            // _onServerSocketClose will be called next
+        };
+        _this._onHttpServerRequest = function (request, response) {
+            debug("[%s] HTTP request: %s", _this._remoteAddress, request.url);
+            // sign up to know when the response is ended, so we can safely send EVENT responses
+            response.on('finish', function () {
+                debug("[%s] HTTP Response is finished", _this._remoteAddress);
+                _this._writingResponse = false;
+                _this._sendPendingEvents();
+            });
+            // pass it along to listeners
+            _this.emit("request" /* REQUEST */, request, response, _this._session, _this._events);
+        };
+        _this._onHttpServerClose = function () {
+            debug("[%s] HTTP server was closed", _this._remoteAddress);
+            // notify listeners that we are completely closed
+            _this.emit("close" /* CLOSE */, _this._events);
+        };
+        _this._onHttpServerError = function (err) {
+            debug("[%s] HTTP server error: %s", _this._remoteAddress, err.message);
+            if (err.code === 'EADDRINUSE') {
+                _this._httpServer.close();
+                _this._httpServer.listen(0);
+            }
+        };
+        _this._onClientSocketClose = function () {
+            debug("[%s] Client connection closed", _this._remoteAddress);
+            // shutdown the other side
+            _this._serverSocket && _this._serverSocket.destroy();
+            _this._session._connectionDestroyed();
+        };
+        _this._onClientSocketError = function (err) {
+            debug("[%s] Client connection error: %s", _this._remoteAddress, err.message);
+            // _onClientSocketClose will be called next
+        };
+        _this.server = server;
+        _this.sessionID = uuid.generate(clientSocket.remoteAddress + ':' + clientSocket.remotePort);
+        _this._remoteAddress = clientSocket.remoteAddress; // cache because it becomes undefined in 'onClientSocketClose'
+        _this._pendingClientSocketData = Buffer.alloc(0); // data received from client before HTTP proxy is fully setup
+        _this._fullySetup = false; // true when we are finished establishing connections
+        _this._writingResponse = false; // true while we are composing an HTTP response (so events can wait)
+        _this._killSocketAfterWrite = false;
+        _this._pendingEventData = []; // queue of unencrypted event data waiting to be sent until after an in-progress HTTP response is being written
+        // clientSocket is the socket connected to the actual iOS device
+        _this._clientSocket = clientSocket;
+        _this._clientSocket.on('data', _this._onClientSocketData);
+        _this._clientSocket.on('close', _this._onClientSocketClose);
+        _this._clientSocket.on('error', _this._onClientSocketError); // we MUST register for this event, otherwise the error will bubble up to the top and crash the node process entirely.
+        // serverSocket is our connection to our own internal httpServer
+        _this._serverSocket = null; // created after httpServer 'listening' event
+        // create our internal HTTP server for this connection that we will proxy data to and from
+        _this._httpServer = http_1.default.createServer();
+        _this._httpServer.timeout = 0; // clients expect to hold connections open as long as they want
+        _this._httpServer.keepAliveTimeout = 0; // workaround for https://github.com/nodejs/node/issues/13391
+        _this._httpServer.on('listening', _this._onHttpServerListening);
+        _this._httpServer.on('request', _this._onHttpServerRequest);
+        _this._httpServer.on('error', _this._onHttpServerError);
+        _this._httpServer.listen(0);
+        // an arbitrary dict that users of this class can store values in to associate with this particular connection
+        _this._session = new Session(_this);
+        // a collection of event names subscribed to by this connection
+        _this._events = {}; // this._events[eventName] = true (value is arbitrary, but must be truthy)
+        debug("[%s] New connection from client", _this._remoteAddress);
+        return _this;
+    }
+    return EventedHTTPServerConnection;
+}(EventEmitter_1.EventEmitter));
+//# sourceMappingURL=eventedhttp.js.map

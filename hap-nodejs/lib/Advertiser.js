@@ -1,12 +1,11 @@
-'use strict';
-
-var crypto = require('crypto');
-
-module.exports = {
-  Advertiser: Advertiser
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-
-
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Advertiser = void 0;
+var crypto_1 = __importDefault(require("crypto"));
+//var bonjour_hap_1 = __importDefault(require("bonjour-hap"));
 /**
  * Advertiser uses mdns to broadcast the presence of an Accessory to the local network.
  *
@@ -15,34 +14,66 @@ module.exports = {
  * To support this requirement, we provide the ability to be "discoverable" or not (via a "service flag" on the
  * mdns payload).
  */
+var Advertiser = /** @class */ (function () {
+    function Advertiser(accessoryInfo, mdnsConfig) {
+        var _this = this;
+        this.accessoryInfo = accessoryInfo;
+        this.startAdvertising = function (port) {
+            // stop advertising if necessary
+            if (_this._advertisement) {
+                _this.stopAdvertising();
+            }
+            var txtRecord = {
+                md: _this.accessoryInfo.displayName,
+                pv: Advertiser.protocolVersion,
+                id: _this.accessoryInfo.username,
+                "c#": _this.accessoryInfo.configVersion + "",
+                "s#": "1",
+                "ff": "0",
+                "ci": _this.accessoryInfo.category,
+                "sf": _this.accessoryInfo.paired() ? "0" : "1",
+                "sh": _this._setupHash
+            };
+            /**
+             * The host name of the component is probably better to be
+             * the username of the hosted accessory + '.local'.
+             * By default 'bonjour' doesnt add '.local' at the end of the os.hostname
+             * this causes to return 'raspberrypi' on raspberry pi / raspbian
+             * then when the phone queryies for A/AAAA record it is being queried
+             * on normal dns, not on mdns. By Adding the username of the accessory
+             * probably the problem will also fix a possible problem
+             * of having multiple pi's on same network
+             */
+            var host = _this.accessoryInfo.username.replace(/\:/ig, "_") + '.local';
+            var advertiseName = _this.accessoryInfo.displayName
+                + " "
+                + crypto_1.default.createHash('sha512').update(_this.accessoryInfo.username, 'utf8').digest('hex').slice(0, 4).toUpperCase();
+            // create/recreate our advertisement
+            _this._advertisement = true;
+        };
+        this.isAdvertising = function () {
+            return (_this._advertisement != null);
+        };
+        this.updateAdvertisement = function () {
 
-function Advertiser(accessoryInfo, mdnsConfig) {
-  this.accessoryInfo = accessoryInfo;
-  this._advertisement = false;
-
-  this._setupHash = this._computeSetupHash();
-}
-
-Advertiser.prototype.startAdvertising = function(port) {
-  this._advertisement = true;
-}
-
-Advertiser.prototype.isAdvertising = function() {
-  return this._advertisement;
-}
-
-Advertiser.prototype.updateAdvertisement = function() {
-}
-
-Advertiser.prototype.stopAdvertising = function() {
-  this._advertisement = false;
-}
-
-Advertiser.prototype._computeSetupHash = function() {
-  var setupHashMaterial = this.accessoryInfo.setupID + this.accessoryInfo.username;
-  var hash = crypto.createHash('sha512');
-  hash.update(setupHashMaterial);
-  var setupHash = hash.digest().slice(0, 4).toString('base64');
-
-  return setupHash;
-}
+        };
+        this.stopAdvertising = function () {
+            _this._advertisement = null;
+        };
+        this._computeSetupHash = function () {
+            var setupHashMaterial = _this.accessoryInfo.setupID + _this.accessoryInfo.username;
+            var hash = crypto_1.default.createHash('sha512');
+            hash.update(setupHashMaterial);
+            var setupHash = hash.digest().slice(0, 4).toString('base64');
+            return setupHash;
+        };
+        //this._bonjourService = bonjour_hap_1.default(mdnsConfig);
+        this._advertisement = null;
+        this._setupHash = this._computeSetupHash();
+    }
+    Advertiser.protocolVersion = "1.1";
+    Advertiser.protocolVersionService = "1.1.0";
+    return Advertiser;
+}());
+exports.Advertiser = Advertiser;
+//# sourceMappingURL=Advertiser.js.map

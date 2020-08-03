@@ -1,687 +1,490 @@
-var path = require('path');
-var fs = require('fs');
-var uuid = require("hap-nodejs").uuid;
-var accessoryStorage = require('node-persist').create();
-var Bridge = require("hap-nodejs").Bridge;
-var Accessory = require("hap-nodejs").Accessory;
-var Service = require("hap-nodejs").Service;
-var Characteristic = require("hap-nodejs").Characteristic;
-var AccessoryLoader = require("hap-nodejs").AccessoryLoader;
-var once = require("hap-nodejs/lib/util/once").once;
-var Plugin = require('./plugin').Plugin;
-var User = require('./user').User;
-var API = require('./api').API;
-var PlatformAccessory = require("./platformAccessory").PlatformAccessory;
-var BridgeSetupManager = require("./bridgeSetupManager").BridgeSetupManager;
-var log = require("./logger")._system;
-var Logger = require('./logger').Logger;
-var mac = require("./util/mac");
-var chalk = require('chalk');
-var qrcode = require('qrcode-terminal');
-
-'use strict';
-
-module.exports = {
-  Server: Server
-}
-
-function toTitleCase(str) {
-  return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
-}
-
-function Server(opts) {
-  opts = opts || {};
-
-  // Setup Accessory Cache Storage
-  accessoryStorage.initSync({ dir: User.cachedAccessoryPath() });
-
-  this._api = new API(); // object we feed to Plugins
-
-  this._api.on('registerPlatformAccessories', function(accessories) {
-    this._handleRegisterPlatformAccessories(accessories);
-  }.bind(this));
-
-  this._api.on('updatePlatformAccessories', function(accessories) {
-    this._handleUpdatePlatformAccessories(accessories);
-  }.bind(this));
-
-  this._api.on('unregisterPlatformAccessories', function(accessories) {
-    this._handleUnregisterPlatformAccessories(accessories);
-  }.bind(this));
-
-  this._api.on('publishExternalAccessories', function(accessories) {
-    this._handlePublishExternalAccessories(accessories);
-  }.bind(this));
-
-  this._config = opts.config || this._loadConfig();
-  this._plugins = this._loadPlugins(); // plugins[name] = Plugin instance
-  this._cachedPlatformAccessories = this._loadCachedPlatformAccessories();
-  this._bridge = this._createBridge();
-  this._cleanCachedAccessories = opts.cleanCachedAccessories || false;
-  this._hideQRCode = opts.hideQRCode || false;
-
-  this._externalPorts = this._config.ports;
-  this._nextExternalPort = undefined;
-
-  this._activeDynamicPlugins = {};
-  this._configurablePlatformPlugins = {};
-  this._publishedAccessories = {};
-  this._setupManager = new BridgeSetupManager();
-  this._setupManager.on('newConfig', this._handleNewConfig.bind(this));
-
-  this._setupManager.on('requestCurrentConfig', function(callback) {
-    callback(this._config);
-  }.bind(this));
-
-  // Server is "secure by default", meaning it creates a top-level Bridge accessory that
-  // will not allow unauthenticated requests. This matches the behavior of actual HomeKit
-  // accessories. However you can set this to true to allow all requests without authentication,
-  // which can be useful for easy hacking. Note that this will expose all functions of your
-  // bridged accessories, like changing charactersitics (i.e. flipping your lights on and off).
-  this._allowInsecureAccess = opts.insecureAccess || false;
-}
-
-Server.prototype.run = function() {
-
-  // keep track of async calls we're waiting for callbacks on before we can start up
-  this._asyncCalls = 0;
-  this._asyncWait = true;
-
-  if (this._config.platforms) this._loadPlatforms();
-  if (this._config.accessories) this._loadAccessories();
-  this._loadDynamicPlatforms();
-  this._configCachedPlatformAccessories();
-  this._setupManager.configurablePlatformPlugins = this._configurablePlatformPlugins;
-  this._bridge.addService(this._setupManager.service);
-
-  this._asyncWait = false;
-
-  // publish now unless we're waiting on anyone
-  if (this._asyncCalls == 0)
-    this._publish();
-
-  this._api.emit('didFinishLaunching');
-}
-
-Server.prototype._publish = function() {
-  // pull out our custom Bridge settings from config.json, if any
-  var bridgeConfig = this._config.bridge || {};
-
-  var info = this._bridge.getService(Service.AccessoryInformation);
-  info.setCharacteristic(Characteristic.Manufacturer, `${toTitleCase(require('../package.json').author.name)}`);
-  info.setCharacteristic(Characteristic.Model, `${toTitleCase(require('../package.json').name)}`);
-  info.setCharacteristic(Characteristic.SerialNumber, bridgeConfig.username);
-  info.setCharacteristic(Characteristic.FirmwareRevision, require('../package.json').version);
-
-  this._bridge.on('listening', function(port) {
-    log.info("Homebridge is running on port %s.", port);
-  });
-
-  var publishInfo = {
-    username: bridgeConfig.username || "CC:22:3D:E3:CE:30",
-    port: bridgeConfig.port || 0,
-    pincode: bridgeConfig.pin || "031-45-154",
-    category: Accessory.Categories.BRIDGE,
-    mdns: this._config.mdns
-  };
-
-  if (bridgeConfig.setupID && bridgeConfig.setupID.length === 4) {
-    publishInfo['setupID'] = bridgeConfig.setupID;
-  }
-
-  this._bridge.publish(publishInfo, this._allowInsecureAccess);
-
-  this._printSetupInfo();
-  this._printPin(publishInfo.pincode);
-}
-
-Server.prototype._loadPlugins = function(accessories, platforms) {
-
-  var plugins = {};
-  var foundOnePlugin = false;
-  var activePlugins = this._computeActivePluginList();
-
-  // load and validate plugins - check for valid package.json, etc.
-  Plugin.installed().forEach(function(plugin) {
-
-    if (activePlugins !== undefined && activePlugins[plugin.name()] !== true) {
-      return;
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Server = void 0;
+const fs_1 = __importDefault(require("fs"));
+const node_persist_1 = __importDefault(require("node-persist"));
+const chalk_1 = __importDefault(require("chalk"));
+const qrcode_terminal_1 = __importDefault(require("qrcode-terminal"));
+const hap_nodejs_1 = require("hap-nodejs");
+const logger_1 = require("./logger");
+const user_1 = require("./user");
+const api_1 = require("./api");
+const platformAccessory_1 = require("./platformAccessory");
+const version_1 = __importDefault(require("./version"));
+const mac = __importStar(require("./util/mac"));
+const pluginManager_1 = require("./pluginManager");
+const accessoryStorage = node_persist_1.default.create();
+const log = logger_1.Logger.internal;
+class Server {
+    constructor(options = {}) {
+        this.cachedPlatformAccessories = [];
+        this.cachedAccessoriesFileCreated = false;
+        this.publishedExternalAccessories = new Map();
+        accessoryStorage.initSync({ dir: user_1.User.cachedAccessoryPath() }); // Setup Accessory Cache Storage
+        this.config = options.config || Server._loadConfig();
+        this.keepOrphanedCachedAccessories = options.keepOrphanedCachedAccessories || false;
+        this.hideQRCode = options.hideQRCode || false;
+        // Server is "secure by default", meaning it creates a top-level Bridge accessory that
+        // will not allow unauthenticated requests. This matches the behavior of actual HomeKit
+        // accessories. However you can set this to true to allow all requests without authentication,
+        // which can be useful for easy hacking. Note that this will expose all functions of your
+        // bridged accessories, like changing characteristics (i.e. flipping your lights on and off).
+        this.allowInsecureAccess = options.insecureAccess || false;
+        this.externalPorts = this.config.ports;
+        this.api = new api_1.HomebridgeAPI(); // object we feed to Plugins
+        this.api.on("registerPlatformAccessories" /* REGISTER_PLATFORM_ACCESSORIES */, this.handleRegisterPlatformAccessories.bind(this));
+        this.api.on("updatePlatformAccessories" /* UPDATE_PLATFORM_ACCESSORIES */, this.handleUpdatePlatformAccessories.bind(this));
+        this.api.on("unregisterPlatformAccessories" /* UNREGISTER_PLATFORM_ACCESSORIES */, this.handleUnregisterPlatformAccessories.bind(this));
+        this.api.on("publishExternalAccessories" /* PUBLISH_EXTERNAL_ACCESSORIES */, this.handlePublishExternalAccessories.bind(this));
+        const pluginManagerOptions = {
+            activePlugins: this.config.plugins,
+            customPluginPath: options.customPluginPath,
+        };
+        this.pluginManager = new pluginManager_1.PluginManager(this.api, pluginManagerOptions);
+        this.bridge = new hap_nodejs_1.Bridge(this.config.bridge.name, hap_nodejs_1.uuid.generate("HomeBridge"));
     }
-
-    // attempt to load it
-    try {
-      plugin.load();
-    }
-    catch (err) {
-      log.error("====================")
-      log.error("ERROR LOADING PLUGIN " + plugin.name() + ":")
-      log.error(err.stack);
-      log.error("====================")
-      plugin.loadError = err;
-    }
-
-    if (!plugin.loadError) {
-
-      // add it to our dict for easy lookup later
-      plugins[plugin.name()] = plugin;
-
-      log.info("Loaded plugin: " + plugin.name());
-
-      // call the plugin's initializer and pass it our API instance
-      plugin.initializer(this._api);
-
-      log.info("---");
-      foundOnePlugin = true;
-    }
-
-  }.bind(this));
-
-  // Complain if you don't have any plugins.
-  if (!foundOnePlugin) {
-    log.warn("No plugins found. See the README for information on installing plugins.")
-  }
-
-  return plugins;
-}
-
-Server.prototype._loadConfig = function() {
-
-  // Look for the configuration file
-  var configPath = User.configPath();
-
-  // Complain and exit if it doesn't exist yet
-  if (!fs.existsSync(configPath)) {
-    log.warn("config.json (%s) not found.", configPath);
-
-    var config = {};
-
-    config.bridge = {
-      "name": "Homebridge",
-      "username": "CC:22:3D:E3:CE:30",
-      "pin": "031-45-154"
-    };
-
-    return config;
-      // log.error("Couldn't find a config.json file at '"+configPath+"'. Look at config-sample.json for examples of how to format your config.js and add your home accessories.");
-      // process.exit(1);
-  }
-
-  // Load up the configuration file
-  var config;
-  try {
-    config = JSON.parse(fs.readFileSync(configPath));
-  }
-  catch (err) {
-    log.error("There was a problem reading your config.json file.");
-    log.error("Please try pasting your config.json file here to validate it: http://jsonlint.com");
-    log.error("");
-    throw err;
-  }
-
-  if (config.ports !== undefined) {
-    if (config.ports.start > config.ports.end) {
-      log.error("Invalid port pool configuration. End should be greater than or equal to start.");
-      config.ports = undefined;
-    }
-  }
-
-  var accessoryCount = (config.accessories && config.accessories.length) || 0;
-
-  var username = config.bridge.username;
-  var validMac = /^([0-9A-F]{2}:){5}([0-9A-F]{2})$/;
-  if (!validMac.test(username)){
-      throw new Error('Not a valid username: ' + username + '. Must be 6 pairs of colon-' +
-                      'separated hexadecimal chars (A-F 0-9), like a MAC address.');
-  }
-
-  var accessoryCount = (config.accessories && config.accessories.length) || 0;
-  var platformCount = (config.platforms && config.platforms.length) || 0;
-  log.info("Loaded config.json with %s accessories and %s platforms.", accessoryCount, platformCount);
-
-  log.info("---");
-
-  return config;
-}
-
-Server.prototype._loadCachedPlatformAccessories = function() {
-  var cachedAccessories = accessoryStorage.getItem("cachedAccessories");
-  var platformAccessories = [];
-
-  if (cachedAccessories) {
-    for (var index in cachedAccessories) {
-      var serializedAccessory = cachedAccessories[index];
-      var platformAccessory = new PlatformAccessory(serializedAccessory.displayName, serializedAccessory.UUID, serializedAccessory.category);
-      platformAccessory._configFromData(serializedAccessory);
-
-      platformAccessories.push(platformAccessory);
-    }
-  }
-
-  return platformAccessories;
-}
-
-Server.prototype._computeActivePluginList = function() {
-  if (this._config.plugins === undefined) {
-    return undefined;
-  }
-
-  var activePlugins = {};
-
-  for (var i=0; i<this._config.plugins.length; i++) {
-    var pluginName = this._config.plugins[i];
-    activePlugins[pluginName] = true;
-  }
-
-  return activePlugins;
-}
-
-Server.prototype._createBridge = function() {
-  // pull out our custom Bridge settings from config.json, if any
-  var bridgeConfig = this._config.bridge || {};
-
-  // Create our Bridge which will host all loaded Accessories
-  return new Bridge(bridgeConfig.name || 'Homebridge', uuid.generate("HomeBridge"));
-}
-
-Server.prototype._loadAccessories = function() {
-
-  // Instantiate all accessories in the config
-  log.info("Loading " + this._config.accessories.length + " accessories...");
-
-  for (var i=0; i<this._config.accessories.length; i++) {
-
-    var accessoryConfig = this._config.accessories[i];
-
-    // Load up the class for this accessory
-    var accessoryType = accessoryConfig["accessory"]; // like "Lockitron"
-    var accessoryConstructor = this._api.accessory(accessoryType); // like "LockitronAccessory", a JavaScript constructor
-
-    if (!accessoryConstructor)
-      throw new Error("Your config.json is requesting the accessory '" + accessoryType + "' which has not been published by any installed plugins.");
-
-    // Create a custom logging function that prepends the device display name for debugging
-    var accessoryName = accessoryConfig["name"];
-    var accessoryLogger = Logger.withPrefix(accessoryName);
-
-    accessoryLogger("Initializing %s accessory...", accessoryType);
-
-    var accessoryInstance = new accessoryConstructor(accessoryLogger, accessoryConfig);
-    var accessory = this._createAccessory(accessoryInstance, accessoryName, accessoryType, accessoryConfig.uuid_base);  //pass accessoryType for UUID generation, and optional parameter uuid_base which can be used instead of displayName for UUID generation
-
-    // add it to the bridge
-    this._bridge.addBridgedAccessory(accessory);
-  }
-}
-
-Server.prototype._loadPlatforms = function() {
-
-    log.info("Loading " + this._config.platforms.length + " platforms...");
-
-    for (var i=0; i<this._config.platforms.length; i++) {
-
-        var platformConfig = this._config.platforms[i];
-
-        // Load up the class for this accessory
-        var platformType = platformConfig["platform"]; // like "Wink"
-        var platformName = platformConfig["name"] || platformType;
-        var platformConstructor = this._api.platform(platformType); // like "WinkPlatform", a JavaScript constructor
-
-        if (!platformConstructor)
-          throw new Error("Your config.json is requesting the platform '" + platformType + "' which has not been published by any installed plugins.");
-
-        // Create a custom logging function that prepends the platform name for debugging
-        var platformLogger = Logger.withPrefix(platformName);
-
-        platformLogger("Initializing %s platform...", platformType);
-
-        var platformInstance = new platformConstructor(platformLogger, platformConfig, this._api);
-
-        if (platformInstance.configureAccessory == undefined) {
-          // Plugin 1.0, load accessories
-          this._loadPlatformAccessories(platformInstance, platformLogger, platformType);
-        } else {
-          this._activeDynamicPlugins[platformType] = platformInstance;
+    async start() {
+        const promises = [];
+        this.loadCachedPlatformAccessoriesFromDisk();
+        this.pluginManager.initializeInstalledPlugins();
+        if (this.config.platforms.length > 0) {
+            promises.push(...this.loadPlatforms());
         }
-
-        if (platformInstance.configurationRequestHandler != undefined) {
-          this._configurablePlatformPlugins[platformType] = platformInstance;
+        if (this.config.accessories.length > 0) {
+            this._loadAccessories();
+        }
+        this.restoreCachedPlatformAccessories();
+        this.api.signalFinished();
+        // wait for all platforms to publish their accessories before we publish the bridge
+        await Promise.all(promises)
+            .then(() => this.publishBridge());
+    }
+    publishBridge() {
+        const bridgeConfig = this.config.bridge;
+        const info = this.bridge.getService(hap_nodejs_1.Service.AccessoryInformation);
+        info.setCharacteristic(hap_nodejs_1.Characteristic.Manufacturer, bridgeConfig.manufacturer || "homebridge.io");
+        info.setCharacteristic(hap_nodejs_1.Characteristic.Model, bridgeConfig.model || "homebridge");
+        info.setCharacteristic(hap_nodejs_1.Characteristic.SerialNumber, bridgeConfig.username);
+        info.setCharacteristic(hap_nodejs_1.Characteristic.FirmwareRevision, version_1.default());
+        this.bridge.on("listening" /* LISTENING */, (port) => {
+            log.info("Homebridge is running on port %s.", port);
+        });
+        const publishInfo = {
+            username: bridgeConfig.username,
+            port: bridgeConfig.port,
+            pincode: bridgeConfig.pin,
+            category: 2 /* BRIDGE */,
+            mdns: this.config.mdns,
+        };
+        if (bridgeConfig.setupID && bridgeConfig.setupID.length === 4) {
+            publishInfo.setupID = bridgeConfig.setupID;
+        }
+        this.bridge.publish(publishInfo, this.allowInsecureAccess);
+        this.printSetupInfo(publishInfo.pincode);
+    }
+    static _loadConfig() {
+        // Look for the configuration file
+        const configPath = user_1.User.configPath();
+        const defaultBridge = {
+            name: "Homebridge",
+            username: "CC:22:3D:E3:CE:30",
+            pin: "031-45-154",
+        };
+        if (!fs_1.default.existsSync(configPath)) {
+            log.warn("config.json (%s) not found.", configPath);
+            return {
+                bridge: defaultBridge,
+                accessories: [],
+                platforms: [],
+            };
+        }
+        let config;
+        try {
+            config = JSON.parse(fs_1.default.readFileSync(configPath, { encoding: "utf8" }));
+        }
+        catch (err) {
+            log.error("There was a problem reading your config.json file.");
+            log.error("Please try pasting your config.json file here to validate it: http://jsonlint.com");
+            log.error("");
+            throw err;
+        }
+        if (config.ports !== undefined) {
+            if (config.ports.start && config.ports.end) {
+                if (config.ports.start > config.ports.end) {
+                    log.error("Invalid port pool configuration. End should be greater than or equal to start.");
+                    config.ports = undefined;
+                }
+            }
+            else {
+                log.error("Invalid configuration for 'ports'. Missing 'start' and 'end' properties! Ignoring it!");
+                config.ports = undefined;
+            }
+        }
+        const bridge = config.bridge || defaultBridge;
+        bridge.name = bridge.name || defaultBridge.name;
+        bridge.username = bridge.username || defaultBridge.username;
+        bridge.pin = bridge.pin || defaultBridge.pin;
+        config.bridge = bridge;
+        const username = config.bridge.username;
+        if (!mac.validMacAddress(username)) {
+            throw new Error(`Not a valid username: ${username}. Must be 6 pairs of colon-separated hexadecimal chars (A-F 0-9), like a MAC address.`);
+        }
+        config.accessories = config.accessories || [];
+        config.platforms = config.platforms || [];
+        log.info("Loaded config.json with %s accessories and %s platforms.", config.accessories.length, config.platforms.length);
+        log.info("---");
+        return config;
+    }
+    loadCachedPlatformAccessoriesFromDisk() {
+        const cachedAccessories = accessoryStorage.getItem("cachedAccessories");
+        if (cachedAccessories) {
+            this.cachedPlatformAccessories = cachedAccessories.map(serialized => {
+                return platformAccessory_1.PlatformAccessory.deserialize(serialized);
+            });
+            this.cachedAccessoriesFileCreated = true;
         }
     }
-}
-
-Server.prototype._loadDynamicPlatforms = function() {
-  for (var dynamicPluginName in this._api._dynamicPlatforms) {
-    if (!this._activeDynamicPlugins[dynamicPluginName] && !this._activeDynamicPlugins[dynamicPluginName.split(".")[1]]) {
-      console.log("Load " + dynamicPluginName);
-      var platformConstructor = this._api._dynamicPlatforms[dynamicPluginName];
-      var platformLogger = Logger.withPrefix(dynamicPluginName);
-      var platformInstance = new platformConstructor(platformLogger, null, this._api);
-      this._activeDynamicPlugins[dynamicPluginName] = platformInstance;
-
-      if (platformInstance.configurationRequestHandler != undefined) {
-          this._configurablePlatformPlugins[dynamicPluginName] = platformInstance;
-      }
+    restoreCachedPlatformAccessories() {
+        this.cachedPlatformAccessories = this.cachedPlatformAccessories.filter(accessory => {
+            let plugin = this.pluginManager.getPlugin(accessory._associatedPlugin);
+            if (!plugin) { // a little explainer here. This section is basically here to resolve plugin name changes of dynamic platform plugins
+                try {
+                    // resolve platform accessories by searching for plugins which registered a dynamic platform for the given name
+                    plugin = this.pluginManager.getPluginByActiveDynamicPlatform(accessory._associatedPlatform);
+                    if (plugin) { // if it's undefined the no plugin was found
+                        // could improve on this by calculating the Levenshtein distance to only allow platform ownership changes
+                        // when something like a typo happened. Are there other reasons the name could change?
+                        // And how would we define the threshold?
+                        log.info("When searching for the associated plugin of the accessory '" + accessory.displayName + "' " +
+                            "it seems like the plugin name changed from '" + accessory._associatedPlugin + "' to '" +
+                            plugin.getPluginIdentifier() + "'. Plugin association is now being transformed!");
+                        accessory._associatedPlugin = plugin.getPluginIdentifier(); // update the assosicated plugin to the new one
+                    }
+                }
+                catch (error) { // error is thrown if multiple plugins where found for the given platform name
+                    log.info("Could not find the associated plugin for the accessory '" + accessory.displayName + "'. " +
+                        "Tried to find the plugin by the platform name but " + error.message);
+                }
+            }
+            const platformPlugins = plugin && plugin.getActiveDynamicPlatform(accessory._associatedPlatform);
+            if (!platformPlugins) {
+                log.info(`Failed to find plugin to handle accessory ${accessory._associatedHAPAccessory.displayName}`);
+                if (!this.keepOrphanedCachedAccessories) {
+                    log.info(`Removing orphaned accessory ${accessory._associatedHAPAccessory.displayName}`);
+                    return false; // filter it from the list
+                }
+            }
+            else {
+                // we set the current plugin version before configureAccessory is called, so the dev has the opportunity to override it
+                accessory.getService(hap_nodejs_1.Service.AccessoryInformation)
+                    .setCharacteristic(hap_nodejs_1.Characteristic.FirmwareRevision, plugin.version);
+                platformPlugins.configureAccessory(accessory);
+            }
+            this.bridge.addBridgedAccessory(accessory._associatedHAPAccessory);
+            return true; // keep it in the list
+        });
     }
-  }
-}
-
-Server.prototype._configCachedPlatformAccessories = function() {
-  var verifiedAccessories = [];
-  for (var index in this._cachedPlatformAccessories) {
-    var accessory = this._cachedPlatformAccessories[index];
-
-    if (!(accessory instanceof PlatformAccessory)) {
-      console.log("Unexpected Accessory!");
-      continue;
-    }
-
-    var fullName = accessory._associatedPlugin + "." + accessory._associatedPlatform;
-    var platformInstance = this._activeDynamicPlugins[fullName];
-
-    if (!platformInstance) {
-      platformInstance = this._activeDynamicPlugins[accessory._associatedPlatform];
-    }
-
-    if (platformInstance) {
-      platformInstance.configureAccessory(accessory);
-    } else {
-      console.log("Failed to find plugin to handle accessory " + accessory.displayName);
-      if (this._cleanCachedAccessories) {
-        console.log("Removing orphaned accessory " + accessory.displayName);
-        continue;
-      }
-    }
-    verifiedAccessories.push(accessory);
-    accessory._prepareAssociatedHAPAccessory();
-    this._bridge.addBridgedAccessory(accessory._associatedHAPAccessory);
-  }
-  this._cachedPlatformAccessories = verifiedAccessories;
-}
-
-Server.prototype._loadPlatformAccessories = function(platformInstance, log, platformType) {
-  this._asyncCalls++;
-  platformInstance.accessories(once(function(foundAccessories){
-      this._asyncCalls--;
-
-      // loop through accessories adding them to the list and registering them
-      for (var i = 0; i < foundAccessories.length; i++) {
-          var accessoryInstance = foundAccessories[i];
-          var accessoryName = accessoryInstance.name; // assume this property was set
-
-          log("Initializing platform accessory '%s'...", accessoryName);
-
-          var accessory = this._createAccessory(accessoryInstance, accessoryName, platformType, accessoryInstance.uuid_base);
-
-          // add it to the bridge
-          this._bridge.addBridgedAccessory(accessory);
-      }
-
-      // were we the last callback?
-      if (this._asyncCalls === 0 && !this._asyncWait)
-        this._publish();
-  }.bind(this)));
-}
-
-Server.prototype._createAccessory = function(accessoryInstance, displayName, accessoryType, uuid_base) {
-
-  var services = accessoryInstance.getServices();
-
-  if (!(services[0] instanceof Service)) {
-    // The returned "services" for this accessory is assumed to be the old style: a big array
-    // of JSON-style objects that will need to be parsed by HAP-NodeJS's AccessoryLoader.
-
-    // Create the actual HAP-NodeJS "Accessory" instance
-    return AccessoryLoader.parseAccessoryJSON({
-      displayName: displayName,
-      services: services
-    });
-  }
-  else {
-    // The returned "services" for this accessory are simply an array of new-API-style
-    // Service instances which we can add to a created HAP-NodeJS Accessory directly.
-
-    var accessoryUUID = uuid.generate(accessoryType + ":" + (uuid_base || displayName));
-
-    var accessory = new Accessory(displayName, accessoryUUID);
-
-    // listen for the identify event if the accessory instance has defined an identify() method
-    if (accessoryInstance.identify)
-      accessory.on('identify', function(paired, callback) { accessoryInstance.identify(callback); });
-
-    services.forEach(function(service) {
-
-      // if you returned an AccessoryInformation service, merge its values with ours
-      if (service instanceof Service.AccessoryInformation) {
-        var existingService = accessory.getService(Service.AccessoryInformation);
-
-        // pull out any values you may have defined
-        var manufacturer = service.getCharacteristic(Characteristic.Manufacturer).value;
-        var model = service.getCharacteristic(Characteristic.Model).value;
-        var serialNumber = service.getCharacteristic(Characteristic.SerialNumber).value;
-        var firmwareRevision = service.getCharacteristic(Characteristic.FirmwareRevision).value;
-        var hardwareRevision = service.getCharacteristic(Characteristic.HardwareRevision).value;
-
-        if (manufacturer) existingService.setCharacteristic(Characteristic.Manufacturer, manufacturer);
-        if (model) existingService.setCharacteristic(Characteristic.Model, model);
-        if (serialNumber) existingService.setCharacteristic(Characteristic.SerialNumber, serialNumber);
-        if (firmwareRevision) existingService.setCharacteristic(Characteristic.FirmwareRevision, firmwareRevision);
-        if (hardwareRevision) existingService.setCharacteristic(Characteristic.HardwareRevision, hardwareRevision);
-      }
-      else {
-        accessory.addService(service);
-      }
-    });
-
-    return accessory;
-  }
-}
-
-Server.prototype._handleRegisterPlatformAccessories = function(accessories) {
-  var hapAccessories = [];
-  for (var index in accessories) {
-    var accessory = accessories[index];
-
-    accessory._prepareAssociatedHAPAccessory();
-    hapAccessories.push(accessory._associatedHAPAccessory);
-
-    this._cachedPlatformAccessories.push(accessory);
-  }
-
-  this._bridge.addBridgedAccessories(hapAccessories);
-  this._updateCachedAccessories();
-}
-
-Server.prototype._handleUpdatePlatformAccessories = function(accessories) {
-  // Update persisted accessories
-  this._updateCachedAccessories();
-}
-
-Server.prototype._handleUnregisterPlatformAccessories = function(accessories) {
-  var hapAccessories = [];
-  for (var index in accessories) {
-    var accessory = accessories[index];
-
-    if (accessory._associatedHAPAccessory) {
-      hapAccessories.push(accessory._associatedHAPAccessory);
-    }
-
-    for (var targetIndex in this._cachedPlatformAccessories) {
-      var existing = this._cachedPlatformAccessories[targetIndex];
-      if (existing.UUID === accessory.UUID) {
-        this._cachedPlatformAccessories.splice(targetIndex, 1);
-        break;
-      }
-    }
-  }
-
-  this._bridge.removeBridgedAccessories(hapAccessories);
-  this._updateCachedAccessories();
-}
-
-Server.prototype._handlePublishExternalAccessories = function(accessories) {
-  var accessoryPin = (this._config.bridge || {}).pin || "031-45-154";
-
-  for (var index in accessories) {
-    var accessory = accessories[index];
-    var accessoryPort = 0;
-
-    if (this._externalPorts) {
-      var minPortNumber = this._externalPorts.start;
-
-      if (this._nextExternalPort > this._externalPorts.end) {
-        log.info("External port pool ran out of ports. Fallback to random assign.");
-        accessoryPort = 0;
-      } else {
-        if (this._nextExternalPort !== undefined) {
-          accessoryPort = this._nextExternalPort;
-          this._nextExternalPort += 1;
-        } else {
-          accessoryPort = minPortNumber;
-          this._nextExternalPort = minPortNumber + 1;
+    saveCachedPlatformAccessoriesOnDisk() {
+        if (this.cachedPlatformAccessories.length > 0) {
+            this.cachedAccessoriesFileCreated = true;
+            const serializedAccessories = this.cachedPlatformAccessories.map(accessory => platformAccessory_1.PlatformAccessory.serialize(accessory));
+            accessoryStorage.setItemSync("cachedAccessories", serializedAccessories);
         }
-      }
-    }
-
-    accessory._prepareAssociatedHAPAccessory();
-    var hapAccessory = accessory._associatedHAPAccessory;
-    var advertiseAddress = mac.generate(accessory.UUID);
-
-    if (this._publishedAccessories[advertiseAddress]) {
-      throw new Error("Accessory " + accessory.displayName + " experienced an address collision.");
-    } else {
-      this._publishedAccessories[advertiseAddress] = accessory;
-    }
-
-    (function(name){
-      hapAccessory.on('listening', function(port) {
-
-          log.info("%s is running on port %s.", name, port);
-          log.info("Please add [%s] manually in Home app. Setup Code: %s", name, accessoryPin);
-      })
-    })(accessory.displayName);
-
-    hapAccessory.publish({
-      username: advertiseAddress,
-      pincode: accessoryPin,
-      category: accessory.category,
-      port: accessoryPort,
-      mdns: this._config.mdns
-    }, this._allowInsecureAccess);
-  }
-}
-
-Server.prototype._updateCachedAccessories = function() {
-  var serializedAccessories = [];
-
-  for (var index in this._cachedPlatformAccessories) {
-    var accessory = this._cachedPlatformAccessories[index];
-    serializedAccessories.push(accessory._dictionaryPresentation());
-  }
-
-  accessoryStorage.setItemSync("cachedAccessories", serializedAccessories);
-}
-
-Server.prototype._teardown = function() {
-  var self = this;
-  self._updateCachedAccessories();
-  self._bridge.unpublish();
-  Object.keys(self._publishedAccessories).forEach(function (advertiseAddress) {
-    self._publishedAccessories[advertiseAddress]._associatedHAPAccessory.unpublish();
-  });
-}
-
-Server.prototype._handleNewConfig = function(type, name, replace, config) {
-  if (type === "accessory") {
-    // TODO: Load new accessory
-    if (!this._config.accessories) {
-      this._config.accessories = [];
-    }
-
-    if (!replace) {
-      this._config.accessories.push(config);
-    } else {
-      var targetName;
-      if (name.indexOf('.') !== -1) {
-        targetName = name.split(".")[1];
-      }
-      var found = false;
-      for (var index in this._config.accessories) {
-        var accessoryConfig = this._config.accessories[index];
-        if (accessoryConfig.accessory === name) {
-          this._config.accessories[index] = config;
-          found = true;
-          break;
+        else if (this.cachedAccessoriesFileCreated) {
+            this.cachedAccessoriesFileCreated = false;
+            accessoryStorage.removeItemSync("cachedAccessories");
         }
-
-        if (targetName && (accessoryConfig.accessory === targetName)) {
-          this._config.accessories[index] = config;
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        this._config.accessories.push(config);
-      }
     }
-  } else if (type === "platform") {
-    if (!this._config.platforms) {
-      this._config.platforms = [];
+    _loadAccessories() {
+        log.info("Loading " + this.config.accessories.length + " accessories...");
+        this.config.accessories.forEach((accessoryConfig, index) => {
+            if (!accessoryConfig.accessory) {
+                log.warn("Your config.json contains an illegal accessory configuration object at position %d. " +
+                    "Missing property 'accessory'. Skipping entry...", index + 1); // we rather count from 1 for the normal people?
+                return;
+            }
+            const accessoryIdentifier = accessoryConfig.accessory;
+            const displayName = accessoryConfig.name;
+            if (!displayName) {
+                log.warn("Could not load accessory %s at position %d as it is missing the required 'name' property!", accessoryIdentifier, index + 1);
+                return;
+            }
+            let plugin;
+            let constructor;
+            try {
+                plugin = this.pluginManager.getPluginForAccessory(accessoryIdentifier);
+                constructor = plugin.getAccessoryConstructor(accessoryIdentifier);
+            }
+            catch (error) {
+                log.warn("Error loading accessory requested in your config.json at position %d", index + 1);
+                throw error; // error message contains more information
+            }
+            const logger = logger_1.Logger.withPrefix(displayName);
+            logger("Initializing %s accessory...", accessoryIdentifier);
+            const accessoryInstance = new constructor(logger, accessoryConfig, this.api);
+            //pass accessoryIdentifier for UUID generation, and optional parameter uuid_base which can be used instead of displayName for UUID generation
+            const accessory = this.createHAPAccessory(plugin, accessoryInstance, displayName, accessoryIdentifier, accessoryConfig.uuid_base);
+            if (accessory) {
+                this.bridge.addBridgedAccessory(accessory);
+            }
+            else {
+                logger("Accessory %s returned empty set of services. Won't adding it to the bridge!", accessoryIdentifier);
+            }
+        });
     }
-
-    if (!replace) {
-      this._config.platforms.push(config);
-    } else {
-      var targetName;
-      if (name.indexOf('.') !== -1) {
-        targetName = name.split(".")[1];
-      }
-
-      var found = false;
-      for (var index in this._config.platforms) {
-        var platformConfig = this._config.platforms[index];
-        if (platformConfig.platform === name) {
-          this._config.platforms[index] = config;
-          found = true;
-          break;
-        }
-
-        if (targetName && (platformConfig.platform === targetName)) {
-          this._config.platforms[index] = config;
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        this._config.platforms.push(config);
-      }
+    loadPlatforms() {
+        log.info("Loading " + this.config.platforms.length + " platforms...");
+        const promises = [];
+        this.config.platforms.forEach((platformConfig, index) => {
+            if (!platformConfig.platform) {
+                log.warn("Your config.json contains an illegal platform configuration object at position %d. " +
+                    "Missing property 'platform'. Skipping entry...", index + 1); // we rather count from 1 for the normal people?
+                return;
+            }
+            const platformIdentifier = platformConfig.platform;
+            const displayName = platformConfig.name || platformIdentifier;
+            let plugin;
+            let constructor;
+            try {
+                plugin = this.pluginManager.getPluginForPlatform(platformIdentifier);
+                constructor = plugin.getPlatformConstructor(platformIdentifier);
+            }
+            catch (error) {
+                log.warn("Error loading platform requested in your config.json at position %d", index + 1);
+                throw error; // error message contains more information
+            }
+            const logger = logger_1.Logger.withPrefix(displayName);
+            logger("Initializing %s platform...", platformIdentifier);
+            const platform = new constructor(logger, platformConfig, this.api);
+            if (api_1.HomebridgeAPI.isDynamicPlatformPlugin(platform)) {
+                plugin.assignDynamicPlatform(platformIdentifier, platform);
+            }
+            else if (api_1.HomebridgeAPI.isStaticPlatformPlugin(platform)) { // Plugin 1.0, load accessories
+                promises.push(this.loadPlatformAccessories(plugin, platform, platformIdentifier, logger));
+            }
+            else {
+                // otherwise it's a IndependentPlatformPlugin which doesn't expose any methods at all.
+                // We just call the constructor and let it be enabled.
+            }
+        });
+        return promises;
     }
-  }
-
-  var serializedConfig = JSON.stringify(this._config, null, '  ');
-  var configPath = User.configPath();
-  fs.writeFileSync(configPath, serializedConfig, 'utf8');
+    async loadPlatformAccessories(plugin, platformInstance, platformType, logger) {
+        // Plugin 1.0, load accessories
+        return new Promise(resolve => {
+            platformInstance.accessories(hap_nodejs_1.once((accessories) => {
+                // loop through accessories adding them to the list and registering them
+                accessories.forEach((accessoryInstance, index) => {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    const accessoryName = accessoryInstance.name; // assume this property was set
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    const uuidBase = accessoryInstance.uuid_base; // optional base uuid
+                    log.info("Initializing platform accessory '%s'...", accessoryName);
+                    const accessory = this.createHAPAccessory(plugin, accessoryInstance, accessoryName, platformType, uuidBase);
+                    if (accessory) {
+                        this.bridge.addBridgedAccessory(accessory);
+                    }
+                    else {
+                        logger("Platform %s returned an accessory at index %d with an empty set of services. Won't adding it to the bridge!", platformType, index);
+                    }
+                });
+                resolve();
+            }));
+        });
+    }
+    createHAPAccessory(plugin, accessoryInstance, displayName, accessoryType, uuidBase) {
+        const services = (accessoryInstance.getServices() || [])
+            .filter(service => !!service); // filter out undefined values; a common mistake
+        const controllers = (accessoryInstance.getControllers && accessoryInstance.getControllers() || [])
+            .filter(controller => !!controller);
+        if (services.length === 0 && controllers.length === 0) { // check that we only add valid accessory with at least one service
+            return undefined;
+        }
+        if (!(services[0] instanceof hap_nodejs_1.Service)) {
+            // The returned "services" for this accessory is assumed to be the old style: a big array
+            // of JSON-style objects that will need to be parsed by HAP-NodeJS's AccessoryLoader.
+            return hap_nodejs_1.AccessoryLoader.parseAccessoryJSON({
+                displayName: displayName,
+                services: services,
+            });
+        }
+        else {
+            // The returned "services" for this accessory are simply an array of new-API-style
+            // Service instances which we can add to a created HAP-NodeJS Accessory directly.
+            const accessoryUUID = hap_nodejs_1.uuid.generate(accessoryType + ":" + (uuidBase || displayName));
+            const accessory = new hap_nodejs_1.Accessory(displayName, accessoryUUID);
+            // listen for the identify event if the accessory instance has defined an identify() method
+            if (accessoryInstance.identify) {
+                accessory.on("identify" /* IDENTIFY */, (paired, callback) => {
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    // eslint-disable-next-line @typescript-eslint/no-empty-function
+                    accessoryInstance.identify(() => { }); // empty callback for backwards compatibility
+                    callback();
+                });
+            }
+            const informationService = accessory.getService(hap_nodejs_1.Service.AccessoryInformation);
+            services.forEach(service => {
+                // if you returned an AccessoryInformation service, merge its values with ours
+                if (service instanceof hap_nodejs_1.Service.AccessoryInformation) {
+                    service.setCharacteristic(hap_nodejs_1.Characteristic.Name, displayName); // ensure display name is set
+                    // ensure the plugin has not hooked already some listeners (some weird ones do).
+                    // Otherwise they would override our identify listener registered by the HAP-NodeJS accessory
+                    service.getCharacteristic(hap_nodejs_1.Characteristic.Identify).removeAllListeners("set" /* SET */);
+                    // pull out any values and listeners (get and set) you may have defined
+                    informationService.replaceCharacteristicsFromService(service);
+                }
+                else {
+                    accessory.addService(service);
+                }
+            });
+            if (informationService.getCharacteristic(hap_nodejs_1.Characteristic.FirmwareRevision).value === "0.0.0") {
+                // overwrite the default value with the actual plugin version
+                informationService.setCharacteristic(hap_nodejs_1.Characteristic.FirmwareRevision, plugin.version);
+            }
+            controllers.forEach(controller => {
+                accessory.configureController(controller);
+            });
+            return accessory;
+        }
+    }
+    handleRegisterPlatformAccessories(accessories) {
+        const hapAccessories = accessories.map(accessory => {
+            this.cachedPlatformAccessories.push(accessory);
+            const plugin = this.pluginManager.getPlugin(accessory._associatedPlugin);
+            if (plugin) {
+                const informationService = accessory.getService(hap_nodejs_1.Service.AccessoryInformation);
+                if (informationService.getCharacteristic(hap_nodejs_1.Characteristic.FirmwareRevision).value === "0.0.0") {
+                    // overwrite the default value with the actual plugin version
+                    informationService.setCharacteristic(hap_nodejs_1.Characteristic.FirmwareRevision, plugin.version);
+                }
+                const platforms = plugin.getActiveDynamicPlatform(accessory._associatedPlatform);
+                if (!platforms) {
+                    log.warn("The plugin '%s' registered a new accessory for the platform '%s'. The platform couldn't be found though!", accessory._associatedPlugin, accessory._associatedPlatform);
+                }
+            }
+            else {
+                log.warn("A platform configure a new accessory under the plugin name '%s'. However no loaded plugin could be found for the name!", accessory._associatedPlugin);
+            }
+            return accessory._associatedHAPAccessory;
+        });
+        this.bridge.addBridgedAccessories(hapAccessories);
+        this.saveCachedPlatformAccessoriesOnDisk();
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    handleUpdatePlatformAccessories(accessories) {
+        // Update persisted accessories
+        this.saveCachedPlatformAccessoriesOnDisk();
+    }
+    handleUnregisterPlatformAccessories(accessories) {
+        const hapAccessories = accessories.map(accessory => {
+            const index = this.cachedPlatformAccessories.indexOf(accessory);
+            if (index >= 0) {
+                this.cachedPlatformAccessories.splice(index, 1);
+            }
+            return accessory._associatedHAPAccessory;
+        });
+        this.bridge.removeBridgedAccessories(hapAccessories);
+        this.saveCachedPlatformAccessoriesOnDisk();
+    }
+    handlePublishExternalAccessories(accessories) {
+        const accessoryPin = this.config.bridge.pin;
+        accessories.forEach(accessory => {
+            let accessoryPort = 0;
+            if (this.externalPorts) {
+                if (this.nextExternalPort === undefined) {
+                    this.nextExternalPort = this.externalPorts.start;
+                }
+                if (this.nextExternalPort <= this.externalPorts.end) {
+                    accessoryPort = this.nextExternalPort++;
+                }
+                else {
+                    // accessoryPort is still zero
+                    log.warn("External port pool ran out of ports. Fallback to random assign.");
+                }
+            }
+            const hapAccessory = accessory._associatedHAPAccessory;
+            const advertiseAddress = mac.generate(hapAccessory.UUID);
+            if (this.publishedExternalAccessories.has(advertiseAddress)) {
+                throw new Error(`Accessory ${hapAccessory.displayName} experienced an address collision.`);
+            }
+            else {
+                this.publishedExternalAccessories.set(advertiseAddress, accessory);
+            }
+            const plugin = this.pluginManager.getPlugin(accessory._associatedPlugin);
+            if (plugin) {
+                const informationService = hapAccessory.getService(hap_nodejs_1.Service.AccessoryInformation);
+                if (informationService.getCharacteristic(hap_nodejs_1.Characteristic.FirmwareRevision).value === "0.0.0") {
+                    // overwrite the default value with the actual plugin version
+                    informationService.setCharacteristic(hap_nodejs_1.Characteristic.FirmwareRevision, plugin.version);
+                }
+            }
+            else if (pluginManager_1.PluginManager.isQualifiedPluginIdentifier(accessory._associatedPlugin)) { // we did already complain in api.ts if it wasn't a qualified name
+                log.warn("A platform configured a external accessory under the plugin name '%s'. However no loaded plugin could be found for the name!", accessory._associatedPlugin);
+            }
+            hapAccessory.on("listening" /* LISTENING */, (port) => {
+                log.info("%s is running on port %s.", hapAccessory.displayName, port);
+                log.info("Please add [%s] manually in Home app. Setup Code: %s", hapAccessory.displayName, accessoryPin);
+            });
+            hapAccessory.publish({
+                username: advertiseAddress,
+                pincode: accessoryPin,
+                category: accessory.category,
+                port: accessoryPort,
+                mdns: this.config.mdns,
+            }, this.allowInsecureAccess);
+        });
+    }
+    teardown() {
+        this.saveCachedPlatformAccessoriesOnDisk();
+        this.bridge.unpublish();
+        for (const accessory of this.publishedExternalAccessories.values()) {
+            accessory._associatedHAPAccessory.unpublish();
+        }
+        this.api.signalShutdown();
+    }
+    printSetupInfo(pin) {
+        console.log("Setup Payload:");
+        console.log(this.bridge.setupURI());
+        if (!this.hideQRCode) {
+            console.log("Scan this code with your HomeKit app on your iOS device to pair with Homebridge:");
+            qrcode_terminal_1.default.setErrorLevel("M"); // HAP specifies level M or higher for ECC
+            qrcode_terminal_1.default.generate(this.bridge.setupURI());
+            console.log("Or enter this code with your HomeKit app on your iOS device to pair with Homebridge:");
+        }
+        else {
+            console.log("Enter this code with your HomeKit app on your iOS device to pair with Homebridge:");
+        }
+        console.log(chalk_1.default.black.bgWhite("                       "));
+        console.log(chalk_1.default.black.bgWhite("    ┌────────────┐     "));
+        console.log(chalk_1.default.black.bgWhite("    │ " + pin + " │     "));
+        console.log(chalk_1.default.black.bgWhite("    └────────────┘     "));
+        console.log(chalk_1.default.black.bgWhite("                       "));
+    }
 }
-
-Server.prototype._printPin = function(pin) {
-  if(!this._hideQRCode)
-    console.log("Or enter this code with your HomeKit app on your iOS device to pair with Homebridge:");
-  else
-    console.log("Enter this code with your HomeKit app on your iOS device to pair with Homebridge:");
-  console.log(chalk.black.bgWhite("                       "));
-  console.log(chalk.black.bgWhite("    ┌────────────┐     "));
-  console.log(chalk.black.bgWhite("    │ " + pin + " │     "));
-  console.log(chalk.black.bgWhite("    └────────────┘     "));
-  console.log(chalk.black.bgWhite("                       "));
-}
-
-Server.prototype._printSetupInfo = function() {
-  console.log("Setup Payload:");
-  console.log(this._bridge.setupURI());
-
-  if(!this._hideQRCode) {
-    console.log("Scan this code with your HomeKit app on your iOS device to pair with Homebridge:");
-    qrcode.generate(this._bridge.setupURI());
-  }
-}
+exports.Server = Server;
+//# sourceMappingURL=server.js.map

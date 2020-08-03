@@ -17,11 +17,6 @@ var Server;
 var Service;
 var Accessory;
 
-function override(child, fn) {
-    child.prototype[fn.name] = fn;
-    fn.inherited = child.super_.prototype[fn.name];
-}
-
 function customStringify(v, func, intent) {
     const cache = new Map();
     return JSON.stringify(v, function (key, value) {
@@ -52,6 +47,7 @@ function HomebridgeWrapper(config) {
             }
         }
     });
+    mock('fast-srp-hap', {});
     User = require(__dirname + '/homebridge/user').User;
     hap = require('./hap-nodejs');
     Server = require(__dirname + '/homebridge/server').Server;
@@ -90,95 +86,93 @@ function HomebridgeWrapper(config) {
     User.setStoragePath(config.homebridgeConfigPath);
 
     function WrapperBridge(displayName, serialNumber) {
-        that.logger.debug('Homebridge Wrapper Bridge constructor');
+        that.logger.debug('Homebridge Wrapper Bridge constructor displayName=' + displayName + ', UUID=' + serialNumber);
         WrapperBridge.super_.call(this, displayName, serialNumber);
+
+        this._origPublish = this.publish;
+        this._origAddBridgedAccessory = this.addBridgedAccessory;
+
+        this.publish = function(info, allowInsecureRequest) {
+            that.logger.info('Homebridge Wrapper Bridge publish ' + customStringify(info));
+            // Вызов метода родительского класса
+            // Calling the method of the parent class
+            this._origPublish.call(this, info, allowInsecureRequest);
+        };
+
+        this.addBridgedAccessory = function(accessory, deferUpdate) {
+            // Вызов метода родительского класса
+            // Calling the method of the parent class
+            accessory = this._origAddBridgedAccessory.call(this, accessory, deferUpdate);
+            that.logger.debug('Homebridge Wrapper Bridge addBridgedAccessory ' + customStringify(accessory)); //OK
+
+            that.emit('addAccessory', accessory);
+
+            function handleCharacteristicPolling(accessory, service, characteristic) {
+                var pollingInterval;
+                if (that.characteristicPollingList && (characteristic.displayName in that.characteristicPollingList)) {
+                    pollingInterval = that.characteristicPollingList[characteristic.displayName];
+                } else {
+                    pollingInterval = that.characteristicPollingInterval;
+                }
+                //that.logger.debug('Interval: char=' + characteristic.displayName + ' ; interval= ' + customStringify(pollingInterval));
+                if (pollingInterval) {
+                    //that.logger.debug('POLLING: char=' + characteristic.displayName + ' ; interval= ' + customStringify(pollingInterval));
+                    if (that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]) {
+                        clearTimeout(that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]);
+                    }
+                    that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = setTimeout(function() {
+                        characteristic.getValue(function(err, value) {
+                            if (value !== that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]) {
+                                that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
+                                that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
+                            }
+                            that.emit('characteristic-value-update', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
+                            handleCharacteristicPolling(accessory, service, characteristic);
+                        });
+                    }, pollingInterval);
+                }
+            }
+
+            function registerEventsForCharacteristic(accessory, service, characteristic) {
+                characteristic.on('change', function(data) {
+                    that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = data.newValue;
+                    that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
+                    that.emit('characteristic-value-update', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
+                    handleCharacteristicPolling(accessory, service, characteristic);
+                });
+                characteristic.getValue(function(err, value) {
+                    that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
+                    that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
+                });
+                handleCharacteristicPolling(accessory, service, characteristic);
+            }
+
+            for (var index in accessory.services) {
+                var service = accessory.services[index];
+                for (var chindex in service.characteristics) {
+                    registerEventsForCharacteristic(accessory, service, service.characteristics[chindex]);
+                }
+                for (chindex in service.optionalCharacteristics) {
+                    registerEventsForCharacteristic(accessory, service, service.optionalCharacteristics[chindex]);
+                }
+            }
+
+            return accessory;
+        };
     }
 
     inherits(WrapperBridge, hap.Bridge);
 
-    override(WrapperBridge, function publish(info, allowInsecureRequest) {
-        that.logger.info('Homebridge Wrapper Bridge publish ' + customStringify(info));
-        // Вызов метода родительского класса
-        // Calling the method of the parent class
-        publish.inherited.call(this, info, allowInsecureRequest);
-    });
-
-    override(WrapperBridge, function addBridgedAccessory(accessory, deferUpdate) {
-        // Вызов метода родительского класса
-        // Calling the method of the parent class
-        accessory = addBridgedAccessory.inherited.call(this, accessory, deferUpdate);
-        that.logger.debug('Homebridge Wrapper Bridge addBridgedAccessory ' + customStringify(accessory)); //OK
-
-        that.emit('addAccessory', accessory);
-
-        function handleCharacteristicPolling(accessory, service, characteristic) {
-            var pollingInterval;
-            if (that.characteristicPollingList && (characteristic.displayName in that.characteristicPollingList)) {
-               pollingInterval = that.characteristicPollingList[characteristic.displayName];
-            } else {
-               pollingInterval = that.characteristicPollingInterval;
-            }
-            that.logger.debug('Interval: char=' + characteristic.displayName + ' ; interval= ' + customStringify(pollingInterval));
-            if (pollingInterval) {
-                that.logger.debug('POLLING: char=' + characteristic.displayName + ' ; interval= ' + customStringify(pollingInterval));
-                if (that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]) {
-                    clearTimeout(that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]);
-                }
-                that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = setTimeout(function() {
-                    characteristic.getValue(function(err, value) {
-                        if (value !== that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]) {
-                            that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
-                            that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
-                        }
-                        that.emit('characteristic-value-update', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
-                        handleCharacteristicPolling(accessory, service, characteristic);
-                    });
-                }, pollingInterval);
-            }
-        }
-
-        function registerEventsForCharacteristic(accessory, service, characteristic) {
-            characteristic.on('change', function(data) {
-                that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = data.newValue;
-                that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
-                that.emit('characteristic-value-update', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
-                handleCharacteristicPolling(accessory, service, characteristic);
-            });
-            characteristic.getValue(function(err, value) {
-                that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
-                that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
-            });
-            handleCharacteristicPolling(accessory, service, characteristic);
-        }
-
-        for (var index in accessory.services) {
-            var service = accessory.services[index];
-            for (var chindex in service.characteristics) {
-                registerEventsForCharacteristic(accessory, service, service.characteristics[chindex]);
-            }
-            for (chindex in service.optionalCharacteristics) {
-                registerEventsForCharacteristic(accessory, service, service.optionalCharacteristics[chindex]);
-            }
-        }
-
-        return accessory;
-    });
-
     Server.prototype._createBridge = function() {
         that.logger.debug('Homebridge Wrapper Bridge create'); //OK
         // pull out our custom Bridge settings from config.json, if any
-        var bridgeConfig = this._config.bridge || {};
+        var bridgeConfig = this.config.bridge || {};
 
         // Create our Bridge which will host all loaded Accessories
         return new WrapperBridge(bridgeConfig.name || 'Homebridge', hap.uuid.generate("HomeBridge"));
     };
 
-    Server.prototype._printPin = function(pin) {
-    };
-    Server.prototype._printSetupInfo = function() {
-    };
-    Server.prototype.getBridge = function() {
-        return this._bridge;
+    Server.prototype.printSetupInfo = function(pin) {
     };
 
     Service.prototype.getCharacteristicByUUID = function (uuid) {
@@ -216,6 +210,8 @@ function HomebridgeWrapper(config) {
           return accessory;
       }
     };
+
+    this.WrapperBridge = WrapperBridge;
 }
 
 inherits(HomebridgeWrapper, EventEmitter);
@@ -230,15 +226,16 @@ HomebridgeWrapper.prototype.init = function init() {
         insecureAccess: this.insecureAccess
     };
     this.server = new Server(serverOpts);
+    this.server.bridge = new this.WrapperBridge(this.server.config.bridge.name, hap.uuid.generate("HomeBridge"));
 
-    this.server.run();
+    this.server.start();
 };
 
 HomebridgeWrapper.prototype.finish = function finish() {
     if (this.server) {
-        this.server._teardown();
+        this.server.teardown();
         // Save cached accessories to persist storage.
-        this.server._updateCachedAccessories();
+        this.server.saveCachedPlatformAccessoriesOnDisk();
     }
     this.removeAllListeners();
     this.server = null;

@@ -10,28 +10,33 @@
   "homepage": "",
   "license": "MIT",
   "keywords": [
-    "Homekit", "Plugin", "Wrapper"
+    "Homekit",
+    "Plugin",
+    "Wrapper"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Apollon77/homebridge-plugin-wrapper"
   },
   "dependencies": {
-      "mock-require": "^3.0.3",
-      "node-persist": "^0.0.11",
-      "decimal.js": "^7.2.3",
-      "buffer-shims": "^1.0.0",
-      "debug": "^2.2.0",
-      "chalk": "^1.1.1",
-      "ip": "^1.1.3",
-      "semver": "5.0.3"
+    "mock-require": "^3.0.3",
+    "node-persist": "^0.0.11",
+    "decimal.js": "^10.2.0",
+    "buffer-shims": "^1.0.0",
+    "debug": "^4.1.1",
+    "chalk": "^4.1.0",
+    "ip": "^1.1.3",
+    "semver": "^7.3.2",
+    "futoin-hkdf": "~1.3.2"
   },
   "devDependencies": {
-    "mocha": "^5.2.0",
+    "mocha": "^8.1.0",
     "chai": "^4.2.0",
-    "istanbul": "*",
-    "sinon": "^7.3.2",
-    "nock": "^10.0.6"
+    "istanbul": "^0.4.5",
+    "sinon": "^9.0.2",
+    "nock": "^13.0.3",
+    "homebridge-sun-position": "^0.2.1",
+    "homebridge-http-webhooks": "^0.1.4"
   },
   "engines": {
     "node": ">=4.3.2"
