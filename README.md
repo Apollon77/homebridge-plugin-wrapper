@@ -66,7 +66,7 @@ The example contains code how to get and set values.
 
 ## Changelog
 
-### __WORK IN PROGRESS__
+### 2.0.0 (2020-08-03)
 * Update to homebridge 1.1.1 with HAP-NodeJS 0.7.7
 * characteristicPollingList: Option to poll only specific characteristics instead of all
 * event characteristic-value-update: notify even when value does not change. Useful for downstream APIs that timeout without regular updates.
