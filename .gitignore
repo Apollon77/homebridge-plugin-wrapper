@@ -1,7 +1,7 @@
 node_modules
 *.build
 npm-debug.log
-.node-persist
+.node-persist/
 coverage
 .idea
 config.json

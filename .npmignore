@@ -1,7 +1,7 @@
 test
 .travis.yml
 appveyor.yml
-.node-persist
+.node-persist/
 coverage
 package-lock.json
 .idea

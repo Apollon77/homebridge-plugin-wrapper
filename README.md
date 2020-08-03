@@ -64,39 +64,39 @@ The example contains code how to get and set values.
 ## Todo
 * More/Better Documentation :-) (open Issue if you need it)
 
-# Changelog
+## Changelog
 
-## __WORK IN PROGRESS__
+### __WORK IN PROGRESS__
 * Update to homebridge 1.1.1 with HAP-NodeJS 0.7.7
 * characteristicPollingList: Option to poll only specific characteristics instead of all
 * event characteristic-value-update: notify even when value does not change. Useful for downstream APIs that timeout without regular updates.
 
-## 1.1.1 (2019-07-08)
+### 1.1.1 (2019-07-08)
 * set a very high limit on allowed accessories because irrelevant 
 
-## 1.1.0 (2019-06-30)
+### 1.1.0 (2019-06-30)
 * sync to homebridge 0.4.50 (Github version from 2019-06-03)
 
-## 1.0.0 (2018-12-04)
+### 1.0.0 (2018-12-04)
 * allow to set "insecureAccess" as option and hand this over when initializing Homebridge
 * sync to homebridge 0.4.45 (Github version from 2018-12-03)
 
-## 0.5.4 (2018-08-21)
+### 0.5.4 (2018-08-21)
 * change logging to prevent crashed on circular structures
 * sync to homebridge 0.4.44 (Github version from 2018-08-21)
 * sync to HAP-Nodejs 0.4.47 (GitHub version from 2018-08-21)
 
-## 0.5.2
+### 0.5.2
 * also store config.json with adapter config in the given config directory because some plugins need it there
 
-## 0.5.1
+### 0.5.1
 * add option to poll values in defined intervals
 * add semver as dep
 
-## 0.4.7
+### 0.4.7
 * add modules ip and chalk as dependecies and remove from mocked
 
-## < 0.4.6
+### < 0.4.6
 * initial versions
 
 ## Credits
