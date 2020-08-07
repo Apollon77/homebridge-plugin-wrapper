@@ -67,7 +67,7 @@ The example contains code how to get and set values.
 
 ## Changelog
 
-### __WORK IN PROGRESS__
+### 2.0.1 (2020-08-08)
 * set a very high limit (again) on allowed accessories and services because irrelevant 
 
 ### 2.0.0 (2020-08-03)
