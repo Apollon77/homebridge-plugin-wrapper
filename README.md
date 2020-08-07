@@ -60,11 +60,15 @@ The example contains code how to get and set values.
 * HAP-NodeJS: HAPServer.js only has minimal functions because not needed
 * HAP-NodeJS: Advertiser.js only has minimal functions because not needed
 * Mocked away: qrcode-terminal, and some more
+* In Accessory.js the MAX settings for accessories and services are increased
 
 ## Todo
 * More/Better Documentation :-) (open Issue if you need it)
 
 ## Changelog
+
+### __WORK IN PROGRESS__
+* set a very high limit (again) on allowed accessories and services because irrelevant 
 
 ### 2.0.0 (2020-08-03)
 * Update to homebridge 1.1.1 with HAP-NodeJS 0.7.7
