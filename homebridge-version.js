@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRequiredNodeVersion = void 0;
 function getVersion() {
-    return '1.1.1';
+    return '1.1.6';
 }
 exports.default = getVersion;
 function getRequiredNodeVersion() {

@@ -67,6 +67,9 @@ The example contains code how to get and set values.
 
 ## Changelog
 
+### __WORK IN PROGRESS__
+* upgrade to homebridge 1.1.6 (and hap-nodejs 0.7.9)
+
 ### 2.0.1 (2020-08-08)
 * set a very high limit (again) on allowed accessories and services because irrelevant 
 
