@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -27,7 +27,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -37,14 +37,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StreamController = exports.RTPStreamManagement = exports.StreamRequestTypes = exports.AudioStreamingSamplerate = exports.AudioStreamingCodecType = exports.SRTPCryptoSuites = exports.H264Level = exports.H264Profile = void 0;
 var crypto_1 = __importDefault(require("crypto"));
-var ip_1 = __importDefault(require("ip"));
 var debug_1 = __importDefault(require("debug"));
-var tlv = __importStar(require("../util/tlv"));
-var Service_1 = require("../Service");
-var Characteristic_1 = require("../Characteristic");
-var RTPProxy_1 = __importDefault(require("./RTPProxy"));
-var controller_1 = require("../controller");
+var net_1 = __importDefault(require("net"));
 var index_1 = require("../../index");
+var Characteristic_1 = require("../Characteristic");
+var controller_1 = require("../controller");
+var Service_1 = require("../Service");
+var eventedhttp_1 = require("../util/eventedhttp");
+var tlv = __importStar(require("../util/tlv"));
+var RTPProxy_1 = __importDefault(require("./RTPProxy"));
 var debug = debug_1.default('HAP-NodeJS:Camera:RTPStreamManagement');
 // ---------------------------------- TLV DEFINITIONS START ----------------------------------
 var StreamingStatusTypes;
@@ -582,6 +583,7 @@ var RTPStreamManagement = /** @class */ (function () {
         this.connectionID = connectionID;
         this.sessionIdentifier = sessionIdentifier;
         this._updateStreamStatus(1 /* IN_USE */);
+        var session = eventedhttp_1.Session.getSession(connectionID);
         // Address
         var targetAddressPayload = objects[3 /* CONTROLLER_ADDRESS */];
         var processedAddressInfo = tlv.decode(targetAddressPayload);
@@ -621,7 +623,7 @@ var RTPStreamManagement = /** @class */ (function () {
         };
         var promises = [];
         if (this.requireProxy) {
-            prepareRequest.targetAddress = ip_1.default.address("public", addressVersion === 1 /* IPV6 */ ? "ipv6" : "ipv4"); // ip versions must be the same
+            prepareRequest.targetAddress = session.getLocalAddress(addressVersion === 1 /* IPV6 */ ? "ipv6" : "ipv4"); // ip versions must be the same
             this.videoProxy = new RTPProxy_1.default({
                 outgoingAddress: controllerAddress,
                 outgoingPort: targetVideoPort,
@@ -654,14 +656,14 @@ var RTPStreamManagement = /** @class */ (function () {
                     callback(error);
                 }
                 else {
-                    _this.generateSetupEndpointResponse(sessionIdentifier, prepareRequest, response, callback);
+                    _this.generateSetupEndpointResponse(session, sessionIdentifier, prepareRequest, response, callback);
                 }
             }));
         });
     };
-    RTPStreamManagement.prototype.generateSetupEndpointResponse = function (identifier, request, response, callback) {
+    RTPStreamManagement.prototype.generateSetupEndpointResponse = function (session, identifier, request, response, callback) {
         var address;
-        var addressVersion;
+        var addressVersion = request.addressVersion;
         var videoPort;
         var audioPort;
         var videoCryptoSuite;
@@ -685,8 +687,13 @@ var RTPStreamManagement = /** @class */ (function () {
         if (!this.requireProxy) {
             var videoInfo = response.video;
             var audioInfo = audio;
-            address = typeof response.address === "string" ? response.address : response.address.address;
-            addressVersion = ip_1.default.isV4Format(address) ? "ipv4" : "ipv6";
+            if (response.addressOverride) {
+                addressVersion = net_1.default.isIPv4(response.addressOverride) ? "ipv4" : "ipv6";
+                address = response.addressOverride;
+            }
+            else {
+                address = session.getLocalAddress(addressVersion);
+            }
             if (request.addressVersion !== addressVersion) {
                 throw new Error("Incoming and outgoing ip address versions must match! Expected " + request.addressVersion + " but got " + addressVersion);
             }
@@ -711,8 +718,7 @@ var RTPStreamManagement = /** @class */ (function () {
         }
         else {
             var videoInfo = response.video;
-            addressVersion = request.addressVersion;
-            address = ip_1.default.address("public", request.addressVersion);
+            address = session.getLocalAddress(request.addressVersion);
             videoCryptoSuite = 2 /* NONE */;
             videoSRTPKey = Buffer.alloc(0);
             videoSRTPSalt = Buffer.alloc(0);

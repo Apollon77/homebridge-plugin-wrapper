@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -27,7 +27,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -36,11 +36,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Session = exports.HAPSessionEvents = exports.EventedHTTPServer = exports.EventedHTTPServerEvents = void 0;
-var net_1 = __importDefault(require("net"));
-var http_1 = __importDefault(require("http"));
 var debug_1 = __importDefault(require("debug"));
-var uuid = __importStar(require("./uuid"));
+var http_1 = __importDefault(require("http"));
+var net_1 = __importDefault(require("net"));
+var os_1 = __importDefault(require("os"));
 var EventEmitter_1 = require("../EventEmitter");
+var uuid = __importStar(require("./uuid"));
 var debug = debug_1.default('HAP-NodeJS:EventedHTTPServer');
 var EventedHTTPServerEvents;
 (function (EventedHTTPServerEvents) {
@@ -115,8 +116,8 @@ var EventedHTTPServer = /** @class */ (function (_super) {
             _this._connections = [];
         };
         _this.sendEvent = function (event, data, contentType, exclude) {
-            for (var index in _this._connections) {
-                var connection = _this._connections[index];
+            for (var _i = 0, _a = _this._connections; _i < _a.length; _i++) {
+                var connection = _a[_i];
                 connection.sendEvent(event, data, contentType, exclude);
             }
         };
@@ -193,6 +194,36 @@ var Session = /** @class */ (function (_super) {
         Session.sessionsBySessionID[_this.sessionID] = _this;
         return _this;
     }
+    Session.prototype.getLocalAddress = function (ipVersion) {
+        var infos = os_1.default.networkInterfaces()[this._connection.networkInterface];
+        if (ipVersion === "ipv4") {
+            for (var _i = 0, infos_1 = infos; _i < infos_1.length; _i++) {
+                var info = infos_1[_i];
+                if (info.family === "IPv4") {
+                    return info.address;
+                }
+            }
+            throw new Error("Could not find " + ipVersion + " address for interface " + this._connection.networkInterface);
+        }
+        else {
+            var localUniqueAddress = undefined;
+            for (var _a = 0, infos_2 = infos; _a < infos_2.length; _a++) {
+                var info = infos_2[_a];
+                if (info.family === "IPv6") {
+                    if (!info.scopeid) {
+                        return info.address;
+                    }
+                    else if (!localUniqueAddress) {
+                        localUniqueAddress = info.address;
+                    }
+                }
+            }
+            if (!localUniqueAddress) {
+                throw new Error("Could not find " + ipVersion + " address for interface " + this._connection.networkInterface);
+            }
+            return localUniqueAddress;
+        }
+    };
     Session.getSession = function (sessionID) {
         return this.sessionsBySessionID[sessionID];
     };
@@ -412,6 +443,7 @@ var EventedHTTPServerConnection = /** @class */ (function (_super) {
         _this.server = server;
         _this.sessionID = uuid.generate(clientSocket.remoteAddress + ':' + clientSocket.remotePort);
         _this._remoteAddress = clientSocket.remoteAddress; // cache because it becomes undefined in 'onClientSocketClose'
+        _this.networkInterface = EventedHTTPServerConnection.getLocalNetworkInterface(clientSocket);
         _this._pendingClientSocketData = Buffer.alloc(0); // data received from client before HTTP proxy is fully setup
         _this._fullySetup = false; // true when we are finished establishing connections
         _this._writingResponse = false; // true while we are composing an HTTP response (so events can wait)
@@ -436,9 +468,33 @@ var EventedHTTPServerConnection = /** @class */ (function (_super) {
         _this._session = new Session(_this);
         // a collection of event names subscribed to by this connection
         _this._events = {}; // this._events[eventName] = true (value is arbitrary, but must be truthy)
-        debug("[%s] New connection from client", _this._remoteAddress);
+        debug("[%s] New connection from client at interface %s", _this._remoteAddress, _this.networkInterface);
         return _this;
     }
+    EventedHTTPServerConnection.getLocalNetworkInterface = function (socket) {
+        var localAddress = socket.localAddress;
+        if (localAddress.startsWith("::ffff:")) { // IPv4-Mapped IPv6 Address https://tools.ietf.org/html/rfc4291#section-2.5.5.2
+            localAddress = localAddress.substring(7);
+        }
+        else {
+            var index = localAddress.indexOf("%");
+            if (index !== -1) { // link-local ipv6
+                localAddress = localAddress.substring(0, index);
+            }
+        }
+        var interfaces = os_1.default.networkInterfaces();
+        for (var _i = 0, _a = Object.entries(interfaces); _i < _a.length; _i++) {
+            var _b = _a[_i], name = _b[0], infos = _b[1];
+            for (var _c = 0, infos_3 = infos; _c < infos_3.length; _c++) {
+                var info = infos_3[_c];
+                if (info.address === localAddress) {
+                    return name;
+                }
+            }
+        }
+        console.log("WARNING couldn't map socket coming from " + socket.remoteAddress + ":" + socket.remotePort + " at local address " + socket.localAddress + " to a interface!");
+        return Object.keys(interfaces)[1]; // just use the first interface after the loopback interface as fallback
+    };
     return EventedHTTPServerConnection;
 }(EventEmitter_1.EventEmitter));
 //# sourceMappingURL=eventedhttp.js.map

@@ -47,7 +47,9 @@ export declare const enum Categories {
     TELEVISION = 31,
     TARGET_CONTROLLER = 32,
     ROUTER = 33,
-    AUDIO_RECEIVER = 34
+    AUDIO_RECEIVER = 34,
+    TV_SET_TOP_BOX = 35,
+    TV_STREAMING_STICK = 36
 }
 export interface SerializedAccessory {
     displayName: string;

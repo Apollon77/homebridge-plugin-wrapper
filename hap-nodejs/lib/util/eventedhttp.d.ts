@@ -1,10 +1,10 @@
 /// <reference types="node" />
-import net, { Socket } from 'net';
+import { SrpServer } from "fast-srp-hap";
 import http, { IncomingMessage, OutgoingMessage, ServerResponse } from 'http';
-import { SessionIdentifier, Nullable } from '../../types';
+import net, { Socket } from 'net';
+import { Nullable, SessionIdentifier } from '../../types';
 import { EventEmitter } from '../EventEmitter';
 import { HAPEncryption } from '../HAPServer';
-import { SrpServer } from "fast-srp-hap";
 export declare const enum EventedHTTPServerEvents {
     LISTENING = "listening",
     REQUEST = "request",
@@ -96,6 +96,7 @@ export declare class Session extends EventEmitter<HAPSessionEventMap> {
     timedWritePid?: number;
     timedWriteTimeout?: NodeJS.Timeout;
     constructor(connection: EventedHTTPServerConnection);
+    getLocalAddress(ipVersion: "ipv4" | "ipv6"): string;
     /**
      * establishSession gets called after a pair verify.
      * establishSession does not get called after the first pairing gets added, as any HomeKit controller will initiate a
@@ -104,7 +105,7 @@ export declare class Session extends EventEmitter<HAPSessionEventMap> {
     establishSession: (username: string) => void;
     _connectionDestroyed: () => void;
     static destroyExistingConnectionsAfterUnpair: (initiator: Session, username: string) => void;
-    static getSession(sessionID: string): Session;
+    static getSession(sessionID: SessionIdentifier): Session;
 }
 /**
  * Manages a single iOS-initiated HTTP connection during its lifetime.
@@ -116,8 +117,9 @@ export declare class Session extends EventEmitter<HAPSessionEventMap> {
  */
 declare class EventedHTTPServerConnection extends EventEmitter<Events> {
     readonly server: EventedHTTPServer;
-    sessionID: SessionIdentifier;
-    _remoteAddress: string;
+    readonly sessionID: SessionIdentifier;
+    readonly _remoteAddress: string;
+    readonly networkInterface: string;
     _pendingClientSocketData: Nullable<Buffer>;
     _fullySetup: boolean;
     _writingResponse: boolean;
@@ -146,6 +148,7 @@ declare class EventedHTTPServerConnection extends EventEmitter<Events> {
     }) => void;
     _onClientSocketClose: () => void;
     _onClientSocketError: (err: Error) => void;
+    private static getLocalNetworkInterface;
 }
 export {};
 //# sourceMappingURL=eventedhttp.d.ts.map

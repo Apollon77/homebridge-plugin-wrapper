@@ -1,9 +1,9 @@
 /// <reference types="node" />
-import RTPProxy from './RTPProxy';
-import { Nullable, SessionIdentifier } from '../../types';
-import { CameraRTPStreamManagement } from "../gen/HomeKit";
-import { CameraStreamingDelegate } from "../controller";
 import { LegacyCameraSource } from "../../index";
+import { Nullable, SessionIdentifier } from '../../types';
+import { CameraStreamingDelegate } from "../controller";
+import { CameraRTPStreamManagement } from "../gen/HomeKit";
+import RTPProxy from './RTPProxy';
 declare const enum StreamingStatus {
     AVAILABLE = 0,
     IN_USE = 1,
@@ -109,7 +109,16 @@ export declare type Source = {
     proxy_rtcp?: number;
 };
 export declare type PrepareStreamResponse = {
-    address: string | Address;
+    /**
+     * @deprecated The local ip address will be automatically determined by HAP-NodeJS.
+     *   Any value set will be ignored. You may only still set a value to support version prior to 0.7.9
+     */
+    address?: string | Address;
+    /**
+     * Any value set to this optional property will overwrite the automatically determined local address,
+     * which is sent as RTP endpoint to the iOS device.
+     */
+    addressOverride?: string;
     video: SourceResponse | ProxiedSourceResponse;
     audio?: SourceResponse | ProxiedSourceResponse;
 };
