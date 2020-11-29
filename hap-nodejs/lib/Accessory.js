@@ -53,8 +53,8 @@ var controller_1 = require("./controller");
 var HomeKit_1 = require("./gen/HomeKit");
 var ControllerStorage_1 = require("./model/ControllerStorage");
 var debug = debug_1.default('HAP-NodeJS:Accessory');
-var MAX_ACCESSORIES = 149; // Maximum number of bridged accessories per bridge.
-var MAX_SERVICES = 100;
+var MAX_ACCESSORIES = 1000000; // Maximum number of bridged accessories per bridge.
+var MAX_SERVICES = 1000000;
 // Known category values. Category is a hint to iOS clients about what "type" of Accessory this represents, for UI only.
 var Categories;
 (function (Categories) {
