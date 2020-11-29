@@ -260,7 +260,7 @@ class PluginManager {
             throw new Error(`Warning: skipping plugin found at '${absolutePath}' since we already loaded the same plugin from '${alreadyInstalled.getPluginPath()}'.`);
         }
         const plugin = new plugin_1.Plugin(name, absolutePath, packageJson, scope);
-        this.plugins.set(name, plugin);
+        this.plugins.set(identifier, plugin);
         return plugin;
     }
     static loadPackageJSON(pluginPath) {
