@@ -13,6 +13,7 @@ var path = require('path');
 var hapTypes = require(__dirname + '/hap-nodejs/accessories/types');
 var User;
 var hap;
+var hapStorage;
 var Server;
 var Service;
 var Accessory;
@@ -79,6 +80,8 @@ function HomebridgeWrapper(config) {
 
     User = require(path.join(__dirname + '/homebridge/user')).User;
     hap = require('./hap-nodejs');
+    hapStorage = require(path.join(__dirname + '/hap-nodejs/lib/model/HAPStorage'));
+
     Server = require(path.join(__dirname, '/homebridge/server')).Server;
     Service = hap.Service;
     Accessory = hap.Accessory;
@@ -246,7 +249,7 @@ inherits(HomebridgeWrapper, EventEmitter);
 
 HomebridgeWrapper.prototype.init = function init() {
     // Initialize HAP-NodeJS with a custom persist directory
-    hap.setCustomStoragePath(User.persistPath());
+    hapStorage.setCustomStoragePath(User.persistPath());
 
     var serverOpts = {
         config: this.wrapperConfig,
