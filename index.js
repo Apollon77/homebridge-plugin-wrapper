@@ -15,6 +15,7 @@ var User;
 var hap;
 var hapStorage;
 var Server;
+var ServerReq;
 var Service;
 var Accessory;
 
@@ -82,7 +83,8 @@ function HomebridgeWrapper(config) {
     hap = require('./hap-nodejs');
     hapStorage = require(path.join(__dirname, 'hap-nodejs/lib/model/HAPStorage')).HAPStorage;
 
-    Server = require(path.join(__dirname, 'homebridge/server')).Server;
+    ServerReq = require(path.join(__dirname, 'homebridge/server'));
+    Server = ServerReq.Server;
     Service = hap.Service;
     Accessory = hap.Accessory;
 
