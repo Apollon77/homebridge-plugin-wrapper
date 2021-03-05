@@ -214,15 +214,6 @@ function HomebridgeWrapper(config) {
 
     this.WrapperBridge = WrapperBridge;
 
-    Server.prototype._createBridge = function() {
-        that.logger.debug('Homebridge Wrapper Bridge create'); //OK
-        // pull out our custom Bridge settings from config.json, if any
-        var bridgeConfig = this.config.bridge || {};
-
-        // Create our Bridge which will host all loaded Accessories
-        return new WrapperBridge(bridgeConfig.name || 'Homebridge', hap.uuid.generate("HomeBridge"));
-    };
-
     Server.prototype.printSetupInfo = function(pin) {
     };
 
