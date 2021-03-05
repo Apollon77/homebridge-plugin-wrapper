@@ -246,7 +246,7 @@ inherits(HomebridgeWrapper, EventEmitter);
 
 HomebridgeWrapper.prototype.init = function init() {
     // Initialize HAP-NodeJS with a custom persist directory
-    hap.init(User.persistPath()); // TODO !!
+    hap.setCustomStoragePath(User.persistPath());
 
     var serverOpts = {
         config: this.wrapperConfig,
