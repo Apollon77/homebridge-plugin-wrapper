@@ -78,11 +78,11 @@ function HomebridgeWrapper(config) {
     mock(path.join(__dirname, '/homebridge/version.js'), path.join(__dirname, '/homebridge-version.js'));
 
 
-    User = require(path.join(__dirname + '/homebridge/user')).User;
+    User = require(path.join(__dirname, 'homebridge/user')).User;
     hap = require('./hap-nodejs');
-    hapStorage = require(path.join(__dirname + '/hap-nodejs/lib/model/HAPStorage'));
+    hapStorage = require(path.join(__dirname, 'hap-nodejs/lib/model/HAPStorage')).HAPStorage;
 
-    Server = require(path.join(__dirname, '/homebridge/server')).Server;
+    Server = require(path.join(__dirname, 'homebridge/server')).Server;
     Service = hap.Service;
     Accessory = hap.Accessory;
 
