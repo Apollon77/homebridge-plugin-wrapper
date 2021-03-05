@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LegacyCameraSourceAdapter = void 0;
+// noinspection JSDeprecatedSymbols
 var LegacyCameraSourceAdapter = /** @class */ (function () {
     function LegacyCameraSourceAdapter(cameraSource) {
         this.cameraSource = cameraSource;

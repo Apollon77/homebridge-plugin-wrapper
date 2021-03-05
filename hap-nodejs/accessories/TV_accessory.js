@@ -15,7 +15,6 @@ tv.pincode = "031-45-154";
 // @ts-ignore
 tv.category = 31 /* TELEVISION */;
 // Add the actual TV Service and listen for change events from iOS.
-// We can see the complete list of Services and Characteristics in `lib/gen/HomeKit.ts`
 var televisionService = tv.addService(__1.Service.Television, "Television", "Television");
 televisionService
     .setCharacteristic(__1.Characteristic.ConfiguredName, "Television");
@@ -93,7 +92,7 @@ accessControl.on("update-control-level" /* ACCESS_LEVEL_UPDATED */, function (le
 });
 accessControl.on("update-password" /* PASSWORD_SETTING_UPDATED */, function (password, passwordRequired) {
     if (passwordRequired) {
-        console.log("Required password is: " + password);
+        console.log("A required password was specified");
     }
     else {
         console.log("No password set!");

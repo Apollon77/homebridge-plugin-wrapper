@@ -1,5 +1,6 @@
-import { AccessControl } from "../gen/HomeKit";
-import { EventEmitter } from "../EventEmitter";
+/// <reference types="node" />
+import { EventEmitter } from "events";
+import type { AccessControl } from '../definitions';
 /**
  * This defines the Access Level for TVs and Speakers. It is pretty much only used for the AirPlay 2 protocol
  * so this information is not really useful.
@@ -23,11 +24,13 @@ export declare const enum AccessControlEvent {
     ACCESS_LEVEL_UPDATED = "update-control-level",
     PASSWORD_SETTING_UPDATED = "update-password"
 }
-export declare type AccessControlEventMap = {
-    [AccessControlEvent.ACCESS_LEVEL_UPDATED]: (accessLevel: AccessLevel) => void;
-    [AccessControlEvent.PASSWORD_SETTING_UPDATED]: (password: string | undefined, passwordRequired: boolean) => void;
-};
-export declare class AccessControlManagement extends EventEmitter<AccessControlEventMap> {
+export declare interface AccessControlManagement {
+    on(event: "update-control-level", listener: (accessLevel: AccessLevel) => void): this;
+    on(event: "update-password", listener: (password: string | undefined, passwordRequired: boolean) => void): this;
+    emit(event: "update-control-level", accessLevel: AccessLevel): boolean;
+    emit(event: "update-password", password: string | undefined, passwordRequired: boolean): boolean;
+}
+export declare class AccessControlManagement extends EventEmitter {
     private readonly accessControlService;
     /**
      * The current access level set for the Home
@@ -35,7 +38,6 @@ export declare class AccessControlManagement extends EventEmitter<AccessControlE
     private accessLevel;
     private passwordRequired;
     private password?;
-    private lastPasswordTLVReceived;
     /**
      * Instantiates a new AccessControlManagement.
      *
@@ -61,6 +63,12 @@ export declare class AccessControlManagement extends EventEmitter<AccessControlE
      * @returns the current password configured for the Home or `undefined` if no password is required.
      */
     getPassword(): string | undefined;
+    /**
+     * This destroys the AccessControlManagement.
+     * It unregisters all GET or SET handler it has associated with the given AccessControl service.
+     * It removes all event handlers which were registered to this object.
+     */
+    destroy(): void;
     private handleAccessLevelChange;
     private handlePasswordChange;
     private setupServiceHandlers;

@@ -14,7 +14,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -32,19 +32,23 @@ const semver_1 = require("semver");
 const log = logger_1.Logger.internal;
 const requiredNodeVersion = version_1.getRequiredNodeVersion();
 if (requiredNodeVersion && !semver_1.satisfies(process.version, requiredNodeVersion)) {
-    log.warn(`Homebridge requires Node version of ${requiredNodeVersion} which does \
-not satisfy the current Node version of ${process.version}. You may need to upgrade your installation of Node.`);
+    log.warn(`Homebridge requires Node.js version of ${requiredNodeVersion} which does \
+not satisfy the current Node.js version of ${process.version}. You may need to upgrade your installation of Node.js - see https://git.io/JTKEF`);
 }
 module.exports = function cli() {
     let insecureAccess = false;
     let hideQRCode = false;
     let keepOrphans = false;
     let customPluginPath = undefined;
+    let noLogTimestamps = false;
+    let debugModeEnabled = false;
+    let forceColourLogging = false;
+    let customStoragePath = undefined;
     let shuttingDown = false;
     commander_1.default
         .version(version_1.default())
-        .option("-C, --color", "force color in logging", () => logger_1.Logger.forceColor())
-        .option("-D, --debug", "turn on debug level logging", () => logger_1.Logger.setDebugEnabled(true))
+        .option("-C, --color", "force color in logging", () => forceColourLogging = true)
+        .option("-D, --debug", "turn on debug level logging", () => debugModeEnabled = true)
         .option("-I, --insecure", "allow unauthenticated requests (for easier hacking)", () => insecureAccess = true)
         .option("-P, --plugin-path [path]", "look for plugins installed at [path] as well as the default locations ([path] can also point to a single plugin)", path => customPluginPath = path)
         .option("-Q, --no-qrcode", "do not issue QRcode in logging", () => hideQRCode = true)
@@ -53,9 +57,21 @@ module.exports = function cli() {
             "Removing orphans is now the default behavior and can be turned off by supplying '-K' or '--keep-orphans'.");
     })
         .option("-K, --keep-orphans", "keep cached accessories for which the associated plugin is not loaded", () => keepOrphans = true)
-        .option("-T, --no-timestamp", "do not issue timestamps in logging", () => logger_1.Logger.setTimestampEnabled(false))
-        .option("-U, --user-storage-path [path]", "look for homebridge user files at [path] instead of the default location (~/.homebridge)", path => user_1.User.setStoragePath(path))
+        .option("-T, --no-timestamp", "do not issue timestamps in logging", () => noLogTimestamps = true)
+        .option("-U, --user-storage-path [path]", "look for homebridge user files at [path] instead of the default location (~/.homebridge)", path => customStoragePath = path)
         .parse(process.argv);
+    if (noLogTimestamps) {
+        logger_1.Logger.setTimestampEnabled(false);
+    }
+    if (debugModeEnabled) {
+        logger_1.Logger.setDebugEnabled(true);
+    }
+    if (forceColourLogging) {
+        logger_1.Logger.forceColor();
+    }
+    if (customStoragePath) {
+        user_1.User.setStoragePath(customStoragePath);
+    }
     // Initialize HAP-NodeJS with a custom persist directory
     hap_nodejs_1.HAPStorage.setCustomStoragePath(user_1.User.persistPath());
     const options = {
@@ -63,6 +79,10 @@ module.exports = function cli() {
         insecureAccess: insecureAccess,
         hideQRCode: hideQRCode,
         customPluginPath: customPluginPath,
+        noLogTimestamps: noLogTimestamps,
+        debugModeEnabled: debugModeEnabled,
+        forceColourLogging: forceColourLogging,
+        customStoragePath: customStoragePath,
     };
     const server = new server_1.Server(options);
     const signalHandler = (signal, signalNum) => {
@@ -71,8 +91,8 @@ module.exports = function cli() {
         }
         shuttingDown = true;
         log.info("Got %s, shutting down Homebridge...", signal);
-        server.teardown();
         setTimeout(() => process.exit(128 + signalNum), 5000);
+        server.teardown();
     };
     process.on("SIGINT", signalHandler.bind(undefined, "SIGINT", 2));
     process.on("SIGTERM", signalHandler.bind(undefined, "SIGTERM", 15));

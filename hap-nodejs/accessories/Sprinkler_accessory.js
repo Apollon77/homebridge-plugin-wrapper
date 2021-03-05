@@ -30,15 +30,12 @@ sprinkler.pincode = "123-44-567";
 // @ts-ignore
 sprinkler.category = 28 /* SPRINKLER */;
 // Add the actual Valve Service and listen for change events from iOS.
-// We can see the complete list of Services and Characteristics in `lib/gen/HomeKit.ts`
 var sprinklerService = sprinkler.addService(__1.Service.Valve, "💦 Sprinkler");
 // set some basic properties (these values are arbitrary and setting them is optional)
-sprinkler
-    .getService(__1.Service.Valve)
+sprinklerService
     .setCharacteristic(__1.Characteristic.ValveType, "1") // IRRIGATION/SPRINKLER = 1; SHOWER_HEAD = 2; WATER_FAUCET = 3;
     .setCharacteristic(__1.Characteristic.Name, SPRINKLER.name);
-sprinkler
-    .getService(__1.Service.Valve)
+sprinklerService
     .getCharacteristic(__1.Characteristic.Active)
     .on("get" /* GET */, function (callback) {
     console.log("get Active");
@@ -86,8 +83,7 @@ sprinkler
         }, 1000);
     }
 });
-sprinkler
-    .getService(__1.Service.Valve)
+sprinklerService
     .getCharacteristic(__1.Characteristic.InUse)
     .on("get" /* GET */, function (callback) {
     console.log("get In_Use");
@@ -101,9 +97,9 @@ sprinkler
 })
     .on("set" /* SET */, function (newValue, callback) {
     console.log("set In_Use => NewValue: " + newValue);
+    callback();
 });
-sprinkler
-    .getService(__1.Service.Valve)
+sprinklerService
     .getCharacteristic(__1.Characteristic.RemainingDuration)
     .on("get" /* GET */, function (callback) {
     var err = null; // in case there were any problems
@@ -116,12 +112,10 @@ sprinkler
         callback(err, 0);
     }
 });
-sprinkler
-    .getService(__1.Service.Valve)
+sprinklerService
     .getCharacteristic(__1.Characteristic.SetDuration)
     .on("set" /* SET */, function (newValue, callback) {
     console.log("SetDuration => NewValue: " + newValue);
-    var err = null; // in case there were any problems
     SPRINKLER.defaultDuration = newValue;
     callback();
 });

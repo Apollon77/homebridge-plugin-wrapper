@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.once = void 0;
+var tslib_1 = require("tslib");
 function once(func) {
     var called = false;
     return function () {
@@ -13,7 +14,7 @@ function once(func) {
         }
         else {
             called = true;
-            return func.apply(void 0, args);
+            return func.apply(void 0, tslib_1.__spread(args));
         }
     };
 }

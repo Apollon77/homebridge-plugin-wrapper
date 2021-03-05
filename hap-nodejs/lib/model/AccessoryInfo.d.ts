@@ -1,13 +1,14 @@
 /// <reference types="node" />
-import { Categories } from '../Accessory';
-import { Session } from "../util/eventedhttp";
+import { AccessoryJsonObject } from "../../internal-types";
 import { MacAddress } from "../../types";
+import { Categories } from '../Accessory';
+import { HAPConnection, HAPUsername } from "../util/eventedhttp";
 export declare const enum PermissionTypes {
     USER = 0,
     ADMIN = 1
 }
 export declare type PairingInformation = {
-    username: string;
+    username: HAPUsername;
     publicKey: Buffer;
     permission: PermissionTypes;
 };
@@ -19,44 +20,57 @@ export declare class AccessoryInfo {
     static readonly deviceIdPattern: RegExp;
     username: MacAddress;
     displayName: string;
+    model: string;
     category: Categories;
     pincode: string;
     signSk: Buffer;
     signPk: Buffer;
-    pairedClients: Record<string, PairingInformation>;
+    pairedClients: Record<HAPUsername, PairingInformation>;
     pairedAdminClients: number;
-    configVersion: number;
-    configHash: string;
+    private configVersion;
+    private configHash;
     setupID: string;
+    private lastFirmwareVersion;
     private constructor();
     /**
      * Add a paired client to memory.
-     * @param {string} username
+     * @param {HAPUsername} username
      * @param {Buffer} publicKey
      * @param {PermissionTypes} permission
      */
-    addPairedClient: (username: string, publicKey: Buffer, permission: PermissionTypes) => void;
-    updatePermission: (username: string, permission: PermissionTypes) => void;
-    listPairings: () => PairingInformation[];
+    addPairedClient(username: HAPUsername, publicKey: Buffer, permission: PermissionTypes): void;
+    updatePermission(username: HAPUsername, permission: PermissionTypes): void;
+    listPairings(): PairingInformation[];
     /**
      * Remove a paired client from memory.
-     * @param controller - the session of the controller initiated the removal of the pairing
+     * @param connection - the session of the connection initiated the removal of the pairing
      * @param {string} username
      */
-    removePairedClient: (controller: Session, username: string) => void;
-    _removePairedClient0: (controller: Session, username: string) => void;
+    removePairedClient(connection: HAPConnection, username: HAPUsername): void;
+    private _removePairedClient0;
     /**
      * Check if username is paired
      * @param username
      */
-    isPaired: (username: string) => boolean;
-    hasAdminPermissions: (username: string) => boolean;
-    getClientPublicKey: (username: string) => Buffer | undefined;
+    isPaired(username: HAPUsername): boolean;
+    hasAdminPermissions(username: HAPUsername): boolean;
+    getClientPublicKey(username: HAPUsername): Buffer | undefined;
     paired: () => boolean;
+    /**
+     * Checks based on the current accessory configuration if the current configuration number needs to be incremented.
+     * Additionally, if desired, it checks if the firmware version was incremented (aka the HAP-NodeJS) version did grow.
+     *
+     * @param configuration - The current accessory configuration.
+     * @param checkFirmwareIncrement
+     * @returns True if the current configuration number was incremented and thus a new TXT must be advertised.
+     */
+    checkForCurrentConfigurationNumberIncrement(configuration: AccessoryJsonObject[], checkFirmwareIncrement?: boolean): boolean;
+    getConfigVersion(): number;
+    private ensureConfigVersionBounds;
     save: () => void;
     static persistKey: (username: MacAddress) => string;
     static create: (username: MacAddress) => AccessoryInfo;
-    static load: (username: MacAddress) => AccessoryInfo | null;
+    static load: (username: MacAddress) => import("../../types").Nullable<AccessoryInfo>;
     static remove(username: MacAddress): void;
     static assertValidUsername: (username: MacAddress) => void;
 }

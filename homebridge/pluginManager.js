@@ -27,8 +27,8 @@ class PluginManager {
                 this.searchPaths.add(path_1.default.resolve(process.cwd(), options.customPluginPath));
             }
             this.activePlugins = options.activePlugins;
+            this.disabledPlugins = Array.isArray(options.disabledPlugins) ? options.disabledPlugins : undefined;
         }
-        this.loadDefaultPaths();
         this.api.on("registerAccessory" /* REGISTER_ACCESSORY */, this.handleRegisterAccessory.bind(this));
         this.api.on("registerPlatform" /* REGISTER_PLATFORM */, this.handleRegisterPlatform.bind(this));
     }
@@ -57,6 +57,7 @@ class PluginManager {
         return identifier.split(".")[0];
     }
     initializeInstalledPlugins() {
+        log.info("---");
         this.loadInstalledPlugins();
         this.plugins.forEach((plugin, identifier) => {
             try {
@@ -70,22 +71,33 @@ class PluginManager {
                 this.plugins.delete(identifier);
                 return;
             }
-            log.info(`Loaded plugin: ${identifier}@${plugin.version}`);
-            try {
-                this.currentInitializingPlugin = plugin;
-                plugin.initialize(this.api); // call the plugin's initializer and pass it our API instance
+            if (this.disabledPlugins && this.disabledPlugins.includes(plugin.getPluginIdentifier())) {
+                plugin.disabled = true;
             }
-            catch (error) {
-                log.error("====================");
-                log.error(`ERROR INITIALIZING PLUGIN ${identifier}:`);
-                log.error(error.stack);
-                log.error("====================");
-                this.plugins.delete(identifier);
-                return;
+            if (plugin.disabled) {
+                log.warn(`Disabled plugin: ${identifier}@${plugin.version}`);
             }
+            else {
+                log.info(`Loaded plugin: ${identifier}@${plugin.version}`);
+            }
+            this.initializePlugin(plugin, identifier);
             log.info("---");
         });
         this.currentInitializingPlugin = undefined;
+    }
+    initializePlugin(plugin, identifier) {
+        try {
+            this.currentInitializingPlugin = plugin;
+            plugin.initialize(this.api); // call the plugin's initializer and pass it our API instance
+        }
+        catch (error) {
+            log.error("====================");
+            log.error(`ERROR INITIALIZING PLUGIN ${identifier}:`);
+            log.error(error.stack);
+            log.error("====================");
+            this.plugins.delete(identifier);
+            return;
+        }
     }
     handleRegisterAccessory(name, constructor, pluginIdentifier) {
         if (!this.currentInitializingPlugin) {
@@ -122,18 +134,20 @@ class PluginManager {
     getPluginForAccessory(accessoryIdentifier) {
         let plugin;
         if (accessoryIdentifier.indexOf(".") === -1) { // see if it matches exactly one accessory
-            const found = this.accessoryToPluginMap.get(accessoryIdentifier);
+            let found = this.accessoryToPluginMap.get(accessoryIdentifier);
             if (!found) {
-                throw new Error(`The requested accessory '${accessoryIdentifier}' was not registered by any plugin.`);
+                throw new Error(`No plugin was found for the accessory "${accessoryIdentifier}" in your config.json. Please make sure the corresponding plugin is installed correctly.`);
             }
-            else if (found.length > 1) {
+            if (found.length > 1) {
                 const options = found.map(plugin => plugin.getPluginIdentifier() + "." + accessoryIdentifier).join(", ");
-                throw new Error(`The requested accessory '${accessoryIdentifier}' has been registered multiple times. Please be more specific by writing one of: ${options}`);
+                // check if only one of the multiple platforms is not disabled
+                found = found.filter(plugin => !plugin.disabled);
+                if (found.length !== 1) {
+                    throw new Error(`The requested accessory '${accessoryIdentifier}' has been registered multiple times. Please be more specific by writing one of: ${options}`);
+                }
             }
-            else {
-                plugin = found[0];
-                accessoryIdentifier = plugin.getPluginIdentifier() + "." + accessoryIdentifier;
-            }
+            plugin = found[0];
+            accessoryIdentifier = plugin.getPluginIdentifier() + "." + accessoryIdentifier;
         }
         else {
             const pluginIdentifier = PluginManager.getPluginIdentifier(accessoryIdentifier);
@@ -147,18 +161,20 @@ class PluginManager {
     getPluginForPlatform(platformIdentifier) {
         let plugin;
         if (platformIdentifier.indexOf(".") === -1) { // see if it matches exactly one platform
-            const found = this.platformToPluginMap.get(platformIdentifier);
+            let found = this.platformToPluginMap.get(platformIdentifier);
             if (!found) {
-                throw new Error(`The requested platform '${platformIdentifier}' was not registered by any plugin.`);
+                throw new Error(`No plugin was found for the platform "${platformIdentifier}" in your config.json. Please make sure the corresponding plugin is installed correctly.`);
             }
-            else if (found.length > 1) {
+            if (found.length > 1) {
                 const options = found.map(plugin => plugin.getPluginIdentifier() + "." + platformIdentifier).join(", ");
-                throw new Error(`The requested platform '${platformIdentifier}' has been registered multiple times. Please be more specific by writing one of: ${options}`);
+                // check if only one of the multiple platforms is not disabled
+                found = found.filter(plugin => !plugin.disabled);
+                if (found.length !== 1) {
+                    throw new Error(`The requested platform '${platformIdentifier}' has been registered multiple times. Please be more specific by writing one of: ${options}`);
+                }
             }
-            else {
-                plugin = found[0];
-                platformIdentifier = plugin.getPluginIdentifier() + "." + platformIdentifier;
-            }
+            plugin = found[0];
+            platformIdentifier = plugin.getPluginIdentifier() + "." + platformIdentifier;
         }
         else {
             const pluginIdentifier = PluginManager.getPluginIdentifier(platformIdentifier);
@@ -199,7 +215,11 @@ class PluginManager {
             return found[0];
         }
     }
+    /**
+     * Gets all plugins installed on the local system
+     */
     loadInstalledPlugins() {
+        this.loadDefaultPaths();
         this.searchPaths.forEach(searchPath => {
             if (!fs_1.default.existsSync(searchPath)) { // just because this path is in require.main.paths doesn't mean it necessarily exists!
                 return;
@@ -215,7 +235,15 @@ class PluginManager {
             }
             else { // read through each directory in this node_modules folder
                 const relativePluginPaths = fs_1.default.readdirSync(searchPath) // search for directories only
-                    .filter(relativePath => fs_1.default.statSync(path_1.default.resolve(searchPath, relativePath)).isDirectory());
+                    .filter(relativePath => {
+                    try {
+                        return fs_1.default.statSync(path_1.default.resolve(searchPath, relativePath)).isDirectory();
+                    }
+                    catch (e) {
+                        log.debug(`Ignoring path ${path_1.default.resolve(searchPath, relativePath)} - ${e.message}`);
+                        return false;
+                    }
+                });
                 // expand out @scoped plugins
                 relativePluginPaths.slice()
                     .filter(path => path.charAt(0) === "@") // is it a scope directory?
@@ -226,7 +254,15 @@ class PluginManager {
                     const absolutePath = path_1.default.join(searchPath, scopeDirectory);
                     fs_1.default.readdirSync(absolutePath)
                         .filter(name => PluginManager.isQualifiedPluginIdentifier(name))
-                        .filter(name => fs_1.default.statSync(path_1.default.resolve(absolutePath, name)).isDirectory())
+                        .filter(name => {
+                        try {
+                            return fs_1.default.statSync(path_1.default.resolve(absolutePath, name)).isDirectory();
+                        }
+                        catch (e) {
+                            log.debug(`Ignoring path ${path_1.default.resolve(absolutePath, name)} - ${e.message}`);
+                            return false;
+                        }
+                    })
                         .forEach(name => relativePluginPaths.push(scopeDirectory + "/" + name));
                 });
                 relativePluginPaths
@@ -260,7 +296,7 @@ class PluginManager {
             throw new Error(`Warning: skipping plugin found at '${absolutePath}' since we already loaded the same plugin from '${alreadyInstalled.getPluginPath()}'.`);
         }
         const plugin = new plugin_1.Plugin(name, absolutePath, packageJson, scope);
-        this.plugins.set(name, plugin);
+        this.plugins.set(identifier, plugin);
         return plugin;
     }
     static loadPackageJSON(pluginPath) {

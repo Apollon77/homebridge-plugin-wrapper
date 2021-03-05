@@ -1,6 +1,6 @@
 import { Accessory } from './Accessory';
-import { Service } from './Service';
 import { Characteristic } from './Characteristic';
+import { Service } from './Service';
 /**
  * Loads all accessories from the given folder. Handles object-literal-style accessories, "accessory factories",
  * and new-API style modules.

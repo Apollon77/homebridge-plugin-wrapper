@@ -1,9 +1,9 @@
 /// <reference types="node" />
-import RTPProxy from './RTPProxy';
-import { Nullable, SessionIdentifier } from '../../types';
-import { CameraRTPStreamManagement } from "../gen/HomeKit";
-import { CameraStreamingDelegate } from "../controller";
 import { LegacyCameraSource } from "../../index";
+import { SessionIdentifier } from '../../types';
+import { CameraStreamingDelegate } from "../controller";
+import type { CameraRTPStreamManagement } from "../definitions";
+import RTPProxy from './RTPProxy';
 declare const enum StreamingStatus {
     AVAILABLE = 0,
     IN_USE = 1,
@@ -109,7 +109,16 @@ export declare type Source = {
     proxy_rtcp?: number;
 };
 export declare type PrepareStreamResponse = {
-    address: string | Address;
+    /**
+     * @deprecated The local ip address will be automatically determined by HAP-NodeJS.
+     *   Any value set will be ignored. You may only still set a value to support version prior to 0.7.9
+     */
+    address?: string | Address;
+    /**
+     * Any value set to this optional property will overwrite the automatically determined local address,
+     * which is sent as RTP endpoint to the iOS device.
+     */
+    addressOverride?: string;
     video: SourceResponse | ProxiedSourceResponse;
     audio?: SourceResponse | ProxiedSourceResponse;
 };
@@ -222,19 +231,28 @@ export declare class RTPStreamManagement {
     readonly supportedRTPConfiguration: string;
     readonly supportedVideoStreamConfiguration: string;
     readonly supportedAudioStreamConfiguration: string;
+    /**
+     * @deprecated
+     */
     connectionID?: SessionIdentifier;
+    private activeConnection?;
+    private activeConnectionClosedListener?;
     sessionIdentifier?: StreamSessionIdentifier;
     streamStatus: StreamingStatus;
     private ipVersion?;
-    selectedConfiguration: Nullable<string>;
+    selectedConfiguration: string;
     setupEndpointsResponse: string;
     audioProxy?: RTPProxy;
     videoProxy?: RTPProxy;
     constructor(id: number, options: CameraStreamingOptions, delegate: CameraStreamingDelegate, service?: CameraRTPStreamManagement);
     forceStop(): void;
     getService(): CameraRTPStreamManagement;
+    /**
+     * @deprecated
+     */
     handleCloseConnection(connectionID: SessionIdentifier): void;
     handleFactoryReset(): void;
+    destroy(): void;
     private constructService;
     private setupServiceHandlers;
     private handleSessionClosed;
@@ -245,11 +263,12 @@ export declare class RTPStreamManagement {
     private handleSetupEndpoints;
     private generateSetupEndpointResponse;
     private _updateStreamStatus;
-    private _supportedRTPConfiguration;
-    private _supportedVideoStreamConfiguration;
+    private static _supportedRTPConfiguration;
+    private static _supportedVideoStreamConfiguration;
     private checkForLegacyAudioCodecRepresentation;
     private _supportedAudioStreamConfiguration;
     private static initialSetupEndpointsResponse;
+    private static initialSelectedStreamConfiguration;
 }
 /**
  * @deprecated - only there for backwards compatibility, please use {@see RTPStreamManagement} directly

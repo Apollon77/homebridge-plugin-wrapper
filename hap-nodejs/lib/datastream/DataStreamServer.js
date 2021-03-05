@@ -1,56 +1,14 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __spreadArrays = (this && this.__spreadArrays) || function () {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DataStreamConnection = exports.DataStreamConnectionEvents = exports.DataStreamServer = exports.DataStreamServerEvents = exports.DataSendCloseReason = exports.HDSStatus = exports.Topics = exports.Protocols = void 0;
-var debug_1 = __importDefault(require("debug"));
-var assert_1 = __importDefault(require("assert"));
-var hapCrypto = __importStar(require("../util/hapCrypto"));
-var DataStreamParser_1 = require("./DataStreamParser");
-var crypto_1 = __importDefault(require("crypto"));
-var net_1 = __importDefault(require("net"));
+exports.DataStreamConnection = exports.DataStreamConnectionEvent = exports.DataStreamServer = exports.DataStreamServerEvent = exports.DataSendCloseReason = exports.HDSStatus = exports.Topics = exports.Protocols = void 0;
+var tslib_1 = require("tslib");
+var assert_1 = tslib_1.__importDefault(require("assert"));
+var crypto_1 = tslib_1.__importDefault(require("crypto"));
+var debug_1 = tslib_1.__importDefault(require("debug"));
 var events_1 = require("events");
-var EventEmitter_1 = require("../EventEmitter");
+var net_1 = tslib_1.__importDefault(require("net"));
+var hapCrypto = tslib_1.__importStar(require("../util/hapCrypto"));
+var DataStreamParser_1 = require("./DataStreamParser");
 var debug = debug_1.default('HAP-NodeJS:DataStream:Server');
 var Protocols;
 (function (Protocols) {
@@ -72,6 +30,7 @@ var Topics;
 })(Topics = exports.Topics || (exports.Topics = {}));
 var HDSStatus;
 (function (HDSStatus) {
+    // noinspection JSUnusedGlobalSymbols
     HDSStatus[HDSStatus["SUCCESS"] = 0] = "SUCCESS";
     HDSStatus[HDSStatus["OUT_OF_MEMORY"] = 1] = "OUT_OF_MEMORY";
     HDSStatus[HDSStatus["TIMEOUT"] = 2] = "TIMEOUT";
@@ -82,6 +41,7 @@ var HDSStatus;
 })(HDSStatus = exports.HDSStatus || (exports.HDSStatus = {}));
 var DataSendCloseReason;
 (function (DataSendCloseReason) {
+    // noinspection JSUnusedGlobalSymbols
     DataSendCloseReason[DataSendCloseReason["NORMAL"] = 0] = "NORMAL";
     DataSendCloseReason[DataSendCloseReason["NOT_ALLOWED"] = 1] = "NOT_ALLOWED";
     DataSendCloseReason[DataSendCloseReason["BUSY"] = 2] = "BUSY";
@@ -111,29 +71,30 @@ var MessageType;
     MessageType[MessageType["REQUEST"] = 2] = "REQUEST";
     MessageType[MessageType["RESPONSE"] = 3] = "RESPONSE";
 })(MessageType || (MessageType = {}));
-var DataStreamServerEvents;
-(function (DataStreamServerEvents) {
-    DataStreamServerEvents["CONNECTION_OPENED"] = "connection-opened";
-    DataStreamServerEvents["CONNECTION_CLOSED"] = "connection-closed";
-})(DataStreamServerEvents = exports.DataStreamServerEvents || (exports.DataStreamServerEvents = {}));
+var DataStreamServerEvent;
+(function (DataStreamServerEvent) {
+    /**
+     * This event is emitted when a new client socket is received. At this point we have no idea to what
+     * hap session this connection will be matched.
+     */
+    DataStreamServerEvent["CONNECTION_OPENED"] = "connection-opened";
+    /**
+     * This event is emitted when the socket of a connection gets closed.
+     */
+    DataStreamServerEvent["CONNECTION_CLOSED"] = "connection-closed";
+})(DataStreamServerEvent = exports.DataStreamServerEvent || (exports.DataStreamServerEvent = {}));
 /**
  * DataStreamServer which listens for incoming tcp connections and handles identification of new connections
- *
- * @event 'connection-opened': (connection: DataStreamConnection) => void
- *        This event is emitted when a new client socket is received. At this point we have no idea to what
- *        hap session this connection will be matched.
- *
- * @event 'connection-closed': (connection: DataStreamConnection) => void
- *        This event is emitted when the socket of a connection gets closed.
  */
 var DataStreamServer = /** @class */ (function (_super) {
-    __extends(DataStreamServer, _super);
+    tslib_1.__extends(DataStreamServer, _super);
     function DataStreamServer() {
         var _this = _super.call(this) || this;
         _this.state = 0 /* UNINITIALIZED */;
-        _this.internalEventEmitter = new events_1.EventEmitter(); // used for message event and message request handlers
         _this.preparedSessions = [];
         _this.connections = [];
+        _this.removeListenersOnceClosed = false;
+        _this.internalEventEmitter = new events_1.EventEmitter(); // used for message event and message request handlers
         return _this;
     }
     /**
@@ -184,25 +145,33 @@ var DataStreamServer = /** @class */ (function (_super) {
         this.internalEventEmitter.removeListener(protocol + "-r-" + request, handler);
         return this;
     };
-    DataStreamServer.prototype.prepareSession = function (session, controllerKeySalt, callback) {
+    DataStreamServer.prototype.prepareSession = function (connection, controllerKeySalt, callback) {
         var _this = this;
-        debug("Preparing for incoming HDS connection from session %s", session.sessionID);
+        debug("Preparing for incoming HDS connection from %s", connection.sessionID);
         var accessoryKeySalt = crypto_1.default.randomBytes(32);
         var salt = Buffer.concat([controllerKeySalt, accessoryKeySalt]);
-        var accessoryToControllerEncryptionKey = hapCrypto.HKDF("sha512", salt, session.encryption.sharedSec, DataStreamServer.accessoryToControllerInfo, 32);
-        var controllerToAccessoryEncryptionKey = hapCrypto.HKDF("sha512", salt, session.encryption.sharedSec, DataStreamServer.controllerToAccessoryInfo, 32);
+        var accessoryToControllerEncryptionKey = hapCrypto.HKDF("sha512", salt, connection.encryption.sharedSecret, DataStreamServer.accessoryToControllerInfo, 32);
+        var controllerToAccessoryEncryptionKey = hapCrypto.HKDF("sha512", salt, connection.encryption.sharedSecret, DataStreamServer.controllerToAccessoryInfo, 32);
         var preparedSession = {
-            session: session,
+            connection: connection,
             accessoryToControllerEncryptionKey: accessoryToControllerEncryptionKey,
             controllerToAccessoryEncryptionKey: controllerToAccessoryEncryptionKey,
             accessoryKeySalt: accessoryKeySalt,
             connectTimeout: setTimeout(function () { return _this.timeoutPreparedSession(preparedSession); }, 10000),
         };
+        preparedSession.connectTimeout.unref();
         this.preparedSessions.push(preparedSession);
-        this.checkTCPServerEstablished(preparedSession, function () { return callback(preparedSession); });
+        this.checkTCPServerEstablished(preparedSession, function (error) {
+            if (error) {
+                callback(error);
+            }
+            else {
+                callback(undefined, preparedSession);
+            }
+        });
     };
     DataStreamServer.prototype.timeoutPreparedSession = function (preparedSession) {
-        debug("Prepared HDS session timed out out since no connection was opened for 10 seconds (%s)", preparedSession.session.sessionID);
+        debug("Prepared HDS session timed out out since no connection was opened for 10 seconds (%s)", preparedSession.connection.sessionID);
         var index = this.preparedSessions.indexOf(preparedSession);
         if (index >= 0) {
             this.preparedSessions.splice(index, 1);
@@ -267,7 +236,7 @@ var DataStreamServer = /** @class */ (function (_super) {
         }
         callback(identifiedSession);
         if (identifiedSession) {
-            debug("[%s] Connection was successfully identified (linked with sessionId: %s)", connection._remoteAddress, identifiedSession.session.sessionID);
+            debug("[%s] Connection was successfully identified (linked with sessionId: %s)", connection.remoteAddress, identifiedSession.connection.sessionID);
             var index = this.preparedSessions.indexOf(identifiedSession);
             if (index >= 0) {
                 this.preparedSessions.splice(index, 1);
@@ -276,10 +245,10 @@ var DataStreamServer = /** @class */ (function (_super) {
             identifiedSession.connectTimeout = undefined;
             // we have currently no experience with data stream connections, maybe it would be good to index active connections
             // by their hap sessionId in order to clear out old but still open connections when the controller opens a new one
-            // on the other han the keepAlive should handle that also :thinking:
+            // on the other hand the keepAlive should handle that also :thinking:
         }
         else { // we looped through all session and didn't find anything
-            debug("[%s] Could not identify connection. Terminating.", connection._remoteAddress);
+            debug("[%s] Could not identify connection. Terminating.", connection.remoteAddress);
             connection.close(); // disconnecting since first message was not a valid hello
         }
     };
@@ -298,30 +267,57 @@ var DataStreamServer = /** @class */ (function (_super) {
         args.push(message.message);
         var hadListeners;
         try {
-            hadListeners = (_a = this.internalEventEmitter).emit.apply(_a, __spreadArrays([message.protocol + separator + message.topic, connection], args));
+            hadListeners = (_a = this.internalEventEmitter).emit.apply(_a, tslib_1.__spread([message.protocol + separator + message.topic, connection], args));
         }
         catch (error) {
             hadListeners = true;
-            debug("[%s] Error occurred while dispatching handler for HDS message: %o", connection._remoteAddress, message);
+            debug("[%s] Error occurred while dispatching handler for HDS message: %o", connection.remoteAddress, message);
             debug(error.stack);
         }
         if (!hadListeners) {
-            debug("[%s] WARNING no handler was found for message: %o", connection._remoteAddress, message);
+            debug("[%s] WARNING no handler was found for message: %o", connection.remoteAddress, message);
         }
     };
     DataStreamServer.prototype.connectionClosed = function (connection) {
-        debug("[%s] DataStream connection closed", connection._remoteAddress);
+        debug("[%s] DataStream connection closed", connection.remoteAddress);
         this.connections.splice(this.connections.indexOf(connection), 1);
         this.emit("connection-closed" /* CONNECTION_CLOSED */, connection);
         this.checkCloseable();
+        if (this.state === 3 /* CLOSING */ && this.removeListenersOnceClosed && this.connections.length === 0) {
+            this.removeAllListeners(); // see this.destroy()
+        }
     };
     DataStreamServer.prototype.checkCloseable = function () {
-        if (this.connections.length === 0 && this.preparedSessions.length === 0) {
+        if (this.connections.length === 0 && this.preparedSessions.length === 0 && this.state < 3 /* CLOSING */) {
             debug("Last connection disconnected. Closing the server now.");
             this.state = 3 /* CLOSING */;
-            // noinspection JSIgnoredPromiseFromCall
             this.tcpServer.close();
         }
+    };
+    /**
+     * This method will fully stop the DataStreamServer
+     */
+    DataStreamServer.prototype.destroy = function () {
+        var e_1, _a;
+        if (this.state > 0 /* UNINITIALIZED */ && this.state < 3 /* CLOSING */) {
+            this.tcpServer.close();
+            try {
+                for (var _b = tslib_1.__values(this.connections), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var connection = _c.value;
+                    connection.close();
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        }
+        this.state = 3 /* CLOSING */;
+        this.removeListenersOnceClosed = true;
+        this.internalEventEmitter.removeAllListeners();
     };
     DataStreamServer.prototype.closed = function () {
         this.tcpServer = undefined;
@@ -332,32 +328,32 @@ var DataStreamServer = /** @class */ (function (_super) {
     DataStreamServer.accessoryToControllerInfo = Buffer.from("HDS-Read-Encryption-Key");
     DataStreamServer.controllerToAccessoryInfo = Buffer.from("HDS-Write-Encryption-Key");
     return DataStreamServer;
-}(EventEmitter_1.EventEmitter));
+}(events_1.EventEmitter));
 exports.DataStreamServer = DataStreamServer;
-var DataStreamConnectionEvents;
-(function (DataStreamConnectionEvents) {
-    DataStreamConnectionEvents["IDENTIFICATION"] = "identification";
-    DataStreamConnectionEvents["HANDLE_MESSAGE_GLOBALLY"] = "handle-message-globally";
-    DataStreamConnectionEvents["CLOSED"] = "closed";
-})(DataStreamConnectionEvents = exports.DataStreamConnectionEvents || (exports.DataStreamConnectionEvents = {}));
+var DataStreamConnectionEvent;
+(function (DataStreamConnectionEvent) {
+    /**
+     * This event is emitted when the first HDSFrame is received from a new connection.
+     * The connection expects the handler to identify the connection by trying to match the decryption keys.
+     * If identification was successful the PreparedDataStreamSession should be supplied to the callback,
+     * otherwise undefined should be supplied.
+     */
+    DataStreamConnectionEvent["IDENTIFICATION"] = "identification";
+    /**
+     * This event is emitted when no handler could be found for the given protocol of a event or request message.
+     */
+    DataStreamConnectionEvent["HANDLE_MESSAGE_GLOBALLY"] = "handle-message-globally";
+    /**
+     * This event is emitted when the socket of the connection was closed.
+     */
+    DataStreamConnectionEvent["CLOSED"] = "closed";
+})(DataStreamConnectionEvent = exports.DataStreamConnectionEvent || (exports.DataStreamConnectionEvent = {}));
 /**
  * DataStream connection which holds any necessary state information, encryption an decryption keys, manages
  * protocol handlers and also handles sending and receiving of data stream frames.
- *
- * @event 'identification': (frame: HDSFrame, callback: IdentificationCallback) => void
- *        This event is emitted when the first HDSFrame is received from a new connection.
- *        The connection expects the handler to identify the connection by trying to match the decryption keys.
- *        If identification was successful the PreparedDataStreamSession should be supplied to the callback,
- *        otherwise undefined should be supplied.
- *
- * @event 'handle-message-globally': (message: DataStreamMessage) => void
- *        This event is emitted when no handler could be found for the given protocol of a event or request message.
- *
- * @event 'closed': () => void
- *        This event is emitted when the socket of the connection was closed.
  */
 var DataStreamConnection = /** @class */ (function (_super) {
-    __extends(DataStreamConnection, _super);
+    tslib_1.__extends(DataStreamConnection, _super);
     function DataStreamConnection(socket) {
         var _a;
         var _this = _super.call(this) || this;
@@ -365,37 +361,38 @@ var DataStreamConnection = /** @class */ (function (_super) {
             Since our DataStream server does only listen on one port and this port is supplied to every client
             which wants to connect, we do not really know which client is who when we receive a tcp connection.
             Thus, we find the correct PreparedDataStreamSession object by testing the encryption keys of all available
-            prepared sessions. Then we can reference this connection with the correct session and mark it as identified.
+            prepared sessions. Then we can reference this hds connection with the correct hap connection and mark it as identified.
          */
         _this.state = 0 /* UNIDENTIFIED */;
         _this.protocolHandlers = {}; // used to store protocolHandlers identified by their protocol name
         _this.responseHandlers = {}; // used to store responseHandlers indexed by their respective requestId
         _this.responseTimers = {}; // used to store response timeouts indexed by their respective requestId
         _this.socket = socket;
-        _this._remoteAddress = socket.remoteAddress;
+        _this.remoteAddress = socket.remoteAddress;
         _this.socket.setNoDelay(true); // disable Nagle algorithm
         _this.socket.setKeepAlive(true);
         _this.accessoryToControllerNonce = 0;
         _this.accessoryToControllerNonceBuffer = Buffer.alloc(8);
         _this.controllerToAccessoryNonce = 0;
         _this.controllerToAccessoryNonceBuffer = Buffer.alloc(8);
+        _this.hapConnectionClosedListener = _this.onHAPSessionClosed.bind(_this);
         _this.addProtocolHandler("control" /* CONTROL */, {
             requestHandler: (_a = {},
                 _a["hello" /* HELLO */] = _this.handleHello.bind(_this),
                 _a)
         });
         _this.helloTimer = setTimeout(function () {
-            debug("[%s] Hello message did not arrive in time. Killing the connection", _this._remoteAddress);
+            debug("[%s] Hello message did not arrive in time. Killing the connection", _this.remoteAddress);
             _this.close();
         }, 10000);
         _this.socket.on('data', _this.onSocketData.bind(_this));
         _this.socket.on('error', _this.onSocketError.bind(_this));
-        _this.socket.on('close', _this.onSocketClose.bind(_this)); // we MUST register for this event, otherwise the error will bubble up to the top and crash the node process entirely.
+        _this.socket.on('close', _this.onSocketClose.bind(_this));
         return _this;
     }
     DataStreamConnection.prototype.handleHello = function (id, _message) {
         // that hello is indeed the _first_ message received is verified in onSocketData(...)
-        debug("[%s] Received hello message from client", this._remoteAddress);
+        debug("[%s] Received hello message from client", this.remoteAddress);
         clearTimeout(this.helloTimer);
         this.helloTimer = undefined;
         this.state = 2 /* READY */;
@@ -508,22 +505,23 @@ var DataStreamConnection = /** @class */ (function (_super) {
             var firstFrame = frames[frameIndex++];
             this.emit("identification" /* IDENTIFICATION */, firstFrame, function (identifiedSession) {
                 if (identifiedSession) {
-                    // horray, we found our session
-                    _this.session = identifiedSession.session;
+                    // horray, we found our connection
+                    _this.connection = identifiedSession.connection;
                     _this.accessoryToControllerEncryptionKey = identifiedSession.accessoryToControllerEncryptionKey;
                     _this.controllerToAccessoryEncryptionKey = identifiedSession.controllerToAccessoryEncryptionKey;
                     _this.state = 1 /* EXPECTING_HELLO */;
-                    _this.session.on("closed" /* CLOSED */, _this.onHAPSessionClosed.bind(_this)); // register close listener
+                    // below listener is removed in .close()
+                    _this.connection.on("closed" /* CLOSED */, _this.hapConnectionClosedListener); // register close listener
                 }
             });
             if (this.state === 0 /* UNIDENTIFIED */) {
-                // did not find a prepared session, server already closed this connection; nothing to do here
+                // did not find a prepared connection, server already closed this connection; nothing to do here
                 return;
             }
         }
         for (; frameIndex < frames.length; frameIndex++) { // decrypt all remaining frames
             if (!this.decryptHDSFrame(frames[frameIndex])) {
-                debug("[%s] HDS frame decryption or authentication failed. Connection will be terminated!", this._remoteAddress);
+                debug("[%s] HDS frame decryption or authentication failed. Connection will be terminated!", this.remoteAddress);
                 this.close();
                 return;
             }
@@ -533,7 +531,7 @@ var DataStreamConnection = /** @class */ (function (_super) {
             var firstMessage = messages[0];
             if (firstMessage.protocol !== "control" /* CONTROL */ || firstMessage.type !== 2 /* REQUEST */ || firstMessage.topic !== "hello" /* HELLO */) {
                 // first message is not the expected hello request
-                debug("[%s] First message received was not the expected hello message. Instead got: %o", this._remoteAddress, firstMessage);
+                debug("[%s] First message received was not the expected hello message. Instead got: %o", this.remoteAddress, firstMessage);
                 this.close();
                 return;
             }
@@ -557,7 +555,7 @@ var DataStreamConnection = /** @class */ (function (_super) {
                     responseHandler(undefined, message.status, message.message);
                 }
                 catch (error) {
-                    debug("[%s] Error occurred while dispatching response handler for HDS message: %o", _this._remoteAddress, message);
+                    debug("[%s] Error occurred while dispatching response handler for HDS message: %o", _this.remoteAddress, message);
                     debug(error.stack);
                 }
                 delete _this.responseHandlers[message.id];
@@ -572,33 +570,33 @@ var DataStreamConnection = /** @class */ (function (_super) {
                 if (message.type === 1 /* EVENT */) {
                     var eventHandler = void 0;
                     if (!handler.eventHandler || !(eventHandler = handler.eventHandler[message.topic])) {
-                        debug("[%s] WARNING no event handler was found for message: %o", _this._remoteAddress, message);
+                        debug("[%s] WARNING no event handler was found for message: %o", _this.remoteAddress, message);
                         return;
                     }
                     try {
                         eventHandler(message.message);
                     }
                     catch (error) {
-                        debug("[%s] Error occurred while dispatching event handler for HDS message: %o", _this._remoteAddress, message);
+                        debug("[%s] Error occurred while dispatching event handler for HDS message: %o", _this.remoteAddress, message);
                         debug(error.stack);
                     }
                 }
                 else if (message.type === 2 /* REQUEST */) {
                     var requestHandler = void 0;
                     if (!handler.requestHandler || !(requestHandler = handler.requestHandler[message.topic])) {
-                        debug("[%s] WARNING no request handler was found for message: %o", _this._remoteAddress, message);
+                        debug("[%s] WARNING no request handler was found for message: %o", _this.remoteAddress, message);
                         return;
                     }
                     try {
                         requestHandler(message.id, message.message);
                     }
                     catch (error) {
-                        debug("[%s] Error occurred while dispatching request handler for HDS message: %o", _this._remoteAddress, message);
+                        debug("[%s] Error occurred while dispatching request handler for HDS message: %o", _this.remoteAddress, message);
                         debug(error.stack);
                     }
                 }
                 else {
-                    debug("[%s] Encountered unknown message type with id %d", _this._remoteAddress, message.type);
+                    debug("[%s] Encountered unknown message type with id %d", _this.remoteAddress, message.type);
                 }
             }
         });
@@ -619,7 +617,7 @@ var DataStreamConnection = /** @class */ (function (_super) {
             var payloadType = data.readUInt8(frameBegin); // type defining structure of payload; 8-bit; currently expected to be 1
             var payloadLength = data.readUIntBE(frameBegin + 1, 3); // read 24-bit big-endian uint length field
             if (payloadLength > DataStreamConnection.MAX_PAYLOAD_LENGTH) {
-                debug("[%s] Connection send payload with size bigger than the maximum allow for data stream", this._remoteAddress);
+                debug("[%s] Connection send payload with size bigger than the maximum allow for data stream", this.remoteAddress);
                 this.close();
                 return [];
             }
@@ -646,7 +644,7 @@ var DataStreamConnection = /** @class */ (function (_super) {
                 frames.push(hdsFrame);
             }
             else {
-                debug("[%s] Encountered unknown payload type %d for payload: %s", this._remoteAddress, plaintextPayload.toString('hex'));
+                debug("[%s] Encountered unknown payload type %d for payload: %s", this.remoteAddress, plaintextPayload.toString('hex'));
             }
         }
         return frames;
@@ -685,7 +683,7 @@ var DataStreamConnection = /** @class */ (function (_super) {
                 headerPayload.finished();
             }
             catch (error) {
-                debug("[%s] Failed to decode header payload: %s", _this._remoteAddress, error.message);
+                debug("[%s] Failed to decode header payload: %s", _this.remoteAddress, error.message);
                 return;
             }
             try {
@@ -693,7 +691,7 @@ var DataStreamConnection = /** @class */ (function (_super) {
                 messagePayload.finished();
             }
             catch (error) {
-                debug("[%s] Failed to decode message payload: %s (header: %o)", _this._remoteAddress, error.message, headerDictionary);
+                debug("[%s] Failed to decode message payload: %s (header: %o)", _this.remoteAddress, error.message, headerDictionary);
                 return;
             }
             var type;
@@ -717,7 +715,7 @@ var DataStreamConnection = /** @class */ (function (_super) {
                 status = headerDictionary["status"];
             }
             else {
-                debug("[%s] Encountered unknown payload header format: %o (message: %o)", _this._remoteAddress, headerDictionary, messageDictionary);
+                debug("[%s] Encountered unknown payload header format: %o (message: %o)", _this.remoteAddress, headerDictionary, messageDictionary);
                 return;
             }
             var message = {
@@ -768,27 +766,31 @@ var DataStreamConnection = /** @class */ (function (_super) {
         //*/
     };
     DataStreamConnection.prototype.close = function () {
+        var _a;
         if (this.state >= 3 /* CLOSING */) {
             return; // connection is already closing/closed
         }
+        (_a = this.connection) === null || _a === void 0 ? void 0 : _a.removeListener("closed" /* CLOSED */, this.hapConnectionClosedListener);
         this.state = 3 /* CLOSING */;
         this.socket.end();
     };
     DataStreamConnection.prototype.onHAPSessionClosed = function () {
-        // If the hap session is closed it is probably also a good idea to close the data stream session
-        debug("[%s] HAP session disconnected. Also closing DataStream connection now.", this._remoteAddress);
+        // If the hap connection is closed it is probably also a good idea to close the data stream connection
+        debug("[%s] HAP connection disconnected. Also closing DataStream connection now.", this.remoteAddress);
         this.close();
     };
     DataStreamConnection.prototype.onSocketError = function (error) {
-        debug("[%s] Encountered socket error: %s", this._remoteAddress, error.message);
+        debug("[%s] Encountered socket error: %s", this.remoteAddress, error.message);
         // onSocketClose will be called next
     };
     DataStreamConnection.prototype.onSocketClose = function () {
+        // this instance is now considered completely dead
         this.state = 4 /* CLOSED */;
         this.emit("closed" /* CLOSED */);
+        this.removeAllListeners();
     };
     DataStreamConnection.MAX_PAYLOAD_LENGTH = 1048575;
     return DataStreamConnection;
-}(EventEmitter_1.EventEmitter));
+}(events_1.EventEmitter));
 exports.DataStreamConnection = DataStreamConnection;
 //# sourceMappingURL=DataStreamServer.js.map

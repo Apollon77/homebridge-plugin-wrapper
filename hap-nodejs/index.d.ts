@@ -1,5 +1,5 @@
-/// <reference path="../@types/bonjour-hap.d.ts" />
-import './lib/gen';
+import "source-map-support/register";
+import './lib/definitions';
 import * as accessoryLoader from './lib/AccessoryLoader';
 import * as uuidFunctions from './lib/util/uuid';
 import * as legacyTypes from './accessories/types';
@@ -14,12 +14,14 @@ export * from './lib/AccessoryLoader';
 export * from './lib/camera';
 export * from './lib/tv/AccessControlManagement';
 export * from './lib/HAPServer';
-export * from './lib/gen';
 export * from './lib/datastream';
 export * from './lib/controller';
 export * from './lib/util/clone';
 export * from './lib/util/once';
 export * from './lib/util/tlv';
+export * from './lib/util/hapStatusError';
+export * from './lib/util/color-utils';
+export * from './lib/util/time';
 export * from './types';
 export declare const LegacyTypes: typeof legacyTypes;
 /**

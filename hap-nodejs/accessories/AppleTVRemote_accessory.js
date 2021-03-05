@@ -1,30 +1,10 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
+var escape_html_1 = tslib_1.__importDefault(require("escape-html"));
 var __1 = require("..");
-var http = __importStar(require("http"));
-var url_1 = __importDefault(require("url"));
+var http = tslib_1.__importStar(require("http"));
+var url_1 = tslib_1.__importDefault(require("url"));
 var gstreamer_audioProducer_1 = require("./gstreamer-audioProducer");
 var remoteUUID = __1.uuid.generate('hap-nodejs:accessories:remote');
 var remote = exports.accessory = new __1.Accessory('Remote', remoteUUID);
@@ -97,7 +77,7 @@ http.createServer(function (request, response) {
         var targetIdentifier = controller.getTargetIdentifierByName(query.name);
         if (targetIdentifier === undefined) {
             response.writeHead(400, { "Content-Type": "text/html" });
-            response.end("Bad request. No target found for given name " + query.name);
+            response.end("Bad request. No target found for given name " + escape_html_1.default(query.name + ""));
             return;
         }
         response.writeHead(200, { "Content-Type": "text/html" });
@@ -115,13 +95,13 @@ http.createServer(function (request, response) {
         // @ts-ignore
         if (__1.ButtonState[buttonState] === undefined) {
             response.writeHead(400, { "Content-Type": "text/html" });
-            response.end("Bad request. Unknown button state " + query.state);
+            response.end("Bad request. Unknown button state " + escape_html_1.default(query.state + ""));
             return;
         }
         // @ts-ignore
         if (__1.ButtonType[button] === undefined) {
             response.writeHead(400, { "Content-Type": "text/html" });
-            response.end("Bad request. Unknown button " + query.button);
+            response.end("Bad request. Unknown button " + escape_html_1.default(query.button + ""));
             return;
         }
         if (buttonState === 0 /* UP */) {
@@ -150,7 +130,7 @@ http.createServer(function (request, response) {
         // @ts-ignore
         if (__1.ButtonType[button] === undefined) {
             response.writeHead(400, { "Content-Type": "text/html" });
-            response.end("Bad request. Unknown button " + query.button);
+            response.end("Bad request. Unknown button " + escape_html_1.default(query.button + ""));
             return;
         }
         controller.pushAndReleaseButton(button, time);
@@ -171,7 +151,7 @@ http.createServer(function (request, response) {
     }
     else {
         response.writeHead(404, { "Content-Type": "text/html" });
-        response.end("Not Found. No path found for " + pathname);
+        response.end("Not Found. No path found for " + escape_html_1.default(pathname));
         return;
     }
 }).listen(8080);

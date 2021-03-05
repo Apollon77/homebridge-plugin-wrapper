@@ -13,7 +13,7 @@ var LightControllerClass = /** @class */ (function () {
         this.brightness = 100; //current brightness
         this.hue = 0; //current hue
         this.saturation = 0; //current saturation
-        this.outputLogs = false; //output logs
+        this.outputLogs = true; //output logs
     }
     LightControllerClass.prototype.setPower = function (status) {
         if (this.outputLogs)
@@ -86,11 +86,8 @@ lightAccessory.on("identify" /* IDENTIFY */, function (paired, callback) {
     LightController.identify();
     callback();
 });
-// Add the actual Lightbulb Service and listen for change events from iOS.
-// We can see the complete list of Services and Characteristics in `lib/gen/HomeKit.ts`
-lightAccessory
-    .addService(__1.Service.Lightbulb, LightController.name) // services exposed to the user should have "names" like "Light" for this case
-    .getCharacteristic(__1.Characteristic.On)
+var lightbulb = lightAccessory.addService(__1.Service.Lightbulb, LightController.name); // services exposed to the user should have "names" like "Light" for this case
+lightbulb.getCharacteristic(__1.Characteristic.On)
     .on("set" /* SET */, function (value, callback) {
     LightController.setPower(value);
     // Our light is synchronous - this value has been successfully set
@@ -113,9 +110,7 @@ lightAccessory
 //   .getCharacteristic(Characteristic.On)
 //   .updateValue(true);
 // also add an "optional" Characteristic for Brightness
-lightAccessory
-    .getService(__1.Service.Lightbulb)
-    .addCharacteristic(__1.Characteristic.Brightness)
+lightbulb.addCharacteristic(__1.Characteristic.Brightness)
     .on("set" /* SET */, function (value, callback) {
     LightController.setBrightness(value);
     callback();
@@ -124,9 +119,7 @@ lightAccessory
     callback(null, LightController.getBrightness());
 });
 // also add an "optional" Characteristic for Saturation
-lightAccessory
-    .getService(__1.Service.Lightbulb)
-    .addCharacteristic(__1.Characteristic.Saturation)
+lightbulb.addCharacteristic(__1.Characteristic.Saturation)
     .on("set" /* SET */, function (value, callback) {
     LightController.setSaturation(value);
     callback();
@@ -135,9 +128,7 @@ lightAccessory
     callback(null, LightController.getSaturation());
 });
 // also add an "optional" Characteristic for Hue
-lightAccessory
-    .getService(__1.Service.Lightbulb)
-    .addCharacteristic(__1.Characteristic.Hue)
+lightbulb.addCharacteristic(__1.Characteristic.Hue)
     .on("set" /* SET */, function (value, callback) {
     LightController.setHue(value);
     callback();

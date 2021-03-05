@@ -7,6 +7,7 @@ export declare class DoorbellController extends CameraController {
     constructServices(): CameraControllerServiceMap;
     initWithServices(serviceMap: CameraControllerServiceMap): void | CameraControllerServiceMap;
     protected migrateFromDoorbell(serviceMap: ControllerServiceMap): boolean;
+    handleControllerRemoved(): void;
     configureServices(): void;
 }
 //# sourceMappingURL=DoorbellController.d.ts.map

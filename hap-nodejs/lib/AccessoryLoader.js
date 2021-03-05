@@ -1,35 +1,14 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseCharacteristicJSON = exports.parseServiceJSON = exports.parseAccessoryJSON = exports.loadDirectory = void 0;
-var fs_1 = __importDefault(require("fs"));
-var path_1 = __importDefault(require("path"));
-var debug_1 = __importDefault(require("debug"));
+var tslib_1 = require("tslib");
+var debug_1 = tslib_1.__importDefault(require("debug"));
+var fs_1 = tslib_1.__importDefault(require("fs"));
+var path_1 = tslib_1.__importDefault(require("path"));
 var Accessory_1 = require("./Accessory");
-var Service_1 = require("./Service");
 var Characteristic_1 = require("./Characteristic");
-var uuid = __importStar(require("./util/uuid"));
+var Service_1 = require("./Service");
+var uuid = tslib_1.__importStar(require("./util/uuid"));
 var debug = debug_1.default('HAP-NodeJS:AccessoryLoader');
 /**
  * Loads all accessories from the given folder. Handles object-literal-style accessories, "accessory factories",
@@ -64,7 +43,7 @@ function loadDirectory(dir) {
         else {
             return (accessory instanceof Accessory_1.Accessory) ? accessory : parseAccessoryJSON(accessory);
         }
-    }).filter(function (accessory) { return accessory ? true : false; });
+    }).filter(function (accessory) { return !!accessory; });
 }
 exports.loadDirectory = loadDirectory;
 /**
@@ -128,10 +107,7 @@ function parseServiceJSON(json) {
 exports.parseServiceJSON = parseServiceJSON;
 function parseCharacteristicJSON(json) {
     var characteristicUUID = json.cType;
-    var characteristic = new Characteristic_1.Characteristic(json.manfDescription || characteristicUUID, characteristicUUID);
-    // copy simple properties
-    characteristic.value = json.initialValue;
-    characteristic.setProps({
+    var characteristic = new Characteristic_1.Characteristic(json.manfDescription || characteristicUUID, characteristicUUID, {
         format: json.format,
         minValue: json.designedMinValue,
         maxValue: json.designedMaxValue,
@@ -139,13 +115,8 @@ function parseCharacteristicJSON(json) {
         unit: json.unit,
         perms: json.perms // example: ["pw","pr","ev"]
     });
-    // monkey-patch this characteristic to add the legacy method `updateValue` which used to exist,
-    // and that accessory modules had access to via the `onRegister` function. This was the old mechanism
-    // for communicating state changes about accessories that happened "outside" HomeKit.
-    // @ts-ignore
-    characteristic.updateValue = function (value, peer) {
-        characteristic.setValue(value);
-    };
+    // copy simple properties
+    characteristic.value = json.initialValue;
     // monkey-patch legacy "locals" property which used to exist.
     // @ts-ignore
     characteristic.locals = json.locals;

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = require("tslib");
 // here's a fake hardware device that we'll expose to HomeKit
 var __1 = require("..");
 var FAKE_FAN = {
@@ -44,40 +45,41 @@ fan.on("identify" /* IDENTIFY */, function (paired, callback) {
     callback(); // success
 });
 // Add the actual Fan Service and listen for change events from iOS.
-// We can see the complete list of Services and Characteristics in `lib/gen/HomeKit.ts`
 fan
     .addService(__1.Service.Fan, "Fan") // services exposed to the user should have "names" like "Fake Light" for us
     .getCharacteristic(__1.Characteristic.On)
-    .on("set" /* SET */, function (value, callback) {
+    .onSet(function (value) {
     FAKE_FAN.setPowerOn(value);
-    callback(); // Our fake Fan is synchronous - this value has been successfully set
 });
 // We want to intercept requests for our current power state so we can query the hardware itself instead of
 // allowing HAP-NodeJS to return the cached Characteristic.value.
 fan
     .getService(__1.Service.Fan)
     .getCharacteristic(__1.Characteristic.On)
-    .on("get" /* GET */, function (callback) {
+    .onGet(function () {
     // this event is emitted when you ask Siri directly whether your fan is on or not. you might query
     // the fan hardware itself to find this out, then call the callback. But if you take longer than a
     // few seconds to respond, Siri will give up.
-    var err = null; // in case there were any problems
     if (FAKE_FAN.powerOn) {
-        callback(err, true);
+        return true;
     }
     else {
-        callback(err, false);
+        return false;
     }
 });
 // also add an "optional" Characteristic for speed
 fan
     .getService(__1.Service.Fan)
     .addCharacteristic(__1.Characteristic.RotationSpeed)
-    .on("get" /* GET */, function (callback) {
-    callback(null, FAKE_FAN.rSpeed);
-})
-    .on("set" /* SET */, function (value, callback) {
-    FAKE_FAN.setSpeed(value);
-    callback();
-});
+    .onGet(function () { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+    return tslib_1.__generator(this, function (_a) {
+        return [2 /*return*/, FAKE_FAN.rSpeed];
+    });
+}); })
+    .onSet(function (value) { return tslib_1.__awaiter(void 0, void 0, void 0, function () {
+    return tslib_1.__generator(this, function (_a) {
+        FAKE_FAN.setSpeed(value);
+        return [2 /*return*/];
+    });
+}); });
 //# sourceMappingURL=Fan_accessory.js.map

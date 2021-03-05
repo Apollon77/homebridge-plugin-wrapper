@@ -1,6 +1,5 @@
-import { DataStreamTransportManagement } from "../gen/HomeKit-DataStream";
-import { DataStreamServerEventMap, GlobalEventHandler, GlobalRequestHandler } from "./DataStreamServer";
-import { Event } from "../EventEmitter";
+import type { DataStreamTransportManagement } from "../definitions";
+import { DataStreamConnection, DataStreamServerEvent, GlobalEventHandler, GlobalRequestHandler } from "./DataStreamServer";
 export declare const enum DataStreamStatus {
     SUCCESS = 0,
     GENERIC_ERROR = 1,
@@ -8,10 +7,11 @@ export declare const enum DataStreamStatus {
 }
 export declare class DataStreamManagement {
     private readonly dataStreamServer;
-    private dataStreamTransportManagementService;
-    readonly supportedDataStreamTransportConfiguration: string;
-    lastSetupDataStreamTransportResponse: string;
+    private readonly dataStreamTransportManagementService;
+    private readonly supportedDataStreamTransportConfiguration;
+    private lastSetupDataStreamTransportResponse;
     constructor(service?: DataStreamTransportManagement);
+    destroy(): void;
     /**
      * @returns the DataStreamTransportManagement service
      */
@@ -58,9 +58,8 @@ export declare class DataStreamManagement {
      * @param event - the event to register for
      * @param listener - the event handler
      */
-    onServerEvent(event: Event<keyof DataStreamServerEventMap>, listener: DataStreamServerEventMap[Event<keyof DataStreamServerEventMap>]): this;
+    onServerEvent(event: DataStreamServerEvent, listener: (connection: DataStreamConnection) => void): this;
     private handleSetupDataStreamTransportWrite;
-    private static buildSetupStatusResponse;
     private buildSupportedDataStreamTransportConfigurationTLV;
     private constructService;
     private setupServiceHandlers;

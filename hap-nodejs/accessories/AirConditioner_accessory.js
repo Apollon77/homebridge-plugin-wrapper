@@ -1,5 +1,5 @@
 "use strict";
-//In This example we create an Airconditioner Accessory that Has a Thermostat linked to a Fan Service.
+//In This example we create an air conditioner Accessory that Has a Thermostat linked to a Fan Service.
 //For example, I've also put a Light Service that should be hidden to represent a light in the closet that is part of the AC. It is to show how to hide services.
 //The linking and Hiding does NOT appear to be reflected in Home
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -34,7 +34,6 @@ ACTest.on("identify" /* IDENTIFY */, function (paired, callback) {
     callback(); // success
 });
 // Add the actual Fan Service and listen for change events from iOS.
-// We can see the complete list of Services and Characteristics in `lib/gen/HomeKit.ts`
 var FanService = ACTest.addService(__1.Service.Fan, "Blower"); // services exposed to the user should have "names" like "Fake Light" for us
 FanService.getCharacteristic(__1.Characteristic.On)
     .on("set" /* SET */, function (value, callback) {

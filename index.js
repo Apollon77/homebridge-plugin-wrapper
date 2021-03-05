@@ -47,6 +47,7 @@ function HomebridgeWrapper(config) {
             this.stop = function () {};
             this.sendEvent = function () {};
             this.on = function () {};
+            this.broadcastEvent = function () {};
 
             that.logger.debug('Fake EventedHTTPServer initialized');
             return this;
@@ -76,6 +77,7 @@ function HomebridgeWrapper(config) {
             destroy: function() {}
         }
     });
+    mock('@homebridge/ciao', function() {});
     mock(path.join(__dirname, '/homebridge/version.js'), path.join(__dirname, '/homebridge-version.js'));
 
 
@@ -250,7 +252,7 @@ HomebridgeWrapper.prototype.init = function init() {
         insecureAccess: this.insecureAccess
     };
     this.server = new Server(serverOpts);
-    this.server.bridge = new this.WrapperBridge(this.server.config.bridge.name, hap.uuid.generate("HomeBridge"));
+    this.server.bridgeService.bridge = new this.WrapperBridge(this.server.config.bridge.name, hap.uuid.generate("HomeBridge"));
 
     this.server.start();
 };
@@ -259,7 +261,7 @@ HomebridgeWrapper.prototype.finish = function finish() {
     if (this.server) {
         this.server.teardown();
         // Save cached accessories to persist storage.
-        this.server.saveCachedPlatformAccessoriesOnDisk();
+        this.server.bridgeService && this.server.bridgeService.saveCachedPlatformAccessoriesOnDisk();
     }
     this.removeAllListeners();
     this.server = null;

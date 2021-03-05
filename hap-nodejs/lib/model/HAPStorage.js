@@ -1,10 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HAPStorage = void 0;
-var node_persist_1 = __importDefault(require("node-persist"));
+var tslib_1 = require("tslib");
+// @ts-ignore
+var node_persist_1 = tslib_1.__importDefault(require("node-persist"));
 var HAPStorage = /** @class */ (function () {
     function HAPStorage() {
     }

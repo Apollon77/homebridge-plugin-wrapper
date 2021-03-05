@@ -52,8 +52,8 @@ export declare const enum DataFormatTags {
     DATA_LENGTH32LE = 147,
     DATA_LENGTH64LE = 148,
     DATA_TERMINATED = 159,
-    DEDUPLICATION_START = 160,
-    DEDUPLICATION_STOP = 207,
+    COMPRESSION_START = 160,
+    COMPRESSION_STOP = 207,
     ARRAY_LENGTH_START = 208,
     ARRAY_LENGTH_STOP = 222,
     ARRAY_TERMINATED = 223,
@@ -61,18 +61,18 @@ export declare const enum DataFormatTags {
     DICTIONARY_LENGTH_STOP = 238,
     DICTIONARY_TERMINATED = 239
 }
-export declare namespace DataStreamParser {
-    function decode(buffer: DataStreamReader): any;
-    function encode(data: any, buffer: DataStreamWriter): void;
+export declare class DataStreamParser {
+    static decode(buffer: DataStreamReader): any;
+    static encode(data: any, buffer: DataStreamWriter): void;
 }
 export declare class DataStreamReader {
     private readonly data;
     readerIndex: number;
-    private deduplicationData;
+    private trackedCompressedData;
     constructor(data: Buffer);
     finished(): void;
-    deduplicateData(index: number): any;
-    private cache;
+    decompressData(index: number): any;
+    private trackData;
     private ensureLength;
     readTag(): number;
     readTrue(): any;
@@ -113,7 +113,7 @@ export declare class DataStreamWriter {
     length(): number;
     getData(): Buffer;
     private ensureLength;
-    private checkDeduplication;
+    private compressDataIfPossible;
     writeTag(tag: DataFormatTags): void;
     writeTrue(): void;
     writeFalse(): void;

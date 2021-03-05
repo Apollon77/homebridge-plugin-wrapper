@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.forceColor = exports.setTimestampEnabled = exports.setDebugEnabled = exports.withPrefix = exports.Logger = exports.LogLevel = void 0;
+exports.forceColor = exports.setTimestampEnabled = exports.setDebugEnabled = exports.getLogPrefix = exports.withPrefix = exports.Logger = exports.LogLevel = void 0;
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const util_1 = __importDefault(require("util"));
 const chalk_1 = __importDefault(require("chalk"));
@@ -90,11 +90,12 @@ class Logger {
         this.log("error" /* ERROR */, message, ...parameters);
     }
     debug(message, ...parameters) {
-        if (Logger.debugEnabled) {
-            this.log("debug" /* DEBUG */, message, ...parameters);
-        }
+        this.log("debug" /* DEBUG */, message, ...parameters);
     }
     log(level, message, ...parameters) {
+        if (level === "debug" /* DEBUG */ && !Logger.debugEnabled) {
+            return;
+        }
         message = util_1.default.format(message, ...parameters);
         let loggingFunction = console.log;
         switch (level) {
@@ -111,7 +112,7 @@ class Logger {
                 break;
         }
         if (this.prefix) {
-            message = chalk_1.default.cyan(`[${this.prefix}] `) + message;
+            message = getLogPrefix(this.prefix) + " " + message;
         }
         if (Logger.timestampEnabled) {
             const date = new Date();
@@ -135,6 +136,14 @@ function withPrefix(prefix) {
     return Logger.withPrefix(prefix);
 }
 exports.withPrefix = withPrefix;
+/**
+ * Gets the prefix
+ * @param prefix
+ */
+function getLogPrefix(prefix) {
+    return chalk_1.default.cyan(`[${prefix}]`);
+}
+exports.getLogPrefix = getLogPrefix;
 /**
  * Turns on debug level logging. Off by default.
  *

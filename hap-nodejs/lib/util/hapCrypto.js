@@ -1,13 +1,15 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.writeUInt64LE = exports.chacha20_poly1305_encryptAndSeal = exports.chacha20_poly1305_decryptAndVerify = exports.layerDecrypt = exports.layerEncrypt = exports.HKDF = exports.generateCurve25519SharedSecKey = exports.generateCurve25519KeyPair = void 0;
-var crypto_1 = __importDefault(require("crypto"));
-var tweetnacl_1 = __importDefault(require("tweetnacl"));
-var assert_1 = __importDefault(require("assert"));
-var futoin_hkdf_1 = __importDefault(require("futoin-hkdf"));
+var tslib_1 = require("tslib");
+var assert_1 = tslib_1.__importDefault(require("assert"));
+var crypto_1 = tslib_1.__importDefault(require("crypto"));
+var futoin_hkdf_1 = tslib_1.__importDefault(require("futoin-hkdf"));
+var tweetnacl_1 = tslib_1.__importDefault(require("tweetnacl"));
+if (!crypto_1.default.getCiphers().includes("chacha20-poly1305")) {
+    assert_1.default.fail("The cipher 'chacha20-poly1305' is not supported with your current running nodejs version v" + process.version + ". " +
+        "At least a nodejs version of v10.17.0 (excluding v11.0 and v11.1) is required!");
+}
 function generateCurve25519KeyPair() {
     return tweetnacl_1.default.box.keyPair();
 }
@@ -20,7 +22,7 @@ function HKDF(hashAlg, salt, ikm, info, size) {
     return futoin_hkdf_1.default(ikm, size, { hash: hashAlg, salt: salt, info: info });
 }
 exports.HKDF = HKDF;
-function layerEncrypt(data, count, key) {
+function layerEncrypt(data, encryption) {
     var result = Buffer.alloc(0);
     var total = data.length;
     for (var offset = 0; offset < total;) {
@@ -28,35 +30,31 @@ function layerEncrypt(data, count, key) {
         var leLength = Buffer.alloc(2);
         leLength.writeUInt16LE(length, 0);
         var nonce = Buffer.alloc(8);
-        writeUInt64LE(count.value++, nonce, 0);
-        var encrypted = chacha20_poly1305_encryptAndSeal(key, nonce, leLength, data.slice(offset, offset + length));
+        writeUInt64LE(encryption.accessoryToControllerCount++, nonce, 0);
+        var encrypted = chacha20_poly1305_encryptAndSeal(encryption.accessoryToControllerKey, nonce, leLength, data.slice(offset, offset + length));
         offset += length;
         result = Buffer.concat([result, leLength, encrypted.ciphertext, encrypted.authTag]);
     }
     return result;
 }
 exports.layerEncrypt = layerEncrypt;
-function layerDecrypt(packet, count, key, extraInfo) {
-    // Handle Extra Info
-    if (extraInfo.leftoverData != undefined) {
-        packet = Buffer.concat([extraInfo.leftoverData, packet]);
+function layerDecrypt(packet, encryption) {
+    if (encryption.incompleteFrame) {
+        packet = Buffer.concat([encryption.incompleteFrame, packet]);
+        encryption.incompleteFrame = undefined;
     }
     var result = Buffer.alloc(0);
     var total = packet.length;
     for (var offset = 0; offset < total;) {
         var realDataLength = packet.slice(offset, offset + 2).readUInt16LE(0);
         var availableDataLength = total - offset - 2 - 16;
-        if (realDataLength > availableDataLength) {
-            // Fragmented packet
-            extraInfo.leftoverData = packet.slice(offset);
+        if (realDataLength > availableDataLength) { // Fragmented packet
+            encryption.incompleteFrame = packet.slice(offset);
             break;
         }
-        else {
-            extraInfo.leftoverData = undefined;
-        }
         var nonce = Buffer.alloc(8);
-        writeUInt64LE(count.value++, nonce, 0);
-        var plaintext = chacha20_poly1305_decryptAndVerify(key, nonce, packet.slice(offset, offset + 2), packet.slice(offset + 2, offset + 2 + realDataLength), packet.slice(offset + 2 + realDataLength, offset + 2 + realDataLength + 16));
+        writeUInt64LE(encryption.controllerToAccessoryCount++, nonce, 0);
+        var plaintext = chacha20_poly1305_decryptAndVerify(encryption.controllerToAccessoryKey, nonce, packet.slice(offset, offset + 2), packet.slice(offset + 2, offset + 2 + realDataLength), packet.slice(offset + 2 + realDataLength, offset + 2 + realDataLength + 16));
         result = Buffer.concat([result, plaintext]);
         offset += (18 + realDataLength);
     }

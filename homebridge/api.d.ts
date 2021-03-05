@@ -1,11 +1,11 @@
 /// <reference types="node" />
 import { EventEmitter } from "events";
 import * as hapNodeJs from "hap-nodejs";
+import { Controller, Service } from "hap-nodejs";
 import { PlatformAccessory } from "./platformAccessory";
 import { User } from "./user";
 import { Logging } from "./logger";
-import { Controller, Service } from "hap-nodejs";
-import { AccessoryConfig, PlatformConfig } from "./server";
+import { AccessoryConfig, PlatformConfig } from "./bridgeService";
 export declare type HAP = typeof hapNodeJs;
 export declare type HAPLegacyTypes = typeof hapNodeJs.LegacyTypes;
 export declare type PluginIdentifier = PluginName | ScopedPluginName;
@@ -127,17 +127,35 @@ export declare const enum InternalAPIEvent {
     UPDATE_PLATFORM_ACCESSORIES = "updatePlatformAccessories",
     UNREGISTER_PLATFORM_ACCESSORIES = "unregisterPlatformAccessories"
 }
-export declare interface API {
-    on(event: "didFinishLaunching", listener: () => void): this;
-    on(event: "shutdown", listener: () => void): this;
-}
 export interface API {
+    /**
+     * The homebridge API version as a floating point number.
+     */
     readonly version: number;
+    /**
+     * The current homebridge semver version.
+     */
     readonly serverVersion: string;
     readonly user: typeof User;
     readonly hap: HAP;
     readonly hapLegacyTypes: HAPLegacyTypes;
     readonly platformAccessory: typeof PlatformAccessory;
+    /**
+     * Returns true if the current running homebridge version is greater or equal to the
+     * passed version string.
+     *
+     * Example:
+     *
+     * We assume the homebridge version 1.3.0-beta.12 ({@link serverVersion}) and the following example calls below
+     * ```
+     *  versionGreaterOrEqual("1.2.0"); // will return true
+     *  versionGreaterOrEqual("1.3.0"); // will return false (the RELEASE version 1.3.0 is bigger than the BETA version 1.3.0-beta.12)
+     *  versionGreaterOrEqual("1.3.0-beta.8); // will return true
+     * ```
+     *
+     * @param version
+     */
+    versionGreaterOrEqual(version: string): boolean;
     registerAccessory(accessoryName: AccessoryName, constructor: AccessoryPluginConstructor): void;
     registerAccessory(pluginIdentifier: PluginIdentifier, accessoryName: AccessoryName, constructor: AccessoryPluginConstructor): void;
     registerPlatform(platformName: PlatformName, constructor: PlatformPluginConstructor): void;
@@ -150,6 +168,8 @@ export interface API {
      */
     publishCameraAccessories(pluginIdentifier: PluginIdentifier, accessories: PlatformAccessory[]): void;
     publishExternalAccessories(pluginIdentifier: PluginIdentifier, accessories: PlatformAccessory[]): void;
+    on(event: "didFinishLaunching", listener: () => void): this;
+    on(event: "shutdown", listener: () => void): this;
 }
 export declare interface HomebridgeAPI {
     on(event: "didFinishLaunching", listener: () => void): this;
@@ -170,13 +190,14 @@ export declare interface HomebridgeAPI {
     emit(event: InternalAPIEvent.UNREGISTER_PLATFORM_ACCESSORIES, accessories: PlatformAccessory[]): boolean;
 }
 export declare class HomebridgeAPI extends EventEmitter implements API {
-    readonly version = 2.6;
+    readonly version = 2.7;
     readonly serverVersion: string;
     readonly user: typeof User;
     readonly hap: typeof hapNodeJs;
     readonly hapLegacyTypes: typeof import("hap-nodejs/dist/accessories/types");
     readonly platformAccessory: typeof PlatformAccessory;
     constructor();
+    versionGreaterOrEqual(version: string): boolean;
     static isDynamicPlatformPlugin(platformPlugin: PlatformPlugin): platformPlugin is DynamicPlatformPlugin;
     static isStaticPlatformPlugin(platformPlugin: PlatformPlugin): platformPlugin is StaticPlatformPlugin;
     signalFinished(): void;

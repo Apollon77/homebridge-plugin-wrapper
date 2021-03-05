@@ -12,9 +12,18 @@ export declare class ControllerStorage {
     private restoredAccessories?;
     private parent?;
     private linkedAccessories?;
+    private queuedSaveTimeout?;
+    private queuedSaveTime?;
     constructor(accessory: Accessory);
+    private enqueueSaveRequest;
+    /**
+     * Links a bridged accessory to the ControllerStorage of the bridge accessory.
+     *
+     * @param accessory
+     */
     linkAccessory(accessory: Accessory): void;
     trackController(controller: SerializableController): void;
+    untrackController(controller: SerializableController): void;
     purgeControllerData(controller: SerializableController): void;
     private handleStateChange;
     private restoreController;

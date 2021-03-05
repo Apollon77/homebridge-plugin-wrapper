@@ -1,20 +1,7 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
-var dgram = require('dgram');
-var EventEmitter = require('events').EventEmitter;
+var tslib_1 = require("tslib");
+var dgram_1 = tslib_1.__importDefault(require("dgram"));
 /**
  * RTPProxy to proxy unencrypted RTP and RTCP
  *
@@ -23,13 +10,12 @@ var EventEmitter = require('events').EventEmitter;
  * Later HomeKit removed support for unencrypted stream so it’s mostly no longer useful anymore, only really for testing
  * with a custom HAP controller.
  */
-var RTPProxy = /** @class */ (function (_super) {
-    __extends(RTPProxy, _super);
+var RTPProxy = /** @class */ (function () {
     function RTPProxy(options) {
-        var _this = _super.call(this) || this;
-        _this.options = options;
-        _this.startingPort = 10000;
-        _this.setup = function () {
+        var _this = this;
+        this.options = options;
+        this.startingPort = 10000;
+        this.setup = function () {
             return _this.createSocketPair(_this.type)
                 .then(function (sockets) {
                 _this.incomingRTPSocket = sockets[0];
@@ -40,7 +26,7 @@ var RTPProxy = /** @class */ (function (_super) {
                 _this.onBound();
             });
         };
-        _this.destroy = function () {
+        this.destroy = function () {
             if (_this.incomingRTPSocket) {
                 _this.incomingRTPSocket.close();
             }
@@ -51,66 +37,66 @@ var RTPProxy = /** @class */ (function (_super) {
                 _this.outgoingSocket.close();
             }
         };
-        _this.incomingRTPPort = function () {
+        this.incomingRTPPort = function () {
             var address = _this.incomingRTPSocket.address();
             if (typeof address !== 'string') {
                 return address.port;
             }
         };
-        _this.incomingRTCPPort = function () {
+        this.incomingRTCPPort = function () {
             var address = _this.incomingRTCPSocket.address();
             if (typeof address !== 'string') {
                 return address.port;
             }
         };
-        _this.outgoingLocalPort = function () {
+        this.outgoingLocalPort = function () {
             var address = _this.outgoingSocket.address();
             if (typeof address !== 'string') {
                 return address.port;
             }
             return 0; // won't happen
         };
-        _this.setServerAddress = function (address) {
+        this.setServerAddress = function (address) {
             _this.serverAddress = address;
         };
-        _this.setServerRTPPort = function (port) {
+        this.setServerRTPPort = function (port) {
             _this.serverRTPPort = port;
         };
-        _this.setServerRTCPPort = function (port) {
+        this.setServerRTCPPort = function (port) {
             _this.serverRTCPPort = port;
         };
-        _this.setIncomingPayloadType = function (pt) {
+        this.setIncomingPayloadType = function (pt) {
             _this.incomingPayloadType = pt;
         };
-        _this.setOutgoingPayloadType = function (pt) {
+        this.setOutgoingPayloadType = function (pt) {
             _this.outgoingPayloadType = pt;
         };
-        _this.sendOut = function (msg) {
+        this.sendOut = function (msg) {
             // Just drop it if we're not setup yet, I guess.
             if (!_this.outgoingAddress || !_this.outgoingPort)
                 return;
             _this.outgoingSocket.send(msg, _this.outgoingPort, _this.outgoingAddress);
         };
-        _this.sendBack = function (msg) {
+        this.sendBack = function (msg) {
             // Just drop it if we're not setup yet, I guess.
             if (!_this.serverAddress || !_this.serverRTCPPort)
                 return;
             _this.outgoingSocket.send(msg, _this.serverRTCPPort, _this.serverAddress);
         };
-        _this.onBound = function () {
+        this.onBound = function () {
             if (_this.disabled)
                 return;
-            _this.incomingRTPSocket.on('message', function (msg, rinfo) {
+            _this.incomingRTPSocket.on('message', function (msg) {
                 _this.rtpMessage(msg);
             });
-            _this.incomingRTCPSocket.on('message', function (msg, rinfo) {
+            _this.incomingRTCPSocket.on('message', function (msg) {
                 _this.rtcpMessage(msg);
             });
-            _this.outgoingSocket.on('message', function (msg, rinfo) {
+            _this.outgoingSocket.on('message', function (msg) {
                 _this.rtcpReply(msg);
             });
         };
-        _this.rtpMessage = function (msg) {
+        this.rtpMessage = function (msg) {
             if (msg.length < 12) {
                 // Not a proper RTP packet. Just forward it.
                 _this.sendOut(msg);
@@ -128,7 +114,7 @@ var RTPProxy = /** @class */ (function (_super) {
             msg.writeUInt32BE(_this.outgoingSSRC, 8);
             _this.sendOut(msg);
         };
-        _this.processRTCPMessage = function (msg, transform) {
+        this.processRTCPMessage = function (msg, transform) {
             var rtcpPackets = [];
             var offset = 0;
             while ((offset + 4) <= msg.length) {
@@ -146,7 +132,7 @@ var RTPProxy = /** @class */ (function (_super) {
                 return Buffer.concat(rtcpPackets);
             return null;
         };
-        _this.rtcpMessage = function (msg) {
+        this.rtcpMessage = function (msg) {
             var processed = _this.processRTCPMessage(msg, function (pt, packet) {
                 if (pt != 200 || packet.length < 8)
                     return packet;
@@ -158,7 +144,7 @@ var RTPProxy = /** @class */ (function (_super) {
             if (processed)
                 _this.sendOut(processed);
         };
-        _this.rtcpReply = function (msg) {
+        this.rtcpReply = function (msg) {
             var processed = _this.processRTCPMessage(msg, function (pt, packet) {
                 if (pt != 201 || packet.length < 12)
                     return packet;
@@ -170,10 +156,10 @@ var RTPProxy = /** @class */ (function (_super) {
             if (processed)
                 _this.sendOut(processed);
         };
-        _this.createSocket = function (type) {
-            return new Promise(function (resolve, reject) {
+        this.createSocket = function (type) {
+            return new Promise(function (resolve) {
                 var retry = function () {
-                    var socket = dgram.createSocket(type);
+                    var socket = dgram_1.default.createSocket(type);
                     var bindErrorHandler = function () {
                         if (_this.startingPort == 65535)
                             _this.startingPort = 10000;
@@ -191,11 +177,11 @@ var RTPProxy = /** @class */ (function (_super) {
                 retry();
             });
         };
-        _this.createSocketPair = function (type) {
-            return new Promise(function (resolve, reject) {
+        this.createSocketPair = function (type) {
+            return new Promise(function (resolve) {
                 var retry = function () {
-                    var socket1 = dgram.createSocket(type);
-                    var socket2 = dgram.createSocket(type);
+                    var socket1 = dgram_1.default.createSocket(type);
+                    var socket2 = dgram_1.default.createSocket(type);
                     var state = { socket1: 0, socket2: 0 };
                     var recheck = function () {
                         if (state.socket1 == 0 || state.socket2 == 0)
@@ -234,18 +220,17 @@ var RTPProxy = /** @class */ (function (_super) {
                 retry();
             });
         };
-        _this.type = options.isIPV6 ? 'udp6' : 'udp4';
-        _this.startingPort = 10000;
-        _this.outgoingAddress = options.outgoingAddress;
-        _this.outgoingPort = options.outgoingPort;
-        _this.incomingPayloadType = 0;
-        _this.outgoingSSRC = options.outgoingSSRC;
-        _this.disabled = options.disabled;
-        _this.incomingSSRC = null;
-        _this.outgoingPayloadType = null;
-        return _this;
+        this.type = options.isIPV6 ? 'udp6' : 'udp4';
+        this.startingPort = 10000;
+        this.outgoingAddress = options.outgoingAddress;
+        this.outgoingPort = options.outgoingPort;
+        this.incomingPayloadType = 0;
+        this.outgoingSSRC = options.outgoingSSRC;
+        this.disabled = options.disabled;
+        this.incomingSSRC = null;
+        this.outgoingPayloadType = null;
     }
     return RTPProxy;
-}(EventEmitter));
+}());
 exports.default = RTPProxy;
 //# sourceMappingURL=RTPProxy.js.map

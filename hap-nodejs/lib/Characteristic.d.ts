@@ -1,22 +1,66 @@
+/// <reference types="node" />
+import { EventEmitter } from "events";
+import { CharacteristicJsonObject } from "../internal-types";
+import { CharacteristicValue, Nullable, VoidCallback } from '../types';
+import { CharacteristicWarningType } from "./Accessory";
+import { AccessControlLevel, AccessoryFlags, AccessoryIdentifier, Active, ActiveIdentifier, ActivityInterval, AdministratorOnlyAccess, AirParticulateDensity, AirParticulateSize, AirQuality, AppMatchingIdentifier, AudioFeedback, BatteryLevel, Brightness, ButtonEvent, CameraOperatingModeIndicator, CarbonDioxideDetected, CarbonDioxideLevel, CarbonDioxidePeakLevel, CarbonMonoxideDetected, CarbonMonoxideLevel, CarbonMonoxidePeakLevel, Category, CCAEnergyDetectThreshold, CCASignalDetectThreshold, CharacteristicValueActiveTransitionCount, CharacteristicValueTransitionControl, ChargingState, ClosedCaptions, ColorTemperature, ConfigureBridgedAccessory, ConfigureBridgedAccessoryStatus, ConfiguredName, ContactSensorState, CoolingThresholdTemperature, CurrentAirPurifierState, CurrentAmbientLightLevel, CurrentDoorState, CurrentFanState, CurrentHeaterCoolerState, CurrentHeatingCoolingState, CurrentHorizontalTiltAngle, CurrentHumidifierDehumidifierState, CurrentMediaState, CurrentPosition, CurrentRelativeHumidity, CurrentSlatState, CurrentTemperature, CurrentTiltAngle, CurrentTime, CurrentTransport, CurrentVerticalTiltAngle, CurrentVisibilityState, DataStreamHAPTransport, DataStreamHAPTransportInterrupt, DayoftheWeek, DiagonalFieldOfView, DigitalZoom, DiscoverBridgedAccessories, DiscoveredBridgedAccessories, DisplayOrder, EventRetransmissionMaximum, EventSnapshotsActive, EventTransmissionCounters, FilterChangeIndication, FilterLifeLevel, FirmwareRevision, FirmwareUpdateReadiness, FirmwareUpdateStatus, HardwareRevision, HeartBeat, HeatingThresholdTemperature, HoldPosition, HomeKitCameraActive, Hue, Identifier, Identify, ImageMirroring, ImageRotation, InputDeviceType, InputSourceType, InUse, IsConfigured, LeakDetected, LinkQuality, ListPairings, LockControlPoint, LockCurrentState, LockLastKnownAction, LockManagementAutoSecurityTimeout, LockPhysicalControls, LockTargetState, Logs, MACRetransmissionMaximum, MACTransmissionCounters, ManagedNetworkEnable, ManuallyDisabled, Manufacturer, MaximumTransmitPower, Model, MotionDetected, Mute, Name, NetworkAccessViolationControl, NetworkClientProfileControl, NetworkClientStatusControl, NightVision, NitrogenDioxideDensity, ObstructionDetected, OccupancyDetected, On, OperatingStateResponse, OpticalZoom, OutletInUse, OzoneDensity, PairingFeatures, PairSetup, PairVerify, PasswordSetting, PeriodicSnapshotsActive, PictureMode, Ping, PM10Density, PM2_5Density, PositionState, PowerModeSelection, ProductData, ProgrammableSwitchEvent, ProgrammableSwitchOutputState, ProgramMode, Reachable, ReceivedSignalStrengthIndication, ReceiverSensitivity, RecordingAudioActive, RelativeHumidityDehumidifierThreshold, RelativeHumidityHumidifierThreshold, RelayControlPoint, RelayEnabled, RelayState, RemainingDuration, RemoteKey, ResetFilterIndication, RotationDirection, RotationSpeed, RouterStatus, Saturation, SecuritySystemAlarmType, SecuritySystemCurrentState, SecuritySystemTargetState, SelectedAudioStreamConfiguration, SelectedCameraRecordingConfiguration, SelectedRTPStreamConfiguration, SerialNumber, ServiceLabelIndex, ServiceLabelNamespace, SetDuration, SetupDataStreamTransport, SetupEndpoints, SetupTransferTransport, SignalToNoiseRatio, SiriInputType, SlatType, SleepDiscoveryMode, SleepInterval, SmokeDetected, SoftwareRevision, StagedFirmwareVersion, StatusActive, StatusFault, StatusJammed, StatusLowBattery, StatusTampered, StreamingStatus, SulphurDioxideDensity, SupportedAudioRecordingConfiguration, SupportedAudioStreamConfiguration, SupportedCameraRecordingConfiguration, SupportedCharacteristicValueTransitionConfiguration, SupportedDataStreamTransportConfiguration, SupportedDiagnosticsSnapshot, SupportedFirmwareUpdateConfiguration, SupportedRouterConfiguration, SupportedRTPConfiguration, SupportedTransferTransportConfiguration, SupportedVideoRecordingConfiguration, SupportedVideoStreamConfiguration, SwingMode, TargetAirPurifierState, TargetAirQuality, TargetControlList, TargetControlSupportedConfiguration, TargetDoorState, TargetFanState, TargetHeaterCoolerState, TargetHeatingCoolingState, TargetHorizontalTiltAngle, TargetHumidifierDehumidifierState, TargetMediaState, TargetPosition, TargetRelativeHumidity, TargetSlatState, TargetTemperature, TargetTiltAngle, TargetVerticalTiltAngle, TargetVisibilityState, TemperatureDisplayUnits, ThirdPartyCameraActive, ThreadControlPoint, ThreadNodeCapabilities, ThreadOpenThreadVersion, ThreadStatus, TimeUpdate, TransmitPower, TunnelConnectionTimeout, TunneledAccessoryAdvertising, TunneledAccessoryConnected, TunneledAccessoryStateNumber, ValveType, Version, VideoAnalysisActive, VOCDensity, Volume, VolumeControlType, VolumeSelector, WakeConfiguration, WANConfigurationList, WANStatusList, WaterLevel, WiFiCapabilities, WiFiConfigurationControl, WiFiSatelliteStatus } from "./definitions";
+import { HAPStatus } from "./HAPServer";
 import { IdentifierCache } from './model/IdentifierCache';
-import { CharacteristicChange, CharacteristicValue, HapCharacteristic, SessionIdentifier, Nullable, ToHAPOptions, VoidCallback } from '../types';
-import { EventEmitter } from './EventEmitter';
-import * as HomeKitTypes from './gen';
+import { HAPConnection } from "./util/eventedhttp";
+import { HapStatusError } from './util/hapStatusError';
 export declare const enum Formats {
     BOOL = "bool",
+    /**
+     * Signed 32-bit integer
+     */
     INT = "int",
+    /**
+     * Signed 64-bit floating point
+     */
     FLOAT = "float",
+    /**
+     * String encoded in utf8
+     */
     STRING = "string",
+    /**
+     * Unsigned 8-bit integer.
+     */
     UINT8 = "uint8",
+    /**
+     * Unsigned 16-bit integer.
+     */
     UINT16 = "uint16",
+    /**
+     * Unsigned 32-bit integer.
+     */
     UINT32 = "uint32",
+    /**
+     * Unsigned 64-bit integer.
+     */
     UINT64 = "uint64",
+    /**
+     * Data is base64 encoded string.
+     */
     DATA = "data",
+    /**
+     * Base64 encoded tlv8 string.
+     */
     TLV8 = "tlv8",
+    /**
+     * @deprecated Not contained in the HAP spec
+     */
     ARRAY = "array",
+    /**
+     * @deprecated Not contained in the HAP spec
+     */
     DICTIONARY = "dict"
 }
 export declare const enum Units {
+    /**
+     * Celsius is the only temperature unit in the HomeKit Accessory Protocol.
+     * Unit conversion is always done on the client side e.g. on the iPhone in the Home App depending on
+     * the configured unit on the device itself.
+     */
     CELSIUS = "celsius",
     PERCENTAGE = "percentage",
     ARC_DEGREE = "arcdegrees",
@@ -42,18 +86,38 @@ export declare const enum Perms {
     WRITE_RESPONSE = "wr"
 }
 export interface CharacteristicProps {
-    format: Formats;
-    unit?: Units;
+    format: Formats | string;
     perms: Perms[];
-    ev?: boolean;
+    unit?: Units | string;
     description?: string;
+    /**
+     * Defines the minimum value for a numeric characteristic
+     */
     minValue?: number;
+    /**
+     * Defines the maximum value for a numeric characteristic
+     */
     maxValue?: number;
     minStep?: number;
+    /**
+     * Maximum number of characters when format is {@link Formats.STRING}.
+     * Default is 64 characters. Maximum allowed is 256 characters.
+     */
     maxLen?: number;
+    /**
+     * Maximum number of characters when format is {@link Formats.DATA}.
+     * Default is 2097152 characters.
+     */
     maxDataLen?: number;
+    /**
+     * Defines a array of valid values to be used for the characteristic.
+     */
     validValues?: number[];
-    validValueRanges?: [number, number];
+    /**
+     * Two element array where the first value specifies the lowest valid value and
+     * the second element specifies the highest valid value.
+     */
+    validValueRanges?: [min: number, max: number];
     adminOnlyAccess?: Access[];
 }
 export declare const enum Access {
@@ -61,63 +125,145 @@ export declare const enum Access {
     WRITE = 1,
     NOTIFY = 2
 }
+export declare type CharacteristicChange = {
+    originator?: HAPConnection;
+    newValue: Nullable<CharacteristicValue>;
+    oldValue: Nullable<CharacteristicValue>;
+    reason: ChangeReason;
+    context?: any;
+};
+export declare const enum ChangeReason {
+    /**
+     * Reason used when HomeKit writes a value or the API user calls {@link Characteristic.setValue}.
+     */
+    WRITE = "write",
+    /**
+     * Reason used when the API user calls the method {@link Characteristic.updateValue}.
+     */
+    UPDATE = "update",
+    /**
+     * Used when when HomeKit reads a value or the API user calls the deprecated method {@link Characteristic.getValue}.
+     */
+    READ = "read",
+    /**
+     * Used when call to {@link Characteristic.sendEventNotification} was made.
+     */
+    EVENT = "event"
+}
+/**
+ * This format for a context object can be used to pass to any characteristic write operation.
+ * It can contain additional information used by the internal event handlers of hap-nodejs.
+ * The context object can be combined with any custom data for own use.
+ */
+export interface CharacteristicOperationContext {
+    /**
+     * If set to true for any characteristic write operation
+     * the Accessory won't send any event notifications to HomeKit controllers
+     * for that particular change.
+     */
+    omitEventUpdate?: boolean;
+}
+/**
+ * @private
+ */
 export interface SerializedCharacteristic {
     displayName: string;
     UUID: string;
-    props: CharacteristicProps;
-    value: Nullable<CharacteristicValue>;
     eventOnlyCharacteristic: boolean;
+    constructorName?: string;
+    value: Nullable<CharacteristicValue>;
+    props: CharacteristicProps;
 }
 export declare const enum CharacteristicEventTypes {
+    /**
+     * This event is thrown when a HomeKit controller wants to read the current value of the characteristic.
+     * The event handler should call the supplied callback as fast as possible.
+     *
+     * HAP-NodeJS will complain about slow running get handlers after 3 seconds and terminate the request after 10 seconds.
+     */
     GET = "get",
+    /**
+     * This event is thrown when a HomeKit controller wants to write a new value to the characteristic.
+     * The event handler should call the supplied callback as fast as possible.
+     *
+     * HAP-NodeJS will complain about slow running set handlers after 3 seconds and terminate the request after 10 seconds.
+     */
     SET = "set",
+    /**
+     * Emitted after a new value is set for the characteristic.
+     * The new value can be set via a request by a HomeKit controller or via an API call.
+     */
+    CHANGE = "change",
+    /**
+     * @private
+     */
     SUBSCRIBE = "subscribe",
+    /**
+     * @private
+     */
     UNSUBSCRIBE = "unsubscribe",
-    CHANGE = "change"
+    /**
+     * @private
+     */
+    CHARACTERISTIC_WARNING = "characteristic-warning"
 }
-export declare type CharacteristicGetCallback<T = Nullable<CharacteristicValue>> = (error?: Error | null, value?: T) => void;
-export declare type CharacteristicSetCallback = (error?: Error | null, value?: CharacteristicValue) => void;
-declare type Events = {
-    ["change"]: (change: CharacteristicChange) => void;
-    ["get"]: (cb: CharacteristicGetCallback, context?: any, connectionID?: SessionIdentifier) => void;
-    ["set"]: (value: CharacteristicValue, cb: CharacteristicSetCallback, context?: any, connectionID?: SessionIdentifier) => void;
-    ["subscribe"]: VoidCallback;
-    ["unsubscribe"]: VoidCallback;
-};
+export declare type CharacteristicGetCallback = (status?: HAPStatus | null | Error, value?: Nullable<CharacteristicValue>) => void;
+export declare type CharacteristicSetCallback = (error?: HAPStatus | null | Error, writeResponse?: Nullable<CharacteristicValue>) => void;
+export declare type CharacteristicGetHandler = (context: any, connection?: HAPConnection) => Promise<Nullable<CharacteristicValue>> | Nullable<CharacteristicValue>;
+export declare type CharacteristicSetHandler = (value: CharacteristicValue, context: any, connection?: HAPConnection) => Promise<Nullable<CharacteristicValue> | void> | Nullable<CharacteristicValue> | void;
+export declare type AdditionalAuthorizationHandler = (additionalAuthorizationData: string | undefined) => boolean;
+export declare interface Characteristic {
+    on(event: "get", listener: (callback: CharacteristicGetCallback, context: any, connection?: HAPConnection) => void): this;
+    on(event: "set", listener: (value: CharacteristicValue, callback: CharacteristicSetCallback, context: any, connection?: HAPConnection) => void): this;
+    on(event: "change", listener: (change: CharacteristicChange) => void): this;
+    /**
+     * @private
+     */
+    on(event: "subscribe", listener: VoidCallback): this;
+    /**
+     * @private
+     */
+    on(event: "unsubscribe", listener: VoidCallback): this;
+    /**
+     * @private
+     */
+    on(event: "characteristic-warning", listener: (type: CharacteristicWarningType, message: string, stack?: string) => void): this;
+    /**
+     * @private
+     */
+    emit(event: "get", callback: CharacteristicGetCallback, context: any, connection?: HAPConnection): boolean;
+    /**
+     * @private
+     */
+    emit(event: "set", value: CharacteristicValue, callback: CharacteristicSetCallback, context: any, connection?: HAPConnection): boolean;
+    /**
+     * @private
+     */
+    emit(event: "change", change: CharacteristicChange): boolean;
+    /**
+     * @private
+     */
+    emit(event: "subscribe"): boolean;
+    /**
+     * @private
+     */
+    emit(event: "unsubscribe"): boolean;
+    /**
+     * @private
+     */
+    emit(event: "characteristic-warning", type: CharacteristicWarningType, message: string, stack?: string): boolean;
+}
 /**
  * Characteristic represents a particular typed variable that can be assigned to a Service. For instance, a
  * "Hue" Characteristic might store a 'float' value of type 'arcdegrees'. You could add the Hue Characteristic
- * to a Service in order to store that value. A particular Characteristic is distinguished from others by its
+ * to a {@link Service} in order to store that value. A particular Characteristic is distinguished from others by its
  * UUID. HomeKit provides a set of known Characteristic UUIDs defined in HomeKit.ts along with a
  * corresponding concrete subclass.
  *
  * You can also define custom Characteristics by providing your own UUID. Custom Characteristics can be added
  * to any native or custom Services, but Siri will likely not be able to work with these.
- *
- * Note that you can get the "value" of a Characteristic by accessing the "value" property directly, but this
- * is really a "cached value". If you want to fetch the latest value, which may involve doing some work, then
- * call getValue().
- *
- * @event 'get' => function(callback(err, newValue), context) { }
- *        Emitted when someone calls getValue() on this Characteristic and desires the latest non-cached
- *        value. If there are any listeners to this event, one of them MUST call the callback in order
- *        for the value to ever be delivered. The `context` object is whatever was passed in by the initiator
- *        of this event (for instance whomever called `getValue`).
- *
- * @event 'set' => function(newValue, callback(err), context) { }
- *        Emitted when someone calls setValue() on this Characteristic with a desired new value. If there
- *        are any listeners to this event, one of them MUST call the callback in order for this.value to
- *        actually be set. The `context` object is whatever was passed in by the initiator of this change
- *        (for instance, whomever called `setValue`).
- *
- * @event 'change' => function({ oldValue, newValue, context }) { }
- *        Emitted after a change in our value has occurred. The new value will also be immediately accessible
- *        in this.value. The event object contains the new value as well as the context object originally
- *        passed in by the initiator of this change (if known).
  */
-export declare class Characteristic extends EventEmitter<Events> {
-    displayName: string;
-    UUID: string;
+export declare class Characteristic extends EventEmitter {
     /**
      * @deprecated Please use the Formats const enum above. Scheduled to be removed in 2021-06.
      */
@@ -130,285 +276,587 @@ export declare class Characteristic extends EventEmitter<Events> {
      * @deprecated Please use the Perms const enum above. Scheduled to be removed in 2021-06.
      */
     static Perms: typeof Perms;
-    static AccessControlLevel: typeof HomeKitTypes.Generated.AccessControlLevel;
-    static AccessoryFlags: typeof HomeKitTypes.Generated.AccessoryFlags;
-    static AccessoryIdentifier: typeof HomeKitTypes.Bridged.AccessoryIdentifier;
-    static Active: typeof HomeKitTypes.Generated.Active;
-    static ActiveIdentifier: typeof HomeKitTypes.TV.ActiveIdentifier;
-    static AdministratorOnlyAccess: typeof HomeKitTypes.Generated.AdministratorOnlyAccess;
-    static AirParticulateDensity: typeof HomeKitTypes.Generated.AirParticulateDensity;
-    static AirParticulateSize: typeof HomeKitTypes.Generated.AirParticulateSize;
-    static AirQuality: typeof HomeKitTypes.Generated.AirQuality;
-    static AppMatchingIdentifier: typeof HomeKitTypes.Bridged.AppMatchingIdentifier;
-    static AudioFeedback: typeof HomeKitTypes.Generated.AudioFeedback;
-    static BatteryLevel: typeof HomeKitTypes.Generated.BatteryLevel;
-    static Brightness: typeof HomeKitTypes.Generated.Brightness;
-    static ButtonEvent: typeof HomeKitTypes.Remote.ButtonEvent;
-    static CarbonDioxideDetected: typeof HomeKitTypes.Generated.CarbonDioxideDetected;
-    static CarbonDioxideLevel: typeof HomeKitTypes.Generated.CarbonDioxideLevel;
-    static CarbonDioxidePeakLevel: typeof HomeKitTypes.Generated.CarbonDioxidePeakLevel;
-    static CarbonMonoxideDetected: typeof HomeKitTypes.Generated.CarbonMonoxideDetected;
-    static CarbonMonoxideLevel: typeof HomeKitTypes.Generated.CarbonMonoxideLevel;
-    static CarbonMonoxidePeakLevel: typeof HomeKitTypes.Generated.CarbonMonoxidePeakLevel;
-    static Category: typeof HomeKitTypes.Bridged.Category;
-    static ChargingState: typeof HomeKitTypes.Generated.ChargingState;
-    static ClosedCaptions: typeof HomeKitTypes.TV.ClosedCaptions;
-    static ColorTemperature: typeof HomeKitTypes.Generated.ColorTemperature;
-    static ConfigureBridgedAccessory: typeof HomeKitTypes.Bridged.ConfigureBridgedAccessory;
-    static ConfigureBridgedAccessoryStatus: typeof HomeKitTypes.Bridged.ConfigureBridgedAccessoryStatus;
-    static ConfiguredName: typeof HomeKitTypes.TV.ConfiguredName;
-    static ContactSensorState: typeof HomeKitTypes.Generated.ContactSensorState;
-    static CoolingThresholdTemperature: typeof HomeKitTypes.Generated.CoolingThresholdTemperature;
-    static CurrentAirPurifierState: typeof HomeKitTypes.Generated.CurrentAirPurifierState;
-    static CurrentAmbientLightLevel: typeof HomeKitTypes.Generated.CurrentAmbientLightLevel;
-    static CurrentDoorState: typeof HomeKitTypes.Generated.CurrentDoorState;
-    static CurrentFanState: typeof HomeKitTypes.Generated.CurrentFanState;
-    static CurrentHeaterCoolerState: typeof HomeKitTypes.Generated.CurrentHeaterCoolerState;
-    static CurrentHeatingCoolingState: typeof HomeKitTypes.Generated.CurrentHeatingCoolingState;
-    static CurrentHorizontalTiltAngle: typeof HomeKitTypes.Generated.CurrentHorizontalTiltAngle;
-    static CurrentHumidifierDehumidifierState: typeof HomeKitTypes.Generated.CurrentHumidifierDehumidifierState;
-    static CurrentMediaState: typeof HomeKitTypes.TV.CurrentMediaState;
-    static CurrentPosition: typeof HomeKitTypes.Generated.CurrentPosition;
-    static CurrentRelativeHumidity: typeof HomeKitTypes.Generated.CurrentRelativeHumidity;
-    static CurrentSlatState: typeof HomeKitTypes.Generated.CurrentSlatState;
-    static CurrentTemperature: typeof HomeKitTypes.Generated.CurrentTemperature;
-    static CurrentTiltAngle: typeof HomeKitTypes.Generated.CurrentTiltAngle;
-    static CurrentTime: typeof HomeKitTypes.Bridged.CurrentTime;
-    static CurrentVerticalTiltAngle: typeof HomeKitTypes.Generated.CurrentVerticalTiltAngle;
-    static CurrentVisibilityState: typeof HomeKitTypes.TV.CurrentVisibilityState;
-    static DayoftheWeek: typeof HomeKitTypes.Bridged.DayoftheWeek;
-    static DigitalZoom: typeof HomeKitTypes.Generated.DigitalZoom;
-    static DiscoverBridgedAccessories: typeof HomeKitTypes.Bridged.DiscoverBridgedAccessories;
-    static DiscoveredBridgedAccessories: typeof HomeKitTypes.Bridged.DiscoveredBridgedAccessories;
-    static DisplayOrder: typeof HomeKitTypes.TV.DisplayOrder;
-    static FilterChangeIndication: typeof HomeKitTypes.Generated.FilterChangeIndication;
-    static FilterLifeLevel: typeof HomeKitTypes.Generated.FilterLifeLevel;
-    static FirmwareRevision: typeof HomeKitTypes.Generated.FirmwareRevision;
-    static HardwareRevision: typeof HomeKitTypes.Generated.HardwareRevision;
-    static HeatingThresholdTemperature: typeof HomeKitTypes.Generated.HeatingThresholdTemperature;
-    static HoldPosition: typeof HomeKitTypes.Generated.HoldPosition;
-    static Hue: typeof HomeKitTypes.Generated.Hue;
-    static Identifier: typeof HomeKitTypes.TV.Identifier;
-    static Identify: typeof HomeKitTypes.Generated.Identify;
-    static ImageMirroring: typeof HomeKitTypes.Generated.ImageMirroring;
-    static ImageRotation: typeof HomeKitTypes.Generated.ImageRotation;
-    static InUse: typeof HomeKitTypes.Generated.InUse;
-    static InputDeviceType: typeof HomeKitTypes.TV.InputDeviceType;
-    static InputSourceType: typeof HomeKitTypes.TV.InputSourceType;
-    static IsConfigured: typeof HomeKitTypes.Generated.IsConfigured;
+    static AccessControlLevel: typeof AccessControlLevel;
+    static AccessoryFlags: typeof AccessoryFlags;
+    static AccessoryIdentifier: typeof AccessoryIdentifier;
+    static Active: typeof Active;
+    static ActiveIdentifier: typeof ActiveIdentifier;
+    static ActivityInterval: typeof ActivityInterval;
+    static AdministratorOnlyAccess: typeof AdministratorOnlyAccess;
+    static AirParticulateDensity: typeof AirParticulateDensity;
+    static AirParticulateSize: typeof AirParticulateSize;
+    static AirQuality: typeof AirQuality;
+    static AppMatchingIdentifier: typeof AppMatchingIdentifier;
+    static AudioFeedback: typeof AudioFeedback;
+    static BatteryLevel: typeof BatteryLevel;
+    static Brightness: typeof Brightness;
+    static ButtonEvent: typeof ButtonEvent;
+    static CameraOperatingModeIndicator: typeof CameraOperatingModeIndicator;
+    static CarbonDioxideDetected: typeof CarbonDioxideDetected;
+    static CarbonDioxideLevel: typeof CarbonDioxideLevel;
+    static CarbonDioxidePeakLevel: typeof CarbonDioxidePeakLevel;
+    static CarbonMonoxideDetected: typeof CarbonMonoxideDetected;
+    static CarbonMonoxideLevel: typeof CarbonMonoxideLevel;
+    static CarbonMonoxidePeakLevel: typeof CarbonMonoxidePeakLevel;
     /**
-     * @deprecated Removed in iOS 11. Use ServiceLabelIndex instead.
+     * @deprecated Removed and not used anymore
      */
-    static LabelIndex: typeof HomeKitTypes.Generated.ServiceLabelIndex;
+    static Category: typeof Category;
+    static CCAEnergyDetectThreshold: typeof CCAEnergyDetectThreshold;
+    static CCASignalDetectThreshold: typeof CCASignalDetectThreshold;
+    static CharacteristicValueActiveTransitionCount: typeof CharacteristicValueActiveTransitionCount;
+    static CharacteristicValueTransitionControl: typeof CharacteristicValueTransitionControl;
+    static ChargingState: typeof ChargingState;
+    static ClosedCaptions: typeof ClosedCaptions;
+    static ColorTemperature: typeof ColorTemperature;
     /**
-     * @deprecated Removed in iOS 11. Use ServiceLabelNamespace instead.
+     * @deprecated Removed and not used anymore
      */
-    static LabelNamespace: typeof HomeKitTypes.Generated.ServiceLabelNamespace;
-    static LeakDetected: typeof HomeKitTypes.Generated.LeakDetected;
-    static LinkQuality: typeof HomeKitTypes.Bridged.LinkQuality;
-    static LockControlPoint: typeof HomeKitTypes.Generated.LockControlPoint;
-    static LockCurrentState: typeof HomeKitTypes.Generated.LockCurrentState;
-    static LockLastKnownAction: typeof HomeKitTypes.Generated.LockLastKnownAction;
-    static LockManagementAutoSecurityTimeout: typeof HomeKitTypes.Generated.LockManagementAutoSecurityTimeout;
-    static LockPhysicalControls: typeof HomeKitTypes.Generated.LockPhysicalControls;
-    static LockTargetState: typeof HomeKitTypes.Generated.LockTargetState;
-    static Logs: typeof HomeKitTypes.Generated.Logs;
-    static Manufacturer: typeof HomeKitTypes.Generated.Manufacturer;
-    static Model: typeof HomeKitTypes.Generated.Model;
-    static MotionDetected: typeof HomeKitTypes.Generated.MotionDetected;
-    static Mute: typeof HomeKitTypes.Generated.Mute;
-    static Name: typeof HomeKitTypes.Generated.Name;
-    static NightVision: typeof HomeKitTypes.Generated.NightVision;
-    static NitrogenDioxideDensity: typeof HomeKitTypes.Generated.NitrogenDioxideDensity;
-    static ObstructionDetected: typeof HomeKitTypes.Generated.ObstructionDetected;
-    static OccupancyDetected: typeof HomeKitTypes.Generated.OccupancyDetected;
-    static On: typeof HomeKitTypes.Generated.On;
-    static OpticalZoom: typeof HomeKitTypes.Generated.OpticalZoom;
-    static OutletInUse: typeof HomeKitTypes.Generated.OutletInUse;
-    static OzoneDensity: typeof HomeKitTypes.Generated.OzoneDensity;
-    static PM10Density: typeof HomeKitTypes.Generated.PM10Density;
-    static PM2_5Density: typeof HomeKitTypes.Generated.PM2_5Density;
-    static PairSetup: typeof HomeKitTypes.Generated.PairSetup;
-    static PairVerify: typeof HomeKitTypes.Generated.PairVerify;
-    static PairingFeatures: typeof HomeKitTypes.Generated.PairingFeatures;
-    static PairingPairings: typeof HomeKitTypes.Generated.PairingPairings;
-    static PasswordSetting: typeof HomeKitTypes.Generated.PasswordSetting;
-    static PictureMode: typeof HomeKitTypes.TV.PictureMode;
-    static PositionState: typeof HomeKitTypes.Generated.PositionState;
-    static PowerModeSelection: typeof HomeKitTypes.TV.PowerModeSelection;
-    static ProgramMode: typeof HomeKitTypes.Generated.ProgramMode;
-    static ProgrammableSwitchEvent: typeof HomeKitTypes.Generated.ProgrammableSwitchEvent;
-    static ProductData: typeof HomeKitTypes.Generated.ProductData;
-    static ProgrammableSwitchOutputState: typeof HomeKitTypes.Bridged.ProgrammableSwitchOutputState;
-    static Reachable: typeof HomeKitTypes.Bridged.Reachable;
-    static RelativeHumidityDehumidifierThreshold: typeof HomeKitTypes.Generated.RelativeHumidityDehumidifierThreshold;
-    static RelativeHumidityHumidifierThreshold: typeof HomeKitTypes.Generated.RelativeHumidityHumidifierThreshold;
-    static RelayControlPoint: typeof HomeKitTypes.Bridged.RelayControlPoint;
-    static RelayEnabled: typeof HomeKitTypes.Bridged.RelayEnabled;
-    static RelayState: typeof HomeKitTypes.Bridged.RelayState;
-    static RemainingDuration: typeof HomeKitTypes.Generated.RemainingDuration;
-    static RemoteKey: typeof HomeKitTypes.TV.RemoteKey;
-    static ResetFilterIndication: typeof HomeKitTypes.Generated.ResetFilterIndication;
-    static RotationDirection: typeof HomeKitTypes.Generated.RotationDirection;
-    static RotationSpeed: typeof HomeKitTypes.Generated.RotationSpeed;
-    static Saturation: typeof HomeKitTypes.Generated.Saturation;
-    static SecuritySystemAlarmType: typeof HomeKitTypes.Generated.SecuritySystemAlarmType;
-    static SecuritySystemCurrentState: typeof HomeKitTypes.Generated.SecuritySystemCurrentState;
-    static SecuritySystemTargetState: typeof HomeKitTypes.Generated.SecuritySystemTargetState;
-    static SelectedAudioStreamConfiguration: typeof HomeKitTypes.Remote.SelectedAudioStreamConfiguration;
+    static ConfigureBridgedAccessory: typeof ConfigureBridgedAccessory;
     /**
-     * @deprecated Removed in iOS 11. Use SelectedRTPStreamConfiguration instead.
+     * @deprecated Removed and not used anymore
      */
-    static SelectedStreamConfiguration: typeof HomeKitTypes.Generated.SelectedRTPStreamConfiguration;
-    static SelectedRTPStreamConfiguration: typeof HomeKitTypes.Generated.SelectedRTPStreamConfiguration;
-    static SerialNumber: typeof HomeKitTypes.Generated.SerialNumber;
-    static ServiceLabelIndex: typeof HomeKitTypes.Generated.ServiceLabelIndex;
-    static ServiceLabelNamespace: typeof HomeKitTypes.Generated.ServiceLabelNamespace;
-    static SetDuration: typeof HomeKitTypes.Generated.SetDuration;
-    static SetupDataStreamTransport: typeof HomeKitTypes.DataStream.SetupDataStreamTransport;
-    static SetupEndpoints: typeof HomeKitTypes.Generated.SetupEndpoints;
-    static SiriInputType: typeof HomeKitTypes.Remote.SiriInputType;
-    static SlatType: typeof HomeKitTypes.Generated.SlatType;
-    static SleepDiscoveryMode: typeof HomeKitTypes.TV.SleepDiscoveryMode;
-    static SmokeDetected: typeof HomeKitTypes.Generated.SmokeDetected;
-    static SoftwareRevision: typeof HomeKitTypes.Bridged.SoftwareRevision;
-    static StatusActive: typeof HomeKitTypes.Generated.StatusActive;
-    static StatusFault: typeof HomeKitTypes.Generated.StatusFault;
-    static StatusJammed: typeof HomeKitTypes.Generated.StatusJammed;
-    static StatusLowBattery: typeof HomeKitTypes.Generated.StatusLowBattery;
-    static StatusTampered: typeof HomeKitTypes.Generated.StatusTampered;
-    static StreamingStatus: typeof HomeKitTypes.Generated.StreamingStatus;
-    static SulphurDioxideDensity: typeof HomeKitTypes.Generated.SulphurDioxideDensity;
-    static SupportedAudioStreamConfiguration: typeof HomeKitTypes.Generated.SupportedAudioStreamConfiguration;
-    static SupportedDataStreamTransportConfiguration: typeof HomeKitTypes.DataStream.SupportedDataStreamTransportConfiguration;
-    static SupportedRTPConfiguration: typeof HomeKitTypes.Generated.SupportedRTPConfiguration;
-    static SupportedVideoStreamConfiguration: typeof HomeKitTypes.Generated.SupportedVideoStreamConfiguration;
-    static SwingMode: typeof HomeKitTypes.Generated.SwingMode;
-    static TargetAirPurifierState: typeof HomeKitTypes.Generated.TargetAirPurifierState;
-    static TargetAirQuality: typeof HomeKitTypes.Generated.TargetAirQuality;
-    static TargetControlList: typeof HomeKitTypes.Remote.TargetControlList;
-    static TargetControlSupportedConfiguration: typeof HomeKitTypes.Remote.TargetControlSupportedConfiguration;
-    static TargetDoorState: typeof HomeKitTypes.Generated.TargetDoorState;
-    static TargetFanState: typeof HomeKitTypes.Generated.TargetFanState;
-    static TargetHeaterCoolerState: typeof HomeKitTypes.Generated.TargetHeaterCoolerState;
-    static TargetHeatingCoolingState: typeof HomeKitTypes.Generated.TargetHeatingCoolingState;
-    static TargetHorizontalTiltAngle: typeof HomeKitTypes.Generated.TargetHorizontalTiltAngle;
-    static TargetHumidifierDehumidifierState: typeof HomeKitTypes.Generated.TargetHumidifierDehumidifierState;
-    static TargetMediaState: typeof HomeKitTypes.TV.TargetMediaState;
-    static TargetPosition: typeof HomeKitTypes.Generated.TargetPosition;
-    static TargetRelativeHumidity: typeof HomeKitTypes.Generated.TargetRelativeHumidity;
-    static TargetSlatState: typeof HomeKitTypes.Generated.TargetSlatState;
-    static TargetTemperature: typeof HomeKitTypes.Generated.TargetTemperature;
-    static TargetTiltAngle: typeof HomeKitTypes.Generated.TargetTiltAngle;
-    static TargetVerticalTiltAngle: typeof HomeKitTypes.Generated.TargetVerticalTiltAngle;
-    static TargetVisibilityState: typeof HomeKitTypes.TV.TargetVisibilityState;
-    static TemperatureDisplayUnits: typeof HomeKitTypes.Generated.TemperatureDisplayUnits;
-    static TimeUpdate: typeof HomeKitTypes.Bridged.TimeUpdate;
-    static TunnelConnectionTimeout: typeof HomeKitTypes.Bridged.TunnelConnectionTimeout;
-    static TunneledAccessoryAdvertising: typeof HomeKitTypes.Bridged.TunneledAccessoryAdvertising;
-    static TunneledAccessoryConnected: typeof HomeKitTypes.Bridged.TunneledAccessoryConnected;
-    static TunneledAccessoryStateNumber: typeof HomeKitTypes.Bridged.TunneledAccessoryStateNumber;
-    static VOCDensity: typeof HomeKitTypes.Generated.VOCDensity;
-    static ValveType: typeof HomeKitTypes.Generated.ValveType;
-    static Version: typeof HomeKitTypes.Generated.Version;
-    static Volume: typeof HomeKitTypes.Generated.Volume;
-    static VolumeControlType: typeof HomeKitTypes.TV.VolumeControlType;
-    static VolumeSelector: typeof HomeKitTypes.TV.VolumeSelector;
-    static WaterLevel: typeof HomeKitTypes.Generated.WaterLevel;
-    static ManuallyDisabled: typeof HomeKitTypes.Generated.ManuallyDisabled;
-    static ThirdPartyCameraActive: typeof HomeKitTypes.Generated.ThirdPartyCameraActive;
-    static PeriodicSnapshotsActive: typeof HomeKitTypes.Generated.PeriodicSnapshotsActive;
-    static EventSnapshotsActive: typeof HomeKitTypes.Generated.EventSnapshotsActive;
-    static HomeKitCameraActive: typeof HomeKitTypes.Generated.HomeKitCameraActive;
-    static RecordingAudioActive: typeof HomeKitTypes.Generated.RecordingAudioActive;
-    static SupportedCameraRecordingConfiguration: typeof HomeKitTypes.Generated.SupportedCameraRecordingConfiguration;
-    static SupportedVideoRecordingConfiguration: typeof HomeKitTypes.Generated.SupportedVideoRecordingConfiguration;
-    static SupportedAudioRecordingConfiguration: typeof HomeKitTypes.Generated.SupportedAudioRecordingConfiguration;
-    static SelectedCameraRecordingConfiguration: typeof HomeKitTypes.Generated.SelectedCameraRecordingConfiguration;
-    static CameraOperatingModeIndicator: typeof HomeKitTypes.Generated.CameraOperatingModeIndicator;
+    static ConfigureBridgedAccessoryStatus: typeof ConfigureBridgedAccessoryStatus;
+    static ConfiguredName: typeof ConfiguredName;
+    static ContactSensorState: typeof ContactSensorState;
+    static CoolingThresholdTemperature: typeof CoolingThresholdTemperature;
+    static CurrentAirPurifierState: typeof CurrentAirPurifierState;
+    static CurrentAmbientLightLevel: typeof CurrentAmbientLightLevel;
+    static CurrentDoorState: typeof CurrentDoorState;
+    static CurrentFanState: typeof CurrentFanState;
+    static CurrentHeaterCoolerState: typeof CurrentHeaterCoolerState;
+    static CurrentHeatingCoolingState: typeof CurrentHeatingCoolingState;
+    static CurrentHorizontalTiltAngle: typeof CurrentHorizontalTiltAngle;
+    static CurrentHumidifierDehumidifierState: typeof CurrentHumidifierDehumidifierState;
+    static CurrentMediaState: typeof CurrentMediaState;
+    static CurrentPosition: typeof CurrentPosition;
+    static CurrentRelativeHumidity: typeof CurrentRelativeHumidity;
+    static CurrentSlatState: typeof CurrentSlatState;
+    static CurrentTemperature: typeof CurrentTemperature;
+    static CurrentTiltAngle: typeof CurrentTiltAngle;
     /**
-     * @deprecated Removed in iOS 13.4
+     * @deprecated Removed and not used anymore
      */
-    static DiagonalFieldOfView: typeof HomeKitTypes.Generated.DiagonalFieldOfView;
-    static NetworkClientProfileControl: typeof HomeKitTypes.Generated.NetworkClientProfileControl;
-    static NetworkClientStatusControl: typeof HomeKitTypes.Generated.NetworkClientStatusControl;
-    static RouterStatus: typeof HomeKitTypes.Generated.RouterStatus;
-    static SupportedRouterConfiguration: typeof HomeKitTypes.Generated.SupportedRouterConfiguration;
-    static WANConfigurationList: typeof HomeKitTypes.Generated.WANConfigurationList;
-    static WANStatusList: typeof HomeKitTypes.Generated.WANStatusList;
-    static ManagedNetworkEnable: typeof HomeKitTypes.Generated.ManagedNetworkEnable;
-    static NetworkAccessViolationControl: typeof HomeKitTypes.Generated.NetworkAccessViolationControl;
-    static WiFiSatelliteStatus: typeof HomeKitTypes.Generated.WiFiSatelliteStatus;
-    static WakeConfiguration: typeof HomeKitTypes.Generated.WakeConfiguration;
-    static SupportedTransferTransportConfiguration: typeof HomeKitTypes.Generated.SupportedTransferTransportConfiguration;
-    static SetupTransferTransport: typeof HomeKitTypes.Generated.SetupTransferTransport;
-    static ActivityInterval: typeof HomeKitTypes.Generated.ActivityInterval;
-    static CCAEnergyDetectThreshold: typeof HomeKitTypes.Generated.CCAEnergyDetectThreshold;
-    static CCASignalDetectThreshold: typeof HomeKitTypes.Generated.CCASignalDetectThreshold;
-    static CharacteristicValueTransitionControl: typeof HomeKitTypes.Generated.CharacteristicValueTransitionControl;
-    static SupportedCharacteristicValueTransitionConfiguration: typeof HomeKitTypes.Generated.SupportedCharacteristicValueTransitionConfiguration;
-    static CurrentTransport: typeof HomeKitTypes.Generated.CurrentTransport;
-    static DataStreamHAPTransport: typeof HomeKitTypes.Generated.DataStreamHAPTransport;
-    static DataStreamHAPTransportInterrupt: typeof HomeKitTypes.Generated.DataStreamHAPTransportInterrupt;
-    static EventRetransmissionMaximum: typeof HomeKitTypes.Generated.EventRetransmissionMaximum;
-    static EventTransmissionCounters: typeof HomeKitTypes.Generated.EventTransmissionCounters;
-    static MACRetransmissionMaximum: typeof HomeKitTypes.Generated.MACRetransmissionMaximum;
-    static MACTransmissionCounters: typeof HomeKitTypes.Generated.MACTransmissionCounters;
-    static OperatingStateResponse: typeof HomeKitTypes.Generated.OperatingStateResponse;
-    static Ping: typeof HomeKitTypes.Generated.Ping;
-    static ReceiverSensitivity: typeof HomeKitTypes.Generated.ReceiverSensitivity;
-    static ReceivedSignalStrengthIndication: typeof HomeKitTypes.Generated.ReceivedSignalStrengthIndication;
-    static SleepInterval: typeof HomeKitTypes.Generated.SleepInterval;
-    static SignalToNoiseRatio: typeof HomeKitTypes.Generated.SignalToNoiseRatio;
-    static SupportedDiagnosticsSnapshot: typeof HomeKitTypes.Generated.SupportedDiagnosticsSnapshot;
-    static TransmitPower: typeof HomeKitTypes.Generated.TransmitPower;
-    static TransmitPowerMaximum: typeof HomeKitTypes.Generated.TransmitPowerMaximum;
-    static VideoAnalysisActive: typeof HomeKitTypes.Generated.VideoAnalysisActive;
-    static WiFiCapabilities: typeof HomeKitTypes.Generated.WiFiCapabilities;
-    static WiFiConfigurationControl: typeof HomeKitTypes.Generated.WiFiConfigurationControl;
+    static CurrentTime: typeof CurrentTime;
+    static CurrentTransport: typeof CurrentTransport;
+    static CurrentVerticalTiltAngle: typeof CurrentVerticalTiltAngle;
+    static CurrentVisibilityState: typeof CurrentVisibilityState;
+    static DataStreamHAPTransport: typeof DataStreamHAPTransport;
+    static DataStreamHAPTransportInterrupt: typeof DataStreamHAPTransportInterrupt;
+    /**
+     * @deprecated Removed and not used anymore
+     */
+    static DayoftheWeek: typeof DayoftheWeek;
+    static DiagonalFieldOfView: typeof DiagonalFieldOfView;
+    static DigitalZoom: typeof DigitalZoom;
+    /**
+     * @deprecated Removed and not used anymore
+     */
+    static DiscoverBridgedAccessories: typeof DiscoverBridgedAccessories;
+    /**
+     * @deprecated Removed and not used anymore
+     */
+    static DiscoveredBridgedAccessories: typeof DiscoveredBridgedAccessories;
+    static DisplayOrder: typeof DisplayOrder;
+    static EventRetransmissionMaximum: typeof EventRetransmissionMaximum;
+    static EventSnapshotsActive: typeof EventSnapshotsActive;
+    static EventTransmissionCounters: typeof EventTransmissionCounters;
+    static FilterChangeIndication: typeof FilterChangeIndication;
+    static FilterLifeLevel: typeof FilterLifeLevel;
+    static FirmwareRevision: typeof FirmwareRevision;
+    static FirmwareUpdateReadiness: typeof FirmwareUpdateReadiness;
+    static FirmwareUpdateStatus: typeof FirmwareUpdateStatus;
+    static HardwareRevision: typeof HardwareRevision;
+    static HeartBeat: typeof HeartBeat;
+    static HeatingThresholdTemperature: typeof HeatingThresholdTemperature;
+    static HoldPosition: typeof HoldPosition;
+    static HomeKitCameraActive: typeof HomeKitCameraActive;
+    static Hue: typeof Hue;
+    static Identifier: typeof Identifier;
+    static Identify: typeof Identify;
+    static ImageMirroring: typeof ImageMirroring;
+    static ImageRotation: typeof ImageRotation;
+    static InputDeviceType: typeof InputDeviceType;
+    static InputSourceType: typeof InputSourceType;
+    static InUse: typeof InUse;
+    static IsConfigured: typeof IsConfigured;
+    static LeakDetected: typeof LeakDetected;
+    /**
+     * @deprecated Removed and not used anymore
+     */
+    static LinkQuality: typeof LinkQuality;
+    static ListPairings: typeof ListPairings;
+    static LockControlPoint: typeof LockControlPoint;
+    static LockCurrentState: typeof LockCurrentState;
+    static LockLastKnownAction: typeof LockLastKnownAction;
+    static LockManagementAutoSecurityTimeout: typeof LockManagementAutoSecurityTimeout;
+    static LockPhysicalControls: typeof LockPhysicalControls;
+    static LockTargetState: typeof LockTargetState;
+    static Logs: typeof Logs;
+    static MACRetransmissionMaximum: typeof MACRetransmissionMaximum;
+    static MACTransmissionCounters: typeof MACTransmissionCounters;
+    static ManagedNetworkEnable: typeof ManagedNetworkEnable;
+    static ManuallyDisabled: typeof ManuallyDisabled;
+    static Manufacturer: typeof Manufacturer;
+    static MaximumTransmitPower: typeof MaximumTransmitPower;
+    static Model: typeof Model;
+    static MotionDetected: typeof MotionDetected;
+    static Mute: typeof Mute;
+    static Name: typeof Name;
+    static NetworkAccessViolationControl: typeof NetworkAccessViolationControl;
+    static NetworkClientProfileControl: typeof NetworkClientProfileControl;
+    static NetworkClientStatusControl: typeof NetworkClientStatusControl;
+    static NightVision: typeof NightVision;
+    static NitrogenDioxideDensity: typeof NitrogenDioxideDensity;
+    static ObstructionDetected: typeof ObstructionDetected;
+    static OccupancyDetected: typeof OccupancyDetected;
+    static On: typeof On;
+    static OperatingStateResponse: typeof OperatingStateResponse;
+    static OpticalZoom: typeof OpticalZoom;
+    static OutletInUse: typeof OutletInUse;
+    static OzoneDensity: typeof OzoneDensity;
+    static PairingFeatures: typeof PairingFeatures;
+    static PairSetup: typeof PairSetup;
+    static PairVerify: typeof PairVerify;
+    static PasswordSetting: typeof PasswordSetting;
+    static PeriodicSnapshotsActive: typeof PeriodicSnapshotsActive;
+    static PictureMode: typeof PictureMode;
+    static Ping: typeof Ping;
+    static PM10Density: typeof PM10Density;
+    static PM2_5Density: typeof PM2_5Density;
+    static PositionState: typeof PositionState;
+    static PowerModeSelection: typeof PowerModeSelection;
+    static ProductData: typeof ProductData;
+    static ProgrammableSwitchEvent: typeof ProgrammableSwitchEvent;
+    static ProgrammableSwitchOutputState: typeof ProgrammableSwitchOutputState;
+    static ProgramMode: typeof ProgramMode;
+    /**
+     * @deprecated Removed and not used anymore
+     */
+    static Reachable: typeof Reachable;
+    static ReceivedSignalStrengthIndication: typeof ReceivedSignalStrengthIndication;
+    static ReceiverSensitivity: typeof ReceiverSensitivity;
+    static RecordingAudioActive: typeof RecordingAudioActive;
+    static RelativeHumidityDehumidifierThreshold: typeof RelativeHumidityDehumidifierThreshold;
+    static RelativeHumidityHumidifierThreshold: typeof RelativeHumidityHumidifierThreshold;
+    static RelayControlPoint: typeof RelayControlPoint;
+    static RelayEnabled: typeof RelayEnabled;
+    static RelayState: typeof RelayState;
+    static RemainingDuration: typeof RemainingDuration;
+    static RemoteKey: typeof RemoteKey;
+    static ResetFilterIndication: typeof ResetFilterIndication;
+    static RotationDirection: typeof RotationDirection;
+    static RotationSpeed: typeof RotationSpeed;
+    static RouterStatus: typeof RouterStatus;
+    static Saturation: typeof Saturation;
+    static SecuritySystemAlarmType: typeof SecuritySystemAlarmType;
+    static SecuritySystemCurrentState: typeof SecuritySystemCurrentState;
+    static SecuritySystemTargetState: typeof SecuritySystemTargetState;
+    static SelectedAudioStreamConfiguration: typeof SelectedAudioStreamConfiguration;
+    static SelectedCameraRecordingConfiguration: typeof SelectedCameraRecordingConfiguration;
+    static SelectedRTPStreamConfiguration: typeof SelectedRTPStreamConfiguration;
+    static SerialNumber: typeof SerialNumber;
+    static ServiceLabelIndex: typeof ServiceLabelIndex;
+    static ServiceLabelNamespace: typeof ServiceLabelNamespace;
+    static SetDuration: typeof SetDuration;
+    static SetupDataStreamTransport: typeof SetupDataStreamTransport;
+    static SetupEndpoints: typeof SetupEndpoints;
+    static SetupTransferTransport: typeof SetupTransferTransport;
+    static SignalToNoiseRatio: typeof SignalToNoiseRatio;
+    static SiriInputType: typeof SiriInputType;
+    static SlatType: typeof SlatType;
+    static SleepDiscoveryMode: typeof SleepDiscoveryMode;
+    static SleepInterval: typeof SleepInterval;
+    static SmokeDetected: typeof SmokeDetected;
+    static SoftwareRevision: typeof SoftwareRevision;
+    static StagedFirmwareVersion: typeof StagedFirmwareVersion;
+    static StatusActive: typeof StatusActive;
+    static StatusFault: typeof StatusFault;
+    static StatusJammed: typeof StatusJammed;
+    static StatusLowBattery: typeof StatusLowBattery;
+    static StatusTampered: typeof StatusTampered;
+    static StreamingStatus: typeof StreamingStatus;
+    static SulphurDioxideDensity: typeof SulphurDioxideDensity;
+    static SupportedAudioRecordingConfiguration: typeof SupportedAudioRecordingConfiguration;
+    static SupportedAudioStreamConfiguration: typeof SupportedAudioStreamConfiguration;
+    static SupportedCameraRecordingConfiguration: typeof SupportedCameraRecordingConfiguration;
+    static SupportedCharacteristicValueTransitionConfiguration: typeof SupportedCharacteristicValueTransitionConfiguration;
+    static SupportedDataStreamTransportConfiguration: typeof SupportedDataStreamTransportConfiguration;
+    static SupportedDiagnosticsSnapshot: typeof SupportedDiagnosticsSnapshot;
+    static SupportedFirmwareUpdateConfiguration: typeof SupportedFirmwareUpdateConfiguration;
+    static SupportedRouterConfiguration: typeof SupportedRouterConfiguration;
+    static SupportedRTPConfiguration: typeof SupportedRTPConfiguration;
+    static SupportedTransferTransportConfiguration: typeof SupportedTransferTransportConfiguration;
+    static SupportedVideoRecordingConfiguration: typeof SupportedVideoRecordingConfiguration;
+    static SupportedVideoStreamConfiguration: typeof SupportedVideoStreamConfiguration;
+    static SwingMode: typeof SwingMode;
+    static TargetAirPurifierState: typeof TargetAirPurifierState;
+    /**
+     * @deprecated Removed and not used anymore
+     */
+    static TargetAirQuality: typeof TargetAirQuality;
+    static TargetControlList: typeof TargetControlList;
+    static TargetControlSupportedConfiguration: typeof TargetControlSupportedConfiguration;
+    static TargetDoorState: typeof TargetDoorState;
+    static TargetFanState: typeof TargetFanState;
+    static TargetHeaterCoolerState: typeof TargetHeaterCoolerState;
+    static TargetHeatingCoolingState: typeof TargetHeatingCoolingState;
+    static TargetHorizontalTiltAngle: typeof TargetHorizontalTiltAngle;
+    static TargetHumidifierDehumidifierState: typeof TargetHumidifierDehumidifierState;
+    static TargetMediaState: typeof TargetMediaState;
+    static TargetPosition: typeof TargetPosition;
+    static TargetRelativeHumidity: typeof TargetRelativeHumidity;
+    /**
+     * @deprecated Removed and not used anymore
+     */
+    static TargetSlatState: typeof TargetSlatState;
+    static TargetTemperature: typeof TargetTemperature;
+    static TargetTiltAngle: typeof TargetTiltAngle;
+    static TargetVerticalTiltAngle: typeof TargetVerticalTiltAngle;
+    static TargetVisibilityState: typeof TargetVisibilityState;
+    static TemperatureDisplayUnits: typeof TemperatureDisplayUnits;
+    static ThirdPartyCameraActive: typeof ThirdPartyCameraActive;
+    static ThreadControlPoint: typeof ThreadControlPoint;
+    static ThreadNodeCapabilities: typeof ThreadNodeCapabilities;
+    static ThreadOpenThreadVersion: typeof ThreadOpenThreadVersion;
+    static ThreadStatus: typeof ThreadStatus;
+    /**
+     * @deprecated Removed and not used anymore
+     */
+    static TimeUpdate: typeof TimeUpdate;
+    static TransmitPower: typeof TransmitPower;
+    static TunnelConnectionTimeout: typeof TunnelConnectionTimeout;
+    static TunneledAccessoryAdvertising: typeof TunneledAccessoryAdvertising;
+    static TunneledAccessoryConnected: typeof TunneledAccessoryConnected;
+    static TunneledAccessoryStateNumber: typeof TunneledAccessoryStateNumber;
+    static ValveType: typeof ValveType;
+    static Version: typeof Version;
+    static VideoAnalysisActive: typeof VideoAnalysisActive;
+    static VOCDensity: typeof VOCDensity;
+    static Volume: typeof Volume;
+    static VolumeControlType: typeof VolumeControlType;
+    static VolumeSelector: typeof VolumeSelector;
+    static WakeConfiguration: typeof WakeConfiguration;
+    static WANConfigurationList: typeof WANConfigurationList;
+    static WANStatusList: typeof WANStatusList;
+    static WaterLevel: typeof WaterLevel;
+    static WiFiCapabilities: typeof WiFiCapabilities;
+    static WiFiConfigurationControl: typeof WiFiConfigurationControl;
+    static WiFiSatelliteStatus: typeof WiFiSatelliteStatus;
+    displayName: string;
+    UUID: string;
     iid: Nullable<number>;
     value: Nullable<CharacteristicValue>;
+    /**
+     * @deprecated replaced by {@link statusCode}
+     * @private
+     */
     status: Nullable<Error>;
-    eventOnlyCharacteristic: boolean;
+    /**
+     * @private
+     */
+    statusCode: HAPStatus;
     props: CharacteristicProps;
-    subscriptions: number;
-    'valid-values': number[];
-    'valid-values-range': [number, number];
-    constructor(displayName: string, UUID: string, props?: CharacteristicProps);
     /**
-     * Copies the given properties to our props member variable,
-     * and returns 'this' for chaining.
+     * The {@link onGet} handler
+     */
+    private getHandler?;
+    /**
+     * The {@link onSet} handler
+     */
+    private setHandler?;
+    private subscriptions;
+    /**
+     * @private
+     */
+    additionalAuthorizationHandler?: AdditionalAuthorizationHandler;
+    constructor(displayName: string, UUID: string, props: CharacteristicProps);
+    /**
+     * Accepts a function that will be called to retrieve the current value of a Characteristic.
+     * The function must return a valid Characteristic value for the Characteristic type.
+     * May optionally return a promise.
      *
-     * @param 'props' {
-     *   format: <one of Formats>,
-     *   unit: <one of Characteristic.Units>,
-     *   perms: array of [Characteristic.Perms] like [Characteristic.Perms.READ, Characteristic.Perms.WRITE]
-     *   ev: <Event Notifications Enabled Boolean>, (Optional)
-     *   description: <String of description>, (Optional)
-     *   minValue: <minimum value for numeric characteristics>, (Optional)
-     *   maxValue: <maximum value for numeric characteristics>, (Optional)
-     *   minStep: <smallest allowed increment for numeric characteristics>, (Optional)
-     *   maxLen: <max length of string up to 256>, (Optional default: 64)
-     *   maxDataLen: <max length of data>, (Optional default: 2097152)
-     *   valid-values: <array of numbers>, (Optional)
-     *   valid-values-range: <array of two numbers for start and end range> (Optional)
-     * }
+     * @example
+     * ```ts
+     * Characteristic.onGet(async () => {
+     *   return true;
+     * });
+     * ```
+     * @param handler
      */
-    setProps: (props: Partial<CharacteristicProps>) => this;
-    subscribe: () => void;
-    unsubscribe: () => void;
-    getValue: (callback?: CharacteristicGetCallback<Nullable<CharacteristicValue>> | undefined, context?: any, connectionID?: string | undefined) => void;
-    validateValue: (newValue: Nullable<CharacteristicValue>) => Nullable<CharacteristicValue>;
-    setValue: (newValue: Nullable<CharacteristicValue | Error>, callback?: CharacteristicSetCallback | undefined, context?: any, connectionID?: string | undefined) => Characteristic;
-    updateValue: (newValue: Nullable<CharacteristicValue | Error>, callback?: (() => void) | undefined, context?: any) => Characteristic;
-    getDefaultValue: () => Nullable<CharacteristicValue>;
-    _assignID: (identifierCache: IdentifierCache, accessoryName: string, serviceUUID: string, serviceSubtype?: string | undefined) => void;
+    onGet(handler: CharacteristicGetHandler): Characteristic;
     /**
-     * Returns a JSON representation of this Accessory suitable for delivering to HAP clients.
+     * Removes the {@link CharacteristicGetHandler} handler which was configured using {@link onGet}.
      */
-    toHAP: (opt?: ToHAPOptions | undefined) => HapCharacteristic;
-    static serialize: (characteristic: Characteristic) => SerializedCharacteristic;
-    static deserialize: (json: SerializedCharacteristic) => Characteristic;
+    removeOnGet(): Characteristic;
+    /**
+     * Accepts a function that will be called when setting the value of a Characteristic.
+     * If the characteristic supports {@link Perms.WRITE_RESPONSE} and the request requests a write response value,
+     * the returned value will be used.
+     * May optionally return a promise.
+     *
+     * @example
+     * ```ts
+     * Characteristic.onSet(async (value: CharacteristicValue) => {
+     *   console.log(value);
+     * });
+     * ```
+     * @param handler
+     */
+    onSet(handler: CharacteristicSetHandler): Characteristic;
+    /**
+     * Removes the {@link CharacteristicSetHandler} which was configured using {@link onSet}.
+     */
+    removeOnSet(): Characteristic;
+    /**
+     * Updates the properties of this characteristic.
+     * Properties passed via the parameter will be set. Any parameter set to null will be deleted.
+     * See {@link CharacteristicProps}.
+     *
+     * @param props - Partial properties object with the desired updates.
+     */
+    setProps(props: Partial<CharacteristicProps>): Characteristic;
+    /**
+     * This method can be used to gain a Iterator to loop over all valid values defined for this characteristic.
+     *
+     * The range of valid values can be defined using three different ways via the {@link CharacteristicProps} object
+     * (set via the {@link setProps} method):
+     *  * First method is to specifically list every valid value inside {@link CharacteristicProps.validValues}
+     *  * Second you can specify a range via {@link CharacteristicProps.minValue} and {@link CharacteristicProps.maxValue} (with optionally defining
+     *    {@link CharacteristicProps.minStep})
+     *  * And lastly you can specify a range via {@link CharacteristicProps.validValueRanges}
+     *  * Implicitly a valid value range is predefined for characteristics with Format {@link Formats.UINT8}, {@link Formats.UINT16},
+     *    {@link Formats.UINT32} and {@link Formats.UINT64}: starting by zero to their respective maximum number
+     *
+     * The method will automatically detect which type of valid values definition is used and provide
+     * the correct Iterator for that case.
+     *
+     * Note: This method is (obviously) only valid for numeric characteristics.
+     *
+     * @example
+     * ```ts
+     * // use the iterator to loop over every valid value...
+     * for (const value of characteristic.validValuesIterator()) {
+     *   // Insert logic to run for every
+     * }
+     *
+     * // ... or collect them in an array for storage or manipulation
+     * const validValues = Array.from(characteristic.validValuesIterator());
+     * ```
+     */
+    validValuesIterator(): Iterable<number>;
+    /**
+     * This method can be used to setup additional authorization for a characteristic.
+     * For one it adds the {@link Perms.ADDITIONAL_AUTHORIZATION} permission to the characteristic
+     * (if it wasn't already) to signal support for additional authorization to HomeKit.
+     * Additionally an {@link AdditionalAuthorizationHandler} is setup up which is called
+     * before a write request is performed.
+     *
+     * Additional Authorization Data can be added to SET request via a custom iOS App.
+     * Before hap-nodejs executes a write request it will call the {@link AdditionalAuthorizationHandler}
+     * with 'authData' supplied in the write request. The 'authData' is a base64 encoded string
+     * (or undefined if no authData was supplied).
+     * The {@link AdditionalAuthorizationHandler} must then return true or false to indicate if the write request
+     * is authorized and should be accepted.
+     *
+     * @param handler - Handler called to check additional authorization data.
+     */
+    setupAdditionalAuthorization(handler: AdditionalAuthorizationHandler): void;
+    /**
+     * Updates the current value of the characteristic.
+     *
+     * @param callback
+     * @param context
+     * @private use to return the current value on HAP requests
+     *
+     * @deprecated
+     */
+    getValue(callback?: CharacteristicGetCallback, context?: any): void;
+    /**
+     * This updates the value by calling the {@link CharacteristicEventTypes.SET} event handler associated with the characteristic.
+     * This acts the same way as when a HomeKit controller sends a /characteristics request to update the characteristic.
+     * A event notification will be sent to all connected HomeKit controllers which are registered
+     * to receive event notifications for this characteristic.
+     *
+     * This method behaves like a {@link updateValue} call with the addition that the own {@link CharacteristicEventTypes.SET}
+     * event handler is called.
+     *
+     * @param value - The new value.
+     */
+    setValue(value: CharacteristicValue): Characteristic;
+    /**
+     * Sets the state of the characteristic to an errored state.
+     * If a onGet or GET handler is set up, the errored state will be ignored and the characteristic
+     * will always query the latest state by calling the provided handler.
+     *
+     * If a generic error object is supplied, the characteristic tries to extract a {@link HAPStatus} code
+     * from the error message string. If not possible a generic {@link HAPStatus.SERVICE_COMMUNICATION_FAILURE} will be used.
+     * If the supplied error object is an instance of {@link HapStatusError} the corresponding status will be used.
+     *
+     * @param error - The error object
+     */
+    setValue(error: HapStatusError | Error): Characteristic;
+    /**
+     * This updates the value by calling the {@link CharacteristicEventTypes.SET} event handler associated with the characteristic.
+     * This acts the same way as when a HomeKit controller sends a /characteristics request to update the characteristic.
+     * A event notification will be sent to all connected HomeKit controllers which are registered
+     * to receive event notifications for this characteristic.
+     *
+     * This method behaves like a {@link updateValue} call with the addition that the own {@link CharacteristicEventTypes.SET}
+     * event handler is called.
+     *
+     * @param value - The new value.
+     * @param callback - Deprecated parameter there to provide backwards compatibility. Called once the
+     *   {@link CharacteristicEventTypes.SET} event handler returns.
+     * @param context - Passed to the {@link CharacteristicEventTypes.SET} and {@link CharacteristicEventTypes.CHANGE} event handler.
+     * @deprecated Parameter callback is deprecated.
+     */
+    setValue(value: CharacteristicValue, callback?: CharacteristicSetCallback, context?: any): Characteristic;
+    /**
+     * This updates the value by calling the {@link CharacteristicEventTypes.SET} event handler associated with the characteristic.
+     * This acts the same way as when a HomeKit controller sends a /characteristics request to update the characteristic.
+     * A event notification will be sent to all connected HomeKit controllers which are registered
+     * to receive event notifications for this characteristic.
+     *
+     * This method behaves like a {@link updateValue} call with the addition that the own {@link CharacteristicEventTypes.SET}
+     * event handler is called.
+     *
+     * @param value - The new value.
+     * @param context - Passed to the {@link CharacteristicEventTypes.SET} and {@link CharacteristicEventTypes.CHANGE} event handler.
+     */
+    setValue(value: CharacteristicValue, context?: any): Characteristic;
+    /**
+     * This updates the value of the characteristic. If the value changed, a event notification will be sent to all connected
+     * HomeKit controllers which are registered to receive event notifications for this characteristic.
+     *
+     * @param value - The new value or a `Error` or {@link HapStatusError}.
+     */
+    updateValue(value: Nullable<CharacteristicValue> | Error | HapStatusError): Characteristic;
+    /**
+     * Sets the state of the characteristic to an errored state.
+     * If a onGet or GET handler is set up, the errored state will be ignored and the characteristic
+     * will always query the latest state by calling the provided handler.
+     *
+     * If a generic error object is supplied, the characteristic tries to extract a {@link HAPStatus} code
+     * from the error message string. If not possible a generic {@link HAPStatus.SERVICE_COMMUNICATION_FAILURE} will be used.
+     * If the supplied error object is an instance of {@link HapStatusError} the corresponding status will be used.
+     *
+     * @param error - The error object
+     */
+    updateValue(error: Error | HapStatusError): Characteristic;
+    /**
+     * This updates the value of the characteristic. If the value changed, a event notification will be sent to all connected
+     * HomeKit controllers which are registered to receive event notifications for this characteristic.
+     *
+     * @param value - The new value.
+     * @param callback - Deprecated parameter there to provide backwards compatibility. Callback is called instantly.
+     * @param context - Passed to the {@link CharacteristicEventTypes.CHANGE} event handler.
+     * @deprecated Parameter callback is deprecated.
+     */
+    updateValue(value: Nullable<CharacteristicValue>, callback?: () => void, context?: any): Characteristic;
+    /**
+     * This updates the value of the characteristic. If the value changed, a event notification will be sent to all connected
+     * HomeKit controllers which are registered to receive event notifications for this characteristic.
+     *
+     * @param value - The new value.
+     * @param context - Passed to the {@link CharacteristicEventTypes.CHANGE} event handler.
+     */
+    updateValue(value: Nullable<CharacteristicValue>, context?: any): Characteristic;
+    /**
+     * This method acts similarly to {@link updateValue} by setting the current value of the characteristic
+     * without calling any {@link CharacteristicEventTypes.SET} or {@link onSet} handlers.
+     * The difference is that this method forces a event notification sent (updateValue only sends one if the value changed).
+     * This is especially useful for characteristics like {@link Characteristic.ButtonEvent} or {@link Characteristic.ProgrammableSwitchEvent}.
+     *
+     * @param value - The new value.
+     * @param context - Passed to the {@link CharacteristicEventTypes.CHANGE} event handler.
+     */
+    sendEventNotification(value: CharacteristicValue, context?: any): Characteristic;
+    /**
+     * Called when a HAP requests wants to know the current value of the characteristic.
+     *
+     * @param connection - The HAP connection from which the request originated from.
+     * @param context - Deprecated parameter. There for backwards compatibility.
+     * @private Used by the Accessory to load the characteristic value
+     */
+    handleGetRequest(connection?: HAPConnection, context?: any): Promise<Nullable<CharacteristicValue>>;
+    /**
+     * Called when a HAP requests update the current value of the characteristic.
+     *
+     * @param value - The updated value
+     * @param connection - The connection from which the request originated from
+     * @param context - Deprecated parameter. There for backwards compatibility.
+     * @returns Promise resolve to void in normal operation. When characteristic supports write response, the
+     *  HAP request requests write response and the set handler returns a write response value, the respective
+     *  write response value is resolved.
+     * @private
+     */
+    handleSetRequest(value: CharacteristicValue, connection?: HAPConnection, context?: any): Promise<CharacteristicValue | void>;
+    /**
+     * Called once a HomeKit controller subscribes to events of this characteristics.
+     * @private
+     */
+    subscribe(): void;
+    /**
+     * Called once a HomeKit controller unsubscribe to events of this characteristics or a HomeKit controller
+     * which was subscribed to this characteristic disconnects.
+     * @private
+     */
+    unsubscribe(): void;
+    protected getDefaultValue(): Nullable<CharacteristicValue>;
+    /**
+     * Checks if the value received from the HAP request is valid.
+     * If returned false the received value is not valid and {@link HAPStatus.INVALID_VALUE_IN_REQUEST}
+     * must be returned.
+     * @param value - Value supplied by the HomeKit controller
+     */
+    private validClientSuppliedValue;
+    /**
+     * Checks if the value received from the API call is valid.
+     * It adjust the value where it makes sense, prints a warning where values may be rejected with an error
+     * in the future and throws an error which can't be converted to a valid value.
+     *
+     * @param value - The value received from the API call
+     */
+    private validateUserInput;
+    /**
+     * @private used to assign iid to characteristic
+     */
+    _assignID(identifierCache: IdentifierCache, accessoryName: string, serviceUUID: string, serviceSubtype?: string): void;
+    private characteristicWarning;
+    /**
+     * @param event
+     * @private
+     */
+    removeAllListeners(event?: string | symbol): this;
+    /**
+     * @param characteristic
+     * @private
+     */
+    replaceBy(characteristic: Characteristic): void;
+    /**
+     * Returns a JSON representation of this characteristic suitable for delivering to HAP clients.
+     * @private used to generate response to /accessories query
+     */
+    toHAP(connection: HAPConnection, contactGetHandlers?: boolean): Promise<CharacteristicJsonObject>;
+    /**
+     * Returns a JSON representation of this characteristic without the value.
+     * @private used to generate the config hash
+     */
+    internalHAPRepresentation(): CharacteristicJsonObject;
+    /**
+     * Serialize characteristic into json string.
+     *
+     * @param characteristic - Characteristic object.
+     * @private used to store characteristic on disk
+     */
+    static serialize(characteristic: Characteristic): SerializedCharacteristic;
+    /**
+     * Deserialize characteristic from json string.
+     *
+     * @param json - Json string representing a characteristic.
+     * @private used to recreate characteristic from disk
+     */
+    static deserialize(json: SerializedCharacteristic): Characteristic;
 }
-export {};
 //# sourceMappingURL=Characteristic.d.ts.map

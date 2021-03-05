@@ -1,33 +1,46 @@
-import { Characteristic, SerializedCharacteristic } from './Characteristic';
-import { EventEmitter } from './EventEmitter';
+/// <reference types="node" />
+import { EventEmitter } from "events";
+import { ServiceJsonObject } from "../internal-types";
+import { CharacteristicValue, Nullable, WithUUID } from '../types';
+import { CharacteristicWarning } from "./Accessory";
+import { Characteristic, CharacteristicChange, SerializedCharacteristic } from './Characteristic';
+import { AccessControl, AccessoryInformation, AccessoryRuntimeInformation, AirPurifier, AirQualitySensor, AudioStreamManagement, Battery, BridgeConfiguration, BridgingState, CameraControl, CameraOperatingMode, CameraRecordingManagement, CameraRTPStreamManagement, CarbonDioxideSensor, CarbonMonoxideSensor, CloudRelay, ContactSensor, DataStreamTransportManagement, Diagnostics, Door, Doorbell, Fan, Fanv2, Faucet, FilterMaintenance, GarageDoorOpener, HeaterCooler, HumidifierDehumidifier, HumiditySensor, InputSource, IrrigationSystem, LeakSensor, Lightbulb, LightSensor, LockManagement, LockMechanism, Microphone, MotionSensor, OccupancySensor, Outlet, Pairing, PowerManagement, ProtocolInformation, SecuritySystem, ServiceLabel, Siri, Slats, SmartSpeaker, SmokeSensor, Speaker, StatefulProgrammableSwitch, StatelessProgrammableSwitch, Switch, TargetControl, TargetControlManagement, Television, TelevisionSpeaker, TemperatureSensor, Thermostat, ThreadTransport, TimeInformation, TransferTransportManagement, Tunnel, Valve, WiFiRouter, WiFiSatellite, WiFiTransport, Window, WindowCovering } from "./definitions";
 import { IdentifierCache } from './model/IdentifierCache';
-import { CharacteristicChange, CharacteristicValue, HapService, Nullable, ToHAPOptions, WithUUID } from '../types';
-import * as HomeKitTypes from './gen';
+import { HAPConnection } from "./util/eventedhttp";
+/**
+ * @private
+ */
 export interface SerializedService {
     displayName: string;
     UUID: string;
     subtype?: string;
+    constructorName?: string;
     hiddenService?: boolean;
     primaryService?: boolean;
     characteristics: SerializedCharacteristic[];
     optionalCharacteristics?: SerializedCharacteristic[];
 }
 export declare type ServiceId = string;
-export declare const enum ServiceEventTypes {
-    CHARACTERISTIC_CHANGE = "characteristic-change",
-    SERVICE_CONFIGURATION_CHANGE = "service-configurationChange"
-}
-export declare type ServiceConfigurationChange = {
-    service: Service;
-};
-declare type Events = {
-    [ServiceEventTypes.CHARACTERISTIC_CHANGE]: (change: CharacteristicChange) => void;
-    [ServiceEventTypes.SERVICE_CONFIGURATION_CHANGE]: (change: ServiceConfigurationChange) => void;
+export declare type ServiceCharacteristicChange = CharacteristicChange & {
+    characteristic: Characteristic;
 };
 /**
  * @deprecated Use ServiceEventTypes instead
  */
 export declare type EventService = ServiceEventTypes.CHARACTERISTIC_CHANGE | ServiceEventTypes.SERVICE_CONFIGURATION_CHANGE;
+export declare const enum ServiceEventTypes {
+    CHARACTERISTIC_CHANGE = "characteristic-change",
+    SERVICE_CONFIGURATION_CHANGE = "service-configurationChange",
+    CHARACTERISTIC_WARNING = "characteristic-warning"
+}
+export declare interface Service {
+    on(event: "characteristic-change", listener: (change: ServiceCharacteristicChange) => void): this;
+    on(event: "service-configurationChange", listener: () => void): this;
+    on(event: "characteristic-warning", listener: (warning: CharacteristicWarning) => void): this;
+    emit(event: "characteristic-change", change: ServiceCharacteristicChange): boolean;
+    emit(event: "service-configurationChange"): boolean;
+    emit(event: "characteristic-warning", warning: CharacteristicWarning): boolean;
+}
 /**
  * Service represents a set of grouped values necessary to provide a logical function. For instance, a
  * "Door Lock Mechanism" service might contain two values, one for the "desired lock state" and one for the
@@ -47,94 +60,129 @@ export declare type EventService = ServiceEventTypes.CHARACTERISTIC_CHANGE | Ser
  * You can also define custom Services by providing your own UUID for the type that you generate yourself.
  * Custom Services can contain an arbitrary set of Characteristics, but Siri will likely not be able to
  * work with these.
- *
- * @event 'characteristic-change' => function({characteristic, oldValue, newValue, context}) { }
- *        Emitted after a change in the value of one of our Characteristics has occurred.
  */
-export declare class Service extends EventEmitter<Events> {
+export declare class Service extends EventEmitter {
+    static AccessControl: typeof AccessControl;
+    static AccessoryInformation: typeof AccessoryInformation;
+    static AccessoryRuntimeInformation: typeof AccessoryRuntimeInformation;
+    static AirPurifier: typeof AirPurifier;
+    static AirQualitySensor: typeof AirQualitySensor;
+    static AudioStreamManagement: typeof AudioStreamManagement;
+    static Battery: typeof Battery;
+    /**
+     * @deprecated Please use {@link Service.Battery}.
+     */
+    static BatteryService: typeof Battery;
+    /**
+     * @deprecated Removed and not used anymore
+     */
+    static BridgeConfiguration: typeof BridgeConfiguration;
+    /**
+     * @deprecated Removed and not used anymore
+     */
+    static BridgingState: typeof BridgingState;
+    /**
+     * @deprecated This service has no usage anymore and will be ignored by iOS
+     */
+    static CameraControl: typeof CameraControl;
+    /**
+     * @deprecated Please use {@link Service.CameraRecordingManagement}.
+     */
+    static CameraEventRecordingManagement: typeof CameraRecordingManagement;
+    static CameraOperatingMode: typeof CameraOperatingMode;
+    static CameraRecordingManagement: typeof CameraRecordingManagement;
+    static CameraRTPStreamManagement: typeof CameraRTPStreamManagement;
+    static CarbonDioxideSensor: typeof CarbonDioxideSensor;
+    static CarbonMonoxideSensor: typeof CarbonMonoxideSensor;
+    static CloudRelay: typeof CloudRelay;
+    static ContactSensor: typeof ContactSensor;
+    static DataStreamTransportManagement: typeof DataStreamTransportManagement;
+    static Diagnostics: typeof Diagnostics;
+    static Door: typeof Door;
+    static Doorbell: typeof Doorbell;
+    static Fan: typeof Fan;
+    static Fanv2: typeof Fanv2;
+    static Faucet: typeof Faucet;
+    static FilterMaintenance: typeof FilterMaintenance;
+    static GarageDoorOpener: typeof GarageDoorOpener;
+    static HeaterCooler: typeof HeaterCooler;
+    static HumidifierDehumidifier: typeof HumidifierDehumidifier;
+    static HumiditySensor: typeof HumiditySensor;
+    static InputSource: typeof InputSource;
+    static IrrigationSystem: typeof IrrigationSystem;
+    static LeakSensor: typeof LeakSensor;
+    static Lightbulb: typeof Lightbulb;
+    static LightSensor: typeof LightSensor;
+    static LockManagement: typeof LockManagement;
+    static LockMechanism: typeof LockMechanism;
+    static Microphone: typeof Microphone;
+    static MotionSensor: typeof MotionSensor;
+    static OccupancySensor: typeof OccupancySensor;
+    static Outlet: typeof Outlet;
+    static Pairing: typeof Pairing;
+    static PowerManagement: typeof PowerManagement;
+    static ProtocolInformation: typeof ProtocolInformation;
+    /**
+     * @deprecated Please use {@link Service.CloudRelay}.
+     */
+    static Relay: typeof CloudRelay;
+    static SecuritySystem: typeof SecuritySystem;
+    static ServiceLabel: typeof ServiceLabel;
+    static Siri: typeof Siri;
+    /**
+     * @deprecated Please use {@link Service.Slats}.
+     */
+    static Slat: typeof Slats;
+    static Slats: typeof Slats;
+    static SmartSpeaker: typeof SmartSpeaker;
+    static SmokeSensor: typeof SmokeSensor;
+    static Speaker: typeof Speaker;
+    static StatefulProgrammableSwitch: typeof StatefulProgrammableSwitch;
+    static StatelessProgrammableSwitch: typeof StatelessProgrammableSwitch;
+    static Switch: typeof Switch;
+    static TargetControl: typeof TargetControl;
+    static TargetControlManagement: typeof TargetControlManagement;
+    static Television: typeof Television;
+    static TelevisionSpeaker: typeof TelevisionSpeaker;
+    static TemperatureSensor: typeof TemperatureSensor;
+    static Thermostat: typeof Thermostat;
+    static ThreadTransport: typeof ThreadTransport;
+    /**
+     * @deprecated Removed and not used anymore
+     */
+    static TimeInformation: typeof TimeInformation;
+    static TransferTransportManagement: typeof TransferTransportManagement;
+    static Tunnel: typeof Tunnel;
+    /**
+     * @deprecated Please use {@link Service.Tunnel}.
+     */
+    static TunneledBTLEAccessoryService: typeof Tunnel;
+    static Valve: typeof Valve;
+    static WiFiRouter: typeof WiFiRouter;
+    static WiFiSatellite: typeof WiFiSatellite;
+    static WiFiTransport: typeof WiFiTransport;
+    static Window: typeof Window;
+    static WindowCovering: typeof WindowCovering;
     displayName: string;
     UUID: string;
-    subtype?: string | undefined;
-    static AccessControl: typeof HomeKitTypes.Generated.AccessControl;
-    static AccessoryInformation: typeof HomeKitTypes.Generated.AccessoryInformation;
-    static AirPurifier: typeof HomeKitTypes.Generated.AirPurifier;
-    static AirQualitySensor: typeof HomeKitTypes.Generated.AirQualitySensor;
-    static AudioStreamManagement: typeof HomeKitTypes.Remote.AudioStreamManagement;
-    static BatteryService: typeof HomeKitTypes.Generated.BatteryService;
-    static BridgeConfiguration: typeof HomeKitTypes.Bridged.BridgeConfiguration;
-    static BridgingState: typeof HomeKitTypes.Bridged.BridgingState;
-    static CameraControl: typeof HomeKitTypes.Bridged.CameraControl;
-    static CameraRTPStreamManagement: typeof HomeKitTypes.Generated.CameraRTPStreamManagement;
-    static CarbonDioxideSensor: typeof HomeKitTypes.Generated.CarbonDioxideSensor;
-    static CarbonMonoxideSensor: typeof HomeKitTypes.Generated.CarbonMonoxideSensor;
-    static ContactSensor: typeof HomeKitTypes.Generated.ContactSensor;
-    static DataStreamTransportManagement: typeof HomeKitTypes.DataStream.DataStreamTransportManagement;
-    static Door: typeof HomeKitTypes.Generated.Door;
-    static Doorbell: typeof HomeKitTypes.Generated.Doorbell;
-    static Fan: typeof HomeKitTypes.Generated.Fan;
-    static Fanv2: typeof HomeKitTypes.Generated.Fanv2;
-    static Faucet: typeof HomeKitTypes.Generated.Faucet;
-    static FilterMaintenance: typeof HomeKitTypes.Generated.FilterMaintenance;
-    static GarageDoorOpener: typeof HomeKitTypes.Generated.GarageDoorOpener;
-    static HeaterCooler: typeof HomeKitTypes.Generated.HeaterCooler;
-    static HumidifierDehumidifier: typeof HomeKitTypes.Generated.HumidifierDehumidifier;
-    static HumiditySensor: typeof HomeKitTypes.Generated.HumiditySensor;
-    static InputSource: typeof HomeKitTypes.TV.InputSource;
-    static IrrigationSystem: typeof HomeKitTypes.Generated.IrrigationSystem;
-    /**
-     * @deprecated Removed in iOS 11. Use ServiceLabel instead.
-     */
-    static Label: typeof HomeKitTypes.Generated.ServiceLabel;
-    static LeakSensor: typeof HomeKitTypes.Generated.LeakSensor;
-    static LightSensor: typeof HomeKitTypes.Generated.LightSensor;
-    static Lightbulb: typeof HomeKitTypes.Generated.Lightbulb;
-    static LockManagement: typeof HomeKitTypes.Generated.LockManagement;
-    static LockMechanism: typeof HomeKitTypes.Generated.LockMechanism;
-    static Microphone: typeof HomeKitTypes.Generated.Microphone;
-    static MotionSensor: typeof HomeKitTypes.Generated.MotionSensor;
-    static OccupancySensor: typeof HomeKitTypes.Generated.OccupancySensor;
-    static Outlet: typeof HomeKitTypes.Generated.Outlet;
-    static Pairing: typeof HomeKitTypes.Bridged.Pairing;
-    static ProtocolInformation: typeof HomeKitTypes.Bridged.ProtocolInformation;
-    static Relay: typeof HomeKitTypes.Bridged.Relay;
-    static SecuritySystem: typeof HomeKitTypes.Generated.SecuritySystem;
-    static ServiceLabel: typeof HomeKitTypes.Generated.ServiceLabel;
-    static Siri: typeof HomeKitTypes.Remote.Siri;
-    static Slat: typeof HomeKitTypes.Generated.Slat;
-    static SmokeSensor: typeof HomeKitTypes.Generated.SmokeSensor;
-    static SmartSpeaker: typeof HomeKitTypes.Generated.SmartSpeaker;
-    static Speaker: typeof HomeKitTypes.Generated.Speaker;
-    static StatefulProgrammableSwitch: typeof HomeKitTypes.Bridged.StatefulProgrammableSwitch;
-    static StatelessProgrammableSwitch: typeof HomeKitTypes.Generated.StatelessProgrammableSwitch;
-    static Switch: typeof HomeKitTypes.Generated.Switch;
-    static TargetControl: typeof HomeKitTypes.Remote.TargetControl;
-    static TargetControlManagement: typeof HomeKitTypes.Remote.TargetControlManagement;
-    static Television: typeof HomeKitTypes.TV.Television;
-    static TelevisionSpeaker: typeof HomeKitTypes.TV.TelevisionSpeaker;
-    static TemperatureSensor: typeof HomeKitTypes.Generated.TemperatureSensor;
-    static Thermostat: typeof HomeKitTypes.Generated.Thermostat;
-    static TimeInformation: typeof HomeKitTypes.Bridged.TimeInformation;
-    static TunneledBTLEAccessoryService: typeof HomeKitTypes.Bridged.TunneledBTLEAccessoryService;
-    static Valve: typeof HomeKitTypes.Generated.Valve;
-    static Window: typeof HomeKitTypes.Generated.Window;
-    static WindowCovering: typeof HomeKitTypes.Generated.WindowCovering;
-    static CameraOperatingMode: typeof HomeKitTypes.Generated.CameraOperatingMode;
-    static CameraEventRecordingManagement: typeof HomeKitTypes.Generated.CameraEventRecordingManagement;
-    static WiFiRouter: typeof HomeKitTypes.Generated.WiFiRouter;
-    static WiFiSatellite: typeof HomeKitTypes.Generated.WiFiSatellite;
-    static PowerManagement: typeof HomeKitTypes.Generated.PowerManagement;
-    static TransferTransportManagement: typeof HomeKitTypes.Generated.TransferTransportManagement;
-    static AccessoryRuntimeInformation: typeof HomeKitTypes.Generated.AccessoryRuntimeInformation;
-    static Diagnostics: typeof HomeKitTypes.Generated.Diagnostics;
-    static WiFiTransport: typeof HomeKitTypes.Generated.WiFiTransport;
+    subtype?: string;
     iid: Nullable<number>;
     name: Nullable<string>;
     characteristics: Characteristic[];
     optionalCharacteristics: Characteristic[];
+    /**
+     * @private
+     */
     isHiddenService: boolean;
+    /**
+     * @private
+     */
     isPrimaryService: boolean;
+    /**
+     * @private
+     */
     linkedServices: Service[];
-    constructor(displayName: string, UUID: string, subtype?: string | undefined);
+    constructor(displayName: string | undefined, UUID: string, subtype?: string);
     /**
      * Returns an id which uniquely identifies an service on the associated accessory.
      * The serviceId is a concatenation of the UUID for the service (defined by HAP) and the subtype (could be empty)
@@ -143,7 +191,10 @@ export declare class Service extends EventEmitter<Events> {
      * @returns the serviceId
      */
     getServiceId(): ServiceId;
-    addCharacteristic: (characteristic: Characteristic | (new (...args: any[]) => Characteristic), ...constructorArgs: any[]) => Characteristic;
+    addCharacteristic(input: Characteristic): Characteristic;
+    addCharacteristic(input: {
+        new (...args: any[]): Characteristic;
+    }, ...constructorArgs: any[]): Characteristic;
     /**
      * Sets this service as the new primary service.
      * Any currently active primary service will be reset to be not primary.
@@ -152,48 +203,91 @@ export declare class Service extends EventEmitter<Events> {
      *
      * @param isPrimary {boolean} - optional boolean (default true) if the service should be the primary service
      */
-    setPrimaryService: (isPrimary?: boolean) => void;
+    setPrimaryService(isPrimary?: boolean): void;
     /**
      * Marks the service as hidden
      *
      * @param isHidden {boolean} - optional boolean (default true) if the service should be marked hidden
      */
-    setHiddenService: (isHidden?: boolean) => void;
-    addLinkedService: (newLinkedService: Service) => void;
-    removeLinkedService: (oldLinkedService: Service) => void;
-    removeCharacteristic: (characteristic: Characteristic) => void;
+    setHiddenService(isHidden?: boolean): void;
+    /**
+     * Adds a new link to the specified service. The service MUST be already added to
+     * the SAME accessory.
+     *
+     * @param service - The service this service should link to
+     */
+    addLinkedService(service: Service): void;
+    /**
+     * Removes a link to the specified service which was previously added with {@link addLinkedService}
+     *
+     * @param service - Previously linked service
+     */
+    removeLinkedService(service: Service): void;
+    removeCharacteristic(characteristic: Characteristic): void;
     getCharacteristic(constructor: WithUUID<{
         new (): Characteristic;
     }>): Characteristic;
     getCharacteristic(name: string | WithUUID<{
         new (): Characteristic;
     }>): Characteristic | undefined;
-    testCharacteristic: <T extends WithUUID<typeof Characteristic>>(name: string | T) => boolean;
-    setCharacteristic: <T extends WithUUID<new () => Characteristic>>(name: string | T, value: CharacteristicValue) => this;
-    updateCharacteristic: <T extends WithUUID<new () => Characteristic>>(name: string | T, value: CharacteristicValue) => this;
-    addOptionalCharacteristic: (characteristic: Characteristic | {
+    testCharacteristic<T extends WithUUID<typeof Characteristic>>(name: string | T): boolean;
+    setCharacteristic<T extends WithUUID<{
         new (): Characteristic;
-    }) => void;
+    }>>(name: string | T, value: CharacteristicValue): Service;
+    updateCharacteristic<T extends WithUUID<{
+        new (): Characteristic;
+    }>>(name: string | T, value: CharacteristicValue): Service;
+    addOptionalCharacteristic(characteristic: Characteristic | {
+        new (): Characteristic;
+    }): void;
     /**
      * This method was created to copy all characteristics from another service to this.
      * It's only adopting is currently in homebridge to merge the AccessoryInformation service. So some things
      * my be explicitly tailored towards this use case.
      *
      * It will not remove characteristics which are present currently but not added on the other characteristic.
-     * It will not replace the characteristic if the value is falsey (except of '0' or 'false')
+     * It will not replace the characteristic if the value is falsy (except of '0' or 'false')
      * @param service
+     * @private used by homebridge
      */
     replaceCharacteristicsFromService(service: Service): void;
-    getCharacteristicByIID: (iid: number) => Characteristic | undefined;
-    _assignIDs: (identifierCache: IdentifierCache, accessoryName: string, baseIID?: number) => void;
     /**
-     * Returns a JSON representation of this Accessory suitable for delivering to HAP clients.
+     * @private
      */
-    toHAP: (opt?: ToHAPOptions | undefined) => HapService;
-    _setupCharacteristic: (characteristic: Characteristic) => void;
-    _sideloadCharacteristics: (targetCharacteristics: Characteristic[]) => void;
-    static serialize: (service: Service) => SerializedService;
-    static deserialize: (json: SerializedService) => Service;
+    getCharacteristicByIID(iid: number): Characteristic | undefined;
+    /**
+     * @private
+     */
+    _assignIDs(identifierCache: IdentifierCache, accessoryName: string, baseIID?: number): void;
+    /**
+     * Returns a JSON representation of this service suitable for delivering to HAP clients.
+     * @private used to generate response to /accessories query
+     */
+    toHAP(connection: HAPConnection, contactGetHandlers?: boolean): Promise<ServiceJsonObject>;
+    /**
+     * Returns a JSON representation of this service without characteristic values.
+     * @private used to generate the config hash
+     */
+    internalHAPRepresentation(): ServiceJsonObject;
+    /**
+     * @private
+     */
+    private setupCharacteristicEventHandlers;
+    /**
+     * @private
+     */
+    private emitCharacteristicWarningEvent;
+    /**
+     * @private
+     */
+    private _sideloadCharacteristics;
+    /**
+     * @private
+     */
+    static serialize(service: Service): SerializedService;
+    /**
+     * @private
+     */
+    static deserialize(json: SerializedService): Service;
 }
-export {};
 //# sourceMappingURL=Service.d.ts.map

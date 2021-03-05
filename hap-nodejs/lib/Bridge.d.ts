@@ -5,6 +5,6 @@ import { Accessory } from './Accessory';
  * will be hosted automatically, instead of needed to publish() every single Accessory as a separate server.
  */
 export declare class Bridge extends Accessory {
-    constructor(displayName: string, serialNumber: string);
+    constructor(displayName: string, UUID: string);
 }
 //# sourceMappingURL=Bridge.d.ts.map

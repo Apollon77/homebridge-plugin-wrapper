@@ -1,17 +1,9 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./Controller"), exports);
-__exportStar(require("./RemoteController"), exports);
-__exportStar(require("./CameraController"), exports);
-__exportStar(require("./DoorbellController"), exports);
+var tslib_1 = require("tslib");
+tslib_1.__exportStar(require("./Controller"), exports);
+tslib_1.__exportStar(require("./AdaptiveLightingController"), exports);
+tslib_1.__exportStar(require("./RemoteController"), exports);
+tslib_1.__exportStar(require("./CameraController"), exports);
+tslib_1.__exportStar(require("./DoorbellController"), exports);
 //# sourceMappingURL=index.js.map

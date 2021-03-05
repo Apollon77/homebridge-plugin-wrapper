@@ -1,34 +1,12 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataStreamManagement = exports.DataStreamStatus = void 0;
-var tlv = __importStar(require("../util/tlv"));
-var debug_1 = __importDefault(require("debug"));
-var Service_1 = require("../Service");
+var tslib_1 = require("tslib");
+var debug_1 = tslib_1.__importDefault(require("debug"));
 var Characteristic_1 = require("../Characteristic");
+var Service_1 = require("../Service");
+var tlv = tslib_1.__importStar(require("../util/tlv"));
 var DataStreamServer_1 = require("./DataStreamServer");
-var eventedhttp_1 = require("../util/eventedhttp");
 var debug = debug_1.default('HAP-NodeJS:DataStream:Management');
 var TransferTransportConfigurationTypes;
 (function (TransferTransportConfigurationTypes) {
@@ -71,13 +49,20 @@ var DataStreamStatus;
 var DataStreamManagement = /** @class */ (function () {
     function DataStreamManagement(service) {
         // one server per accessory is probably the best practice
-        this.dataStreamServer = new DataStreamServer_1.DataStreamServer();
+        this.dataStreamServer = new DataStreamServer_1.DataStreamServer(); // TODO how to handle Remote+future HKSV controller at the same time?
         this.lastSetupDataStreamTransportResponse = ""; // stripped. excludes ACCESSORY_KEY_SALT
         var supportedConfiguration = [TransportType.HOMEKIT_DATA_STREAM];
         this.supportedDataStreamTransportConfiguration = this.buildSupportedDataStreamTransportConfigurationTLV(supportedConfiguration);
         this.dataStreamTransportManagementService = service || this.constructService();
         this.setupServiceHandlers();
     }
+    DataStreamManagement.prototype.destroy = function () {
+        this.dataStreamServer.destroy(); // removes ALL listeners
+        this.dataStreamTransportManagementService.getCharacteristic(Characteristic_1.Characteristic.SetupDataStreamTransport)
+            .removeOnGet()
+            .removeAllListeners("set" /* SET */);
+        this.lastSetupDataStreamTransportResponse = "";
+    };
     /**
      * @returns the DataStreamTransportManagement service
      */
@@ -139,10 +124,11 @@ var DataStreamManagement = /** @class */ (function () {
      * @param listener - the event handler
      */
     DataStreamManagement.prototype.onServerEvent = function (event, listener) {
+        // @ts-expect-error
         this.dataStreamServer.on(event, listener);
         return this;
     };
-    DataStreamManagement.prototype.handleSetupDataStreamTransportWrite = function (value, callback, connectionID) {
+    DataStreamManagement.prototype.handleSetupDataStreamTransportWrite = function (value, callback, connection) {
         var _this = this;
         var data = Buffer.from(value, 'base64');
         var objects = tlv.decode(data);
@@ -151,20 +137,15 @@ var DataStreamManagement = /** @class */ (function () {
         var controllerKeySalt = objects[3 /* CONTROLLER_KEY_SALT */];
         debug("Received setup write with command %s and transport type %s", SessionCommandType[sessionCommandType], TransportType[transportType]);
         if (sessionCommandType === SessionCommandType.START_SESSION) {
-            if (transportType !== TransportType.HOMEKIT_DATA_STREAM) {
-                callback(null, DataStreamManagement.buildSetupStatusResponse(1 /* GENERIC_ERROR */));
+            if (transportType !== TransportType.HOMEKIT_DATA_STREAM || controllerKeySalt.length !== 32) {
+                callback(-70410 /* INVALID_VALUE_IN_REQUEST */);
                 return;
             }
-            if (!connectionID) { // we need the session for the shared secret to generate the encryption keys
-                callback(null, DataStreamManagement.buildSetupStatusResponse(1 /* GENERIC_ERROR */));
-                return;
-            }
-            var session = eventedhttp_1.Session.getSession(connectionID);
-            if (!session) { // we need the session for the shared secret to generate the encryption keys
-                callback(null, DataStreamManagement.buildSetupStatusResponse(1 /* GENERIC_ERROR */));
-                return;
-            }
-            this.dataStreamServer.prepareSession(session, controllerKeySalt, function (preparedSession) {
+            this.dataStreamServer.prepareSession(connection, controllerKeySalt, function (error, preparedSession) {
+                if (error || !preparedSession) {
+                    callback(error !== null && error !== void 0 ? error : new Error("PreparedSession was undefined!"));
+                    return;
+                }
                 var listeningPort = tlv.encode(1 /* TCP_LISTENING_PORT */, tlv.writeUInt16(preparedSession.port));
                 var response = Buffer.concat([
                     tlv.encode(1 /* STATUS */, 0 /* SUCCESS */),
@@ -179,12 +160,9 @@ var DataStreamManagement = /** @class */ (function () {
             });
         }
         else {
-            callback(null, DataStreamManagement.buildSetupStatusResponse(1 /* GENERIC_ERROR */));
+            callback(-70410 /* INVALID_VALUE_IN_REQUEST */);
             return;
         }
-    };
-    DataStreamManagement.buildSetupStatusResponse = function (status) {
-        return tlv.encode(1 /* STATUS */, status).toString('base64');
     };
     DataStreamManagement.prototype.buildSupportedDataStreamTransportConfigurationTLV = function (supportedConfiguration) {
         var buffers = [];
@@ -204,12 +182,16 @@ var DataStreamManagement = /** @class */ (function () {
     DataStreamManagement.prototype.setupServiceHandlers = function () {
         var _this = this;
         this.dataStreamTransportManagementService.getCharacteristic(Characteristic_1.Characteristic.SetupDataStreamTransport)
-            .on("get" /* GET */, function (callback) {
-            callback(null, _this.lastSetupDataStreamTransportResponse);
+            .onGet(function () { return _this.lastSetupDataStreamTransportResponse; })
+            .on("set" /* SET */, function (value, callback, context, connection) {
+            if (!connection) {
+                debug("Set event handler for SetupDataStreamTransport cannot be called from plugin! Connection undefined!");
+                callback(-70410 /* INVALID_VALUE_IN_REQUEST */);
+                return;
+            }
+            _this.handleSetupDataStreamTransportWrite(value, callback, connection);
         })
-            .on("set" /* SET */, function (value, callback, context, connectionID) {
-            _this.handleSetupDataStreamTransportWrite(value, callback, connectionID);
-        }).getValue();
+            .updateValue(this.lastSetupDataStreamTransportResponse);
     };
     return DataStreamManagement;
 }());

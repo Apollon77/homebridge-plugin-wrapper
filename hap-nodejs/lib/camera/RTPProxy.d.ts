@@ -1,6 +1,5 @@
 /// <reference types="node" />
 import { Socket, SocketType } from "dgram";
-declare const EventEmitter: any;
 export interface RTPProxyOptions {
     disabled: boolean;
     isIPV6?: boolean;
@@ -16,7 +15,7 @@ export interface RTPProxyOptions {
  * Later HomeKit removed support for unencrypted stream so it’s mostly no longer useful anymore, only really for testing
  * with a custom HAP controller.
  */
-export default class RTPProxy extends EventEmitter {
+export default class RTPProxy {
     options: RTPProxyOptions;
     startingPort: number;
     type: SocketType;
@@ -54,5 +53,4 @@ export default class RTPProxy extends EventEmitter {
     createSocket: (type: SocketType) => Promise<Socket>;
     createSocketPair: (type: SocketType) => Promise<Socket[]>;
 }
-export {};
 //# sourceMappingURL=RTPProxy.d.ts.map

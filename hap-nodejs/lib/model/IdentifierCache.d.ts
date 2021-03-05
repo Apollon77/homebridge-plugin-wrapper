@@ -26,7 +26,7 @@ export declare class IdentifierCache {
      * Persisting to File System
      */
     static persistKey: (username: MacAddress) => string;
-    static load: (username: MacAddress) => import("../../types").Nullable<IdentifierCache>;
+    static load: (username: MacAddress) => IdentifierCache | null;
     static remove(username: MacAddress): void;
 }
 //# sourceMappingURL=IdentifierCache.d.ts.map

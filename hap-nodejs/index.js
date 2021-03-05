@@ -1,53 +1,39 @@
 "use strict";
-/// <reference path="../@types/bonjour-hap.d.ts" />
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __exportStar = (this && this.__exportStar) || function(m, exports) {
-    for (var p in m) if (p !== "default" && !exports.hasOwnProperty(p)) __createBinding(exports, m, p);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.init = exports.LegacyTypes = exports.uuid = exports.AccessoryLoader = void 0;
-require("./lib/gen");
-var accessoryLoader = __importStar(require("./lib/AccessoryLoader"));
-var uuidFunctions = __importStar(require("./lib/util/uuid"));
-var legacyTypes = __importStar(require("./accessories/types"));
+var tslib_1 = require("tslib");
+require("source-map-support/register"); // registering node-source-map-support for typescript stack traces
+require("./lib/definitions"); // must be loaded before Characteristic and Service class
+var accessoryLoader = tslib_1.__importStar(require("./lib/AccessoryLoader"));
+var uuidFunctions = tslib_1.__importStar(require("./lib/util/uuid"));
+var legacyTypes = tslib_1.__importStar(require("./accessories/types"));
 var HAPStorage_1 = require("./lib/model/HAPStorage");
 exports.AccessoryLoader = accessoryLoader;
 exports.uuid = uuidFunctions;
-__exportStar(require("./lib/model/HAPStorage"), exports);
-__exportStar(require("./lib/Accessory"), exports);
-__exportStar(require("./lib/Bridge"), exports);
-__exportStar(require("./lib/Service"), exports);
-__exportStar(require("./lib/Characteristic"), exports);
-__exportStar(require("./lib/AccessoryLoader"), exports);
-__exportStar(require("./lib/camera"), exports);
-__exportStar(require("./lib/tv/AccessControlManagement"), exports);
-__exportStar(require("./lib/HAPServer"), exports);
-__exportStar(require("./lib/gen"), exports);
-__exportStar(require("./lib/datastream"), exports);
-__exportStar(require("./lib/controller"), exports);
-__exportStar(require("./lib/util/clone"), exports);
-__exportStar(require("./lib/util/once"), exports);
-__exportStar(require("./lib/util/tlv"), exports);
-__exportStar(require("./types"), exports);
+tslib_1.__exportStar(require("./lib/model/HAPStorage"), exports);
+tslib_1.__exportStar(require("./lib/Accessory"), exports);
+tslib_1.__exportStar(require("./lib/Bridge"), exports);
+tslib_1.__exportStar(require("./lib/Service"), exports);
+tslib_1.__exportStar(require("./lib/Characteristic"), exports);
+tslib_1.__exportStar(require("./lib/AccessoryLoader"), exports);
+tslib_1.__exportStar(require("./lib/camera"), exports);
+tslib_1.__exportStar(require("./lib/tv/AccessControlManagement"), exports);
+tslib_1.__exportStar(require("./lib/HAPServer"), exports);
+tslib_1.__exportStar(require("./lib/datastream"), exports);
+tslib_1.__exportStar(require("./lib/controller"), exports);
+tslib_1.__exportStar(require("./lib/util/clone"), exports);
+tslib_1.__exportStar(require("./lib/util/once"), exports);
+tslib_1.__exportStar(require("./lib/util/tlv"), exports);
+tslib_1.__exportStar(require("./lib/util/hapStatusError"), exports);
+tslib_1.__exportStar(require("./lib/util/color-utils"), exports);
+tslib_1.__exportStar(require("./lib/util/time"), exports);
+tslib_1.__exportStar(require("./types"), exports);
 exports.LegacyTypes = legacyTypes;
+function printInit() {
+    var packageJson = require("../package.json");
+    console.log("Initializing HAP-NodeJS v" + packageJson.version + "...");
+}
+printInit();
 /**
  *
  * @param {string} storagePath
@@ -55,6 +41,9 @@ exports.LegacyTypes = legacyTypes;
  *  storage path location, please use {@link HAPStorage.setCustomStoragePath} directly.
  */
 function init(storagePath) {
+    console.log("DEPRECATED: The need to manually initialize HAP (by calling the init method) was removed. " +
+        "If you want to set a custom storage path location, please ust HAPStorage.setCustomStoragePath directly. " +
+        "This method will be removed in the next major update!");
     if (storagePath) {
         HAPStorage_1.HAPStorage.setCustomStoragePath(storagePath);
     }

@@ -14,7 +14,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -30,6 +30,7 @@ const platformAccessory_1 = require("./platformAccessory");
 const user_1 = require("./user");
 const logger_1 = require("./logger");
 const pluginManager_1 = require("./pluginManager");
+const semver_1 = __importDefault(require("semver"));
 const log = logger_1.Logger.internal;
 var PluginType;
 (function (PluginType) {
@@ -63,13 +64,16 @@ class HomebridgeAPI extends events_1.EventEmitter {
     // ------------------------------------------------------------------------
     constructor() {
         super();
-        this.version = 2.6; // homebridge API version
+        this.version = 2.7; // homebridge API version
         this.serverVersion = version_1.default(); // homebridge node module version
         // ------------------ LEGACY EXPORTS FOR PRE TYPESCRIPT  ------------------
         this.user = user_1.User;
         this.hap = hapNodeJs;
         this.hapLegacyTypes = hapNodeJs.LegacyTypes; // used for older accessories/platforms
         this.platformAccessory = platformAccessory_1.PlatformAccessory;
+    }
+    versionGreaterOrEqual(version) {
+        return semver_1.default.gte(this.serverVersion, version);
     }
     static isDynamicPlatformPlugin(platformPlugin) {
         return "configureAccessory" in platformPlugin;

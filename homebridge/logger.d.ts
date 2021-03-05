@@ -74,6 +74,11 @@ export declare class Logger {
  */
 export declare function withPrefix(prefix: string): Logging;
 /**
+ * Gets the prefix
+ * @param prefix
+ */
+export declare function getLogPrefix(prefix: string): string;
+/**
  * Turns on debug level logging. Off by default.
  *
  * @param enabled {boolean}

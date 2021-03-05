@@ -1,10 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toLongForm = exports.toShortForm = exports.write = exports.unparse = exports.isValid = exports.generate = void 0;
-var crypto_1 = __importDefault(require("crypto"));
+exports.toLongForm = exports.toShortForm = exports.write = exports.unparse = exports.isValid = exports.generate = exports.BASE_UUID = void 0;
+var tslib_1 = require("tslib");
+var crypto_1 = tslib_1.__importDefault(require("crypto"));
+exports.BASE_UUID = '-0000-1000-8000-0026BB765291';
 // http://stackoverflow.com/a/25951500/66673
 function generate(data) {
     var sha1sum = crypto_1.default.createHash('sha1');
@@ -28,7 +27,6 @@ function isValid(UUID) {
     return VALID_UUID_REGEX.test(UUID);
 }
 exports.isValid = isValid;
-// https://github.com/defunctzombie/node-uuid/blob/master/uuid.js
 function unparse(buf, offset) {
     if (offset === void 0) { offset = 0; }
     if (typeof buf === "string" && isValid(buf)) {
@@ -46,29 +44,28 @@ function unparse(buf, offset) {
         return buf;
     }
     var i = offset;
-    return buf[i++].toString(16) + buf[i++].toString(16) +
-        buf[i++].toString(16) + buf[i++].toString(16) + '-' +
-        buf[i++].toString(16) + buf[i++].toString(16) + '-' +
-        buf[i++].toString(16) + buf[i++].toString(16) + '-' +
-        buf[i++].toString(16) + buf[i++].toString(16) + '-' +
-        buf[i++].toString(16) + buf[i++].toString(16) +
-        buf[i++].toString(16) + buf[i++].toString(16) +
-        buf[i++].toString(16) + buf[i++].toString(16);
+    return buf.toString("hex", i, (i += 4)) + "-" +
+        buf.toString("hex", i, (i += 2)) + "-" +
+        buf.toString("hex", i, (i += 2)) + "-" +
+        buf.toString("hex", i, (i += 2)) + "-" +
+        buf.toString("hex", i, i + 6);
 }
 exports.unparse = unparse;
 function write(uuid, buf, offset) {
-    if (buf === void 0) { buf = Buffer.alloc(16); }
     if (offset === void 0) { offset = 0; }
-    uuid = uuid.replace(/-/g, "");
-    for (var i = 0; i < uuid.length; i += 2) {
-        var octet = uuid.substring(i, i + 2);
-        buf.write(octet, offset++, undefined, "hex");
+    var buffer = Buffer.from(uuid.replace(/-/g, ""), "hex");
+    if (buf) {
+        buffer.copy(buf, offset);
+        return buf;
     }
-    return buf;
+    else {
+        return buffer;
+    }
 }
 exports.write = write;
 var SHORT_FORM_REGEX = /^0*([0-9a-f]{1,8})-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 function toShortForm(uuid, base) {
+    if (base === void 0) { base = exports.BASE_UUID; }
     if (!isValid(uuid))
         throw new TypeError('uuid was not a valid UUID or short form UUID');
     if (base && !isValid('00000000' + base))
@@ -80,6 +77,7 @@ function toShortForm(uuid, base) {
 exports.toShortForm = toShortForm;
 var VALID_SHORT_REGEX = /^[0-9a-f]{1,8}$/i;
 function toLongForm(uuid, base) {
+    if (base === void 0) { base = exports.BASE_UUID; }
     if (isValid(uuid))
         return uuid.toUpperCase();
     if (!VALID_SHORT_REGEX.test(uuid))

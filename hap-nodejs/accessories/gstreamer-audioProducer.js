@@ -1,11 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GStreamerAudioProducer = void 0;
-var assert_1 = __importDefault(require("assert"));
-var debug_1 = __importDefault(require("debug"));
+var tslib_1 = require("tslib");
+var assert_1 = tslib_1.__importDefault(require("assert"));
+var debug_1 = tslib_1.__importDefault(require("debug"));
 var child_process_1 = require("child_process");
 var __1 = require("..");
 var debug = debug_1.default("HAP-NodeJS:Remote:GStreamer");
@@ -33,22 +31,35 @@ var BitrateType;
  *
  * This producer is mainly tested on a RaspberryPi, but should also work on other linux based devices using alsa.
  *
- * This producer requires some packages to be installed. It is adviced to install the following (for example via apt-get):
+ * This producer requires some packages to be installed. It is advised to install the following (for example via apt-get):
  * gstreamer1.0-plugins-base, gstreamer1.0-x, gstreamer1.0-tools, libgstreamer1.0-dev, gstreamer1.0-doc,
  * gstreamer1.0-plugins-good, gstreamer1.0-plugins- ugly, gstreamer1.0-plugins-bad, gstreamer1.0-alsa
  *
  */
 var GStreamerAudioProducer = /** @class */ (function () {
     function GStreamerAudioProducer(frameHandler, errorHandler, options) {
+        var e_1, _a;
         this.options = {
             alsaSrc: "plughw:1"
         };
         this.running = false;
         this.frameHandler = frameHandler;
         this.errorHandler = errorHandler;
-        for (var key in options) {
-            // @ts-ignore
-            GStreamerAudioProducer.options[key] = options[key];
+        if (options) {
+            try {
+                for (var _b = tslib_1.__values(Object.entries(options)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var _d = tslib_1.__read(_c.value, 2), key = _d[0], value = _d[1];
+                    // @ts-ignore
+                    GStreamerAudioProducer.options[key] = value;
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
         }
     }
     GStreamerAudioProducer.prototype.startAudioProduction = function (selectedAudioConfiguration) {

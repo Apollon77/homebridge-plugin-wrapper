@@ -1,11 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ControllerStorage = void 0;
-var util_1 = __importDefault(require("util"));
-var debug_1 = __importDefault(require("debug"));
+var tslib_1 = require("tslib");
+var util_1 = tslib_1.__importDefault(require("util"));
+var debug_1 = tslib_1.__importDefault(require("debug"));
 var HAPStorage_1 = require("./HAPStorage");
 var debug = debug_1.default("HAP-NodeJS:ControllerStorage");
 var ControllerStorage = /** @class */ (function () {
@@ -18,6 +16,32 @@ var ControllerStorage = /** @class */ (function () {
         this.controllerData = {};
         this.accessoryUUID = accessory.UUID;
     }
+    ControllerStorage.prototype.enqueueSaveRequest = function (timeout) {
+        var _this = this;
+        var _a;
+        if (timeout === void 0) { timeout = 0; }
+        if (this.parent) {
+            this.parent.enqueueSaveRequest(timeout);
+            return;
+        }
+        var plannedTime = Date.now() + timeout;
+        if (this.queuedSaveTimeout) {
+            if (plannedTime <= ((_a = this.queuedSaveTime) !== null && _a !== void 0 ? _a : 0)) {
+                return;
+            }
+            clearTimeout(this.queuedSaveTimeout);
+        }
+        this.queuedSaveTimeout = setTimeout(function () {
+            _this.queuedSaveTimeout = _this.queuedSaveTime = undefined;
+            _this.save();
+        }, timeout).unref();
+        this.queuedSaveTime = Date.now() + timeout;
+    };
+    /**
+     * Links a bridged accessory to the ControllerStorage of the bridge accessory.
+     *
+     * @param accessory
+     */
     ControllerStorage.prototype.linkAccessory = function (accessory) {
         if (!this.linkedAccessories) {
             this.linkedAccessories = [];
@@ -39,23 +63,30 @@ var ControllerStorage = /** @class */ (function () {
             this.restoreController(controller);
         }
     };
+    ControllerStorage.prototype.untrackController = function (controller) {
+        var index = this.trackedControllers.indexOf(controller);
+        if (index !== -1) { // remove from trackedControllers if storage wasn't initialized yet
+            this.trackedControllers.splice(index, 1);
+        }
+        controller.setupStateChangeDelegate(undefined); // remove associating with this storage object
+        this.purgeControllerData(controller);
+    };
     ControllerStorage.prototype.purgeControllerData = function (controller) {
-        var _this = this;
-        delete this.controllerData[controller.controllerType];
+        delete this.controllerData[controller.controllerId()];
         if (this.initialized) {
-            setTimeout(function () { return _this.save(); }, 0);
+            this.enqueueSaveRequest(100);
         }
     };
     ControllerStorage.prototype.handleStateChange = function (controller) {
-        var _this = this;
+        var id = controller.controllerId();
         var serialized = controller.serialize();
         if (!serialized) { // can be undefined when controller wishes to delete data
-            delete this.controllerData[controller.controllerType];
+            delete this.controllerData[id];
         }
         else {
-            var controllerData = this.controllerData[controller.controllerType];
+            var controllerData = this.controllerData[id];
             if (!controllerData) {
-                this.controllerData[controller.controllerType] = {
+                this.controllerData[id] = {
                     data: serialized,
                 };
             }
@@ -66,17 +97,23 @@ var ControllerStorage = /** @class */ (function () {
         if (this.initialized) { // only save if data was loaded
             // run save data "async", as handleStateChange call will probably always be caused by a http request
             // this should improve our response time
-            setTimeout(function () { return _this.save(); }, 0);
+            this.enqueueSaveRequest(100);
         }
     };
     ControllerStorage.prototype.restoreController = function (controller) {
         if (!this.initialized) {
             throw new Error("Illegal state. Controller data wasn't loaded yet!");
         }
-        var controllerData = this.controllerData[controller.controllerType];
+        var controllerData = this.controllerData[controller.controllerId()];
         if (controllerData) {
-            controller.deserialize(controllerData.data);
-            controllerData.purgeOnNextLoad = false;
+            try {
+                controller.deserialize(controllerData.data);
+            }
+            catch (error) {
+                console.warn("Could not initialize controller of type '" + controller.controllerId() + "' from data stored on disk. Resetting to default: " + error.stack);
+                controller.handleFactoryReset();
+            }
+            controllerData.purgeOnNextLoad = undefined;
         }
     };
     /**
@@ -96,19 +133,24 @@ var ControllerStorage = /** @class */ (function () {
         var restoredControllers = [];
         this.trackedControllers.forEach(function (controller) {
             _this.restoreController(controller);
-            restoredControllers.push(controller.controllerType);
+            restoredControllers.push(controller.controllerId());
         });
-        this.trackedControllers = []; // clear tracking list
+        this.trackedControllers.splice(0, this.trackedControllers.length); // clear tracking list
+        var purgedData = false;
         Object.entries(this.controllerData).forEach(function (_a) {
-            var type = _a[0], data = _a[1];
+            var _b = tslib_1.__read(_a, 2), id = _b[0], data = _b[1];
             if (data.purgeOnNextLoad) {
-                delete _this.controllerData[type];
+                delete _this.controllerData[id];
+                purgedData = true;
                 return;
             }
-            if (!restoredControllers.includes(type)) {
+            if (!restoredControllers.includes(id)) {
                 data.purgeOnNextLoad = true;
             }
         });
+        if (purgedData) {
+            this.enqueueSaveRequest(500);
+        }
     };
     ControllerStorage.prototype.load = function (username) {
         if (this.username) {
@@ -160,15 +202,16 @@ var ControllerStorage = /** @class */ (function () {
         if (this.linkedAccessories) { // grab data from all linked storage objects
             this.linkedAccessories.forEach(function (accessory) { return accessories[accessory.accessoryUUID] = accessory.controllerData; });
         }
+        // TODO removed accessories won't ever be deleted?
         var accessoryData = this.restoredAccessories || {};
         Object.entries(accessories).forEach(function (_a) {
-            var uuid = _a[0], controllerData = _a[1];
+            var _b = tslib_1.__read(_a, 2), uuid = _b[0], controllerData = _b[1];
             var entries = Object.entries(controllerData);
             if (entries.length > 0) {
                 accessoryData[uuid] = entries.map(function (_a) {
-                    var type = _a[0], data = _a[1];
+                    var _b = tslib_1.__read(_a, 2), id = _b[0], data = _b[1];
                     return ({
-                        type: type,
+                        type: id,
                         controllerData: data,
                     });
                 });

@@ -1,2 +1,2 @@
-export declare function once(func: Function): (...args: any[]) => any;
+export declare function once<T extends Function>(func: T): (...args: unknown[]) => any;
 //# sourceMappingURL=once.d.ts.map

@@ -7,6 +7,7 @@ export declare class Plugin {
     private readonly pluginName;
     private readonly scope?;
     private readonly pluginPath;
+    disabled: boolean;
     readonly version: string;
     private readonly main;
     private loadContext?;

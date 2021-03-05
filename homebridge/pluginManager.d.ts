@@ -19,6 +19,10 @@ export interface PluginManagerOptions {
      * When defined, only plugins specified here will be initialized.
      */
     activePlugins?: PluginIdentifier[];
+    /**
+     * Plugins that are marked as disabled and whos corresponding config blocks should be ignored
+     */
+    disabledPlugins?: PluginIdentifier[];
 }
 /**
  * Utility which exposes methods to search for installed Homebridge plugins
@@ -28,6 +32,7 @@ export declare class PluginManager {
     private readonly api;
     private readonly searchPaths;
     private readonly activePlugins?;
+    private readonly disabledPlugins?;
     private readonly plugins;
     private readonly pluginIdentifierTranslation;
     private readonly accessoryToPluginMap;
@@ -41,6 +46,7 @@ export declare class PluginManager {
     static getPlatformName(identifier: PlatformIdentifier): PlatformIdentifier;
     static getPluginIdentifier(identifier: AccessoryIdentifier | PlatformIdentifier): PluginIdentifier;
     initializeInstalledPlugins(): void;
+    initializePlugin(plugin: Plugin, identifier: string): void;
     private handleRegisterAccessory;
     private handleRegisterPlatform;
     getPluginForAccessory(accessoryIdentifier: AccessoryIdentifier | AccessoryName): Plugin;
@@ -48,8 +54,11 @@ export declare class PluginManager {
     hasPluginRegistered(pluginIdentifier: PluginIdentifier): boolean;
     getPlugin(pluginIdentifier: PluginIdentifier): Plugin | undefined;
     getPluginByActiveDynamicPlatform(platformName: PlatformName): Plugin | undefined;
+    /**
+     * Gets all plugins installed on the local system
+     */
     private loadInstalledPlugins;
-    private loadPlugin;
+    loadPlugin(absolutePath: string): Plugin;
     private static loadPackageJSON;
     private loadDefaultPaths;
 }

@@ -16,6 +16,7 @@ const log = logger_1.Logger.internal;
  */
 class Plugin {
     constructor(name, path, packageJSON, scope) {
+        this.disabled = false; // mark the plugin as disabled
         this.registeredAccessories = new Map();
         this.registeredPlatforms = new Map();
         this.activeDynamicPlatforms = new Map();
@@ -44,14 +45,18 @@ class Plugin {
         if (this.registeredAccessories.has(name)) {
             throw new Error(`Plugin '${this.getPluginIdentifier()}' tried to register an accessory '${name}' which has already been registered!`);
         }
-        log.info("Registering accessory '%s'", this.getPluginIdentifier() + "." + name);
+        if (!this.disabled) {
+            log.info("Registering accessory '%s'", this.getPluginIdentifier() + "." + name);
+        }
         this.registeredAccessories.set(name, constructor);
     }
     registerPlatform(name, constructor) {
         if (this.registeredPlatforms.has(name)) {
             throw new Error(`Plugin '${this.getPluginIdentifier()}' tried to register a platform '${name}' which has already been registered!`);
         }
-        log.info("Registering platform '%s'", this.getPluginIdentifier() + "." + name);
+        if (!this.disabled) {
+            log.info("Registering platform '%s'", this.getPluginIdentifier() + "." + name);
+        }
         this.registeredPlatforms.set(name, constructor);
     }
     getAccessoryConstructor(accessoryIdentifier) {
@@ -109,8 +114,8 @@ You may face unexpected issues or stability problems running this plugin.`);
         }
         // make sure the version is satisfied by the currently running version of Node
         if (nodeVersionRequired && !semver_1.satisfies(process.version, nodeVersionRequired)) {
-            log.warn(`The plugin "${this.pluginName}" requires Node version of ${nodeVersionRequired} which does \
-not satisfy the current Node version of ${process.version}. You may need to upgrade your installation of Node.`);
+            log.warn(`The plugin "${this.pluginName}" requires Node.js version of ${nodeVersionRequired} which does \
+not satisfy the current Node.js version of ${process.version}. You may need to upgrade your installation of Node.js - see https://git.io/JTKEF`);
         }
         const dependencies = context.dependencies || {};
         if (dependencies.homebridge || dependencies["hap-nodejs"]) {

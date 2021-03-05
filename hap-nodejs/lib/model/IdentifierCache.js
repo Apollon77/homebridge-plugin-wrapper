@@ -1,11 +1,9 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IdentifierCache = void 0;
-var crypto_1 = __importDefault(require("crypto"));
-var util_1 = __importDefault(require("util"));
+var tslib_1 = require("tslib");
+var crypto_1 = tslib_1.__importDefault(require("crypto"));
+var util_1 = tslib_1.__importDefault(require("util"));
 var HAPStorage_1 = require("./HAPStorage");
 /**
  * IdentifierCache is a model class that manages a system of associating HAP "Accessory IDs" and "Instance IDs"
@@ -21,7 +19,7 @@ var IdentifierCache = /** @class */ (function () {
         this.username = username;
         this._cache = {}; // cache[key:string] = id:number
         this._usedCache = null; // for usage tracking and expiring old keys
-        this._savedCacheHash = ""; // for checking if new cache neeed to be saved
+        this._savedCacheHash = ""; // for checking if new cache need to be saved
         this.startTrackingUsage = function () {
             _this._usedCache = {};
         };
@@ -100,7 +98,7 @@ var IdentifierCache = /** @class */ (function () {
         if (saved) {
             var info = new IdentifierCache(username);
             info._cache = saved.cache;
-            info._savedCacheHash = crypto_1.default.createHash('sha1').update(JSON.stringify(info._cache)).digest('hex'); //calculate hash of the saved hash to decide in future if saving of new cache is neeeded
+            info._savedCacheHash = crypto_1.default.createHash('sha1').update(JSON.stringify(info._cache)).digest('hex'); //calculate hash of the saved hash to decide in future if saving of new cache is needed
             return info;
         }
         else {

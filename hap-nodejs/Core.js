@@ -1,10 +1,8 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var path_1 = __importDefault(require("path"));
-var node_persist_1 = __importDefault(require("node-persist"));
+var tslib_1 = require("tslib");
+var path_1 = tslib_1.__importDefault(require("path"));
+var node_persist_1 = tslib_1.__importDefault(require("node-persist"));
 var _1 = require("./");
 console.log("HAP-NodeJS starting...");
 console.warn("DEPRECATION NOTICE: The use of Core and BridgeCore are deprecated and are scheduled to be remove in October 2020. " +

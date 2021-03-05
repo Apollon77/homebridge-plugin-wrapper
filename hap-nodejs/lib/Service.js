@@ -1,55 +1,22 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __spreadArrays = (this && this.__spreadArrays) || function () {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Service = exports.ServiceEventTypes = void 0;
+var tslib_1 = require("tslib");
+var assert_1 = tslib_1.__importDefault(require("assert"));
+var debug_1 = tslib_1.__importDefault(require("debug"));
+var events_1 = require("events");
 var Characteristic_1 = require("./Characteristic");
-var clone_1 = require("./util/clone");
-var EventEmitter_1 = require("./EventEmitter");
-var HomeKitTypes = __importStar(require("./gen"));
 var uuid_1 = require("./util/uuid");
+var debug = debug_1.default("HAP-NodeJS:Service");
+/**
+ * HAP spec allows a maximum of 100 characteristics per service!
+ */
 var MAX_CHARACTERISTICS = 100;
 var ServiceEventTypes;
 (function (ServiceEventTypes) {
     ServiceEventTypes["CHARACTERISTIC_CHANGE"] = "characteristic-change";
     ServiceEventTypes["SERVICE_CONFIGURATION_CHANGE"] = "service-configurationChange";
+    ServiceEventTypes["CHARACTERISTIC_WARNING"] = "characteristic-warning";
 })(ServiceEventTypes = exports.ServiceEventTypes || (exports.ServiceEventTypes = {}));
 /**
  * Service represents a set of grouped values necessary to provide a logical function. For instance, a
@@ -70,210 +37,32 @@ var ServiceEventTypes;
  * You can also define custom Services by providing your own UUID for the type that you generate yourself.
  * Custom Services can contain an arbitrary set of Characteristics, but Siri will likely not be able to
  * work with these.
- *
- * @event 'characteristic-change' => function({characteristic, oldValue, newValue, context}) { }
- *        Emitted after a change in the value of one of our Characteristics has occurred.
  */
 var Service = /** @class */ (function (_super) {
-    __extends(Service, _super);
+    tslib_1.__extends(Service, _super);
     function Service(displayName, UUID, subtype) {
         if (displayName === void 0) { displayName = ""; }
         var _this = _super.call(this) || this;
-        _this.displayName = displayName;
-        _this.UUID = UUID;
-        _this.subtype = subtype;
-        // NOTICE: when adding/changing properties, remember to possibly adjust the serialize/deserialize functions
         _this.iid = null; // assigned later by our containing Accessory
         _this.name = null;
         _this.characteristics = [];
         _this.optionalCharacteristics = [];
+        /**
+         * @private
+         */
         _this.isHiddenService = false;
+        /**
+         * @private
+         */
         _this.isPrimaryService = false; // do not write to this directly
+        /**
+         * @private
+         */
         _this.linkedServices = [];
-        _this.addCharacteristic = function (characteristic) {
-            var constructorArgs = [];
-            for (var _i = 1; _i < arguments.length; _i++) {
-                constructorArgs[_i - 1] = arguments[_i];
-            }
-            // characteristic might be a constructor like `Characteristic.Brightness` instead of an instance
-            // of Characteristic. Coerce if necessary.
-            if (typeof characteristic === 'function') {
-                characteristic = new (characteristic.bind.apply(characteristic, __spreadArrays([void 0], constructorArgs)))();
-            }
-            // check for UUID conflict
-            for (var index in _this.characteristics) {
-                var existing = _this.characteristics[index];
-                if (existing.UUID === characteristic.UUID) {
-                    if (characteristic.UUID === '00000052-0000-1000-8000-0026BB765291') {
-                        //This is a special workaround for the Firmware Revision characteristic.
-                        return existing;
-                    }
-                    throw new Error("Cannot add a Characteristic with the same UUID as another Characteristic in this Service: " + existing.UUID);
-                }
-            }
-            if (_this.characteristics.length >= MAX_CHARACTERISTICS) {
-                throw new Error("Cannot add more than " + MAX_CHARACTERISTICS + " characteristics to a single service!");
-            }
-            // listen for changes in characteristics and bubble them up
-            characteristic.on("change" /* CHANGE */, function (change) {
-                // make a new object with the relevant characteristic added, and bubble it up
-                _this.emit("characteristic-change" /* CHARACTERISTIC_CHANGE */, clone_1.clone(change, { characteristic: characteristic }));
-            });
-            _this.characteristics.push(characteristic);
-            _this.emit("service-configurationChange" /* SERVICE_CONFIGURATION_CHANGE */, clone_1.clone({ service: _this }));
-            return characteristic;
-        };
-        /**
-         * Sets this service as the new primary service.
-         * Any currently active primary service will be reset to be not primary.
-         * This will happen immediately, if the service was already added to an accessory, or later
-         * when the service gets added to an accessory.
-         *
-         * @param isPrimary {boolean} - optional boolean (default true) if the service should be the primary service
-         */
-        _this.setPrimaryService = function (isPrimary) {
-            if (isPrimary === void 0) { isPrimary = true; }
-            _this.isPrimaryService = isPrimary;
-            _this.emit("service-configurationChange" /* SERVICE_CONFIGURATION_CHANGE */, clone_1.clone({ service: _this }));
-        };
-        /**
-         * Marks the service as hidden
-         *
-         * @param isHidden {boolean} - optional boolean (default true) if the service should be marked hidden
-         */
-        _this.setHiddenService = function (isHidden) {
-            if (isHidden === void 0) { isHidden = true; }
-            _this.isHiddenService = isHidden;
-            _this.emit("service-configurationChange" /* SERVICE_CONFIGURATION_CHANGE */, clone_1.clone({ service: _this }));
-        };
-        //Allows setting other services that link to this one.
-        _this.addLinkedService = function (newLinkedService) {
-            //TODO: Add a check if the service is on the same accessory.
-            if (!_this.linkedServices.includes(newLinkedService))
-                _this.linkedServices.push(newLinkedService);
-            _this.emit("service-configurationChange" /* SERVICE_CONFIGURATION_CHANGE */, clone_1.clone({ service: _this }));
-        };
-        _this.removeLinkedService = function (oldLinkedService) {
-            //TODO: Add a check if the service is on the same accessory.
-            if (_this.linkedServices.includes(oldLinkedService))
-                _this.linkedServices.splice(_this.linkedServices.indexOf(oldLinkedService), 1);
-            _this.emit("service-configurationChange" /* SERVICE_CONFIGURATION_CHANGE */, clone_1.clone({ service: _this }));
-        };
-        _this.removeCharacteristic = function (characteristic) {
-            var targetCharacteristicIndex;
-            for (var index in _this.characteristics) {
-                var existingCharacteristic = _this.characteristics[index];
-                if (existingCharacteristic === characteristic) {
-                    targetCharacteristicIndex = index;
-                    break;
-                }
-            }
-            if (targetCharacteristicIndex) {
-                _this.characteristics.splice(Number.parseInt(targetCharacteristicIndex), 1);
-                characteristic.removeAllListeners();
-                _this.emit("service-configurationChange" /* SERVICE_CONFIGURATION_CHANGE */, clone_1.clone({ service: _this }));
-            }
-        };
-        _this.testCharacteristic = function (name) {
-            // checks for the existence of a characteristic object in the service
-            var index, characteristic;
-            for (index in _this.characteristics) {
-                characteristic = _this.characteristics[index];
-                if (typeof name === 'string' && characteristic.displayName === name) {
-                    return true;
-                }
-                else if (typeof name === 'function' && ((characteristic instanceof name) || (name.UUID === characteristic.UUID))) {
-                    return true;
-                }
-            }
-            return false;
-        };
-        _this.setCharacteristic = function (name, value) {
-            _this.getCharacteristic(name).setValue(value);
-            return _this; // for chaining
-        };
-        // A function to only updating the remote value, but not firing the 'set' event.
-        _this.updateCharacteristic = function (name, value) {
-            _this.getCharacteristic(name).updateValue(value);
-            return _this;
-        };
-        _this.addOptionalCharacteristic = function (characteristic) {
-            // characteristic might be a constructor like `Characteristic.Brightness` instead of an instance
-            // of Characteristic. Coerce if necessary.
-            if (typeof characteristic === 'function') {
-                // @ts-ignore we are dealing with predefined characteristics here
-                characteristic = new characteristic();
-            }
-            _this.optionalCharacteristics.push(characteristic);
-        };
-        _this.getCharacteristicByIID = function (iid) {
-            for (var index in _this.characteristics) {
-                var characteristic = _this.characteristics[index];
-                if (characteristic.iid === iid)
-                    return characteristic;
-            }
-        };
-        _this._assignIDs = function (identifierCache, accessoryName, baseIID) {
-            if (baseIID === void 0) { baseIID = 0; }
-            // the Accessory Information service must have a (reserved by IdentifierCache) ID of 1
-            if (_this.UUID === '0000003E-0000-1000-8000-0026BB765291') {
-                _this.iid = 1;
-            }
-            else {
-                // assign our own ID based on our UUID
-                _this.iid = baseIID + identifierCache.getIID(accessoryName, _this.UUID, _this.subtype);
-            }
-            // assign IIDs to our Characteristics
-            for (var index in _this.characteristics) {
-                var characteristic = _this.characteristics[index];
-                characteristic._assignID(identifierCache, accessoryName, _this.UUID, _this.subtype);
-            }
-        };
-        /**
-         * Returns a JSON representation of this Accessory suitable for delivering to HAP clients.
-         */
-        _this.toHAP = function (opt) {
-            var characteristicsHAP = [];
-            for (var index in _this.characteristics) {
-                var characteristic = _this.characteristics[index];
-                characteristicsHAP.push(characteristic.toHAP(opt));
-            }
-            var hap = {
-                iid: _this.iid,
-                type: uuid_1.toShortForm(_this.UUID, HomeKitTypes.BASE_UUID),
-                characteristics: characteristicsHAP
-            };
-            if (_this.isPrimaryService) {
-                hap['primary'] = _this.isPrimaryService;
-            }
-            if (_this.isHiddenService) {
-                hap['hidden'] = _this.isHiddenService;
-            }
-            if (_this.linkedServices.length > 0) {
-                hap['linked'] = [];
-                for (var index in _this.linkedServices) {
-                    var otherService = _this.linkedServices[index];
-                    hap['linked'].push(otherService.iid);
-                }
-            }
-            return hap;
-        };
-        _this._setupCharacteristic = function (characteristic) {
-            // listen for changes in characteristics and bubble them up
-            characteristic.on("change" /* CHANGE */, function (change) {
-                // make a new object with the relevant characteristic added, and bubble it up
-                _this.emit("characteristic-change" /* CHARACTERISTIC_CHANGE */, clone_1.clone(change, { characteristic: characteristic }));
-            });
-        };
-        _this._sideloadCharacteristics = function (targetCharacteristics) {
-            for (var index in targetCharacteristics) {
-                var target = targetCharacteristics[index];
-                _this._setupCharacteristic(target);
-            }
-            _this.characteristics = targetCharacteristics.slice();
-        };
-        if (!UUID)
-            throw new Error("Services must be created with a valid UUID.");
+        assert_1.default(UUID, "Services must be created with a valid UUID.");
+        _this.displayName = displayName;
+        _this.UUID = UUID;
+        _this.subtype = subtype;
         // every service has an optional Characteristic.Name property - we'll set it to our displayName
         // if one was given
         // if you don't provide a display name, some HomeKit apps may choose to hide the device.
@@ -281,7 +70,7 @@ var Service = /** @class */ (function (_super) {
             // create the characteristic if necessary
             var nameCharacteristic = _this.getCharacteristic(Characteristic_1.Characteristic.Name) ||
                 _this.addCharacteristic(Characteristic_1.Characteristic.Name);
-            nameCharacteristic.setValue(displayName);
+            nameCharacteristic.updateValue(displayName);
         }
         return _this;
     }
@@ -295,42 +84,198 @@ var Service = /** @class */ (function (_super) {
     Service.prototype.getServiceId = function () {
         return this.UUID + (this.subtype || "");
     };
+    Service.prototype.addCharacteristic = function (input) {
+        // characteristic might be a constructor like `Characteristic.Brightness` instead of an instance of Characteristic. Coerce if necessary.
+        var e_1, _a;
+        var constructorArgs = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            constructorArgs[_i - 1] = arguments[_i];
+        }
+        var characteristic = typeof input === "function" ? new (input.bind.apply(input, tslib_1.__spread([void 0], constructorArgs)))() : input;
+        try {
+            // check for UUID conflict
+            for (var _b = tslib_1.__values(this.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var existing = _c.value;
+                if (existing.UUID === characteristic.UUID) {
+                    if (characteristic.UUID === '00000052-0000-1000-8000-0026BB765291') {
+                        //This is a special workaround for the Firmware Revision characteristic.
+                        return existing;
+                    }
+                    throw new Error("Cannot add a Characteristic with the same UUID as another Characteristic in this Service: " + existing.UUID);
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        if (this.characteristics.length >= MAX_CHARACTERISTICS) {
+            throw new Error("Cannot add more than " + MAX_CHARACTERISTICS + " characteristics to a single service!");
+        }
+        this.setupCharacteristicEventHandlers(characteristic);
+        this.characteristics.push(characteristic);
+        this.emit("service-configurationChange" /* SERVICE_CONFIGURATION_CHANGE */);
+        return characteristic;
+    };
+    /**
+     * Sets this service as the new primary service.
+     * Any currently active primary service will be reset to be not primary.
+     * This will happen immediately, if the service was already added to an accessory, or later
+     * when the service gets added to an accessory.
+     *
+     * @param isPrimary {boolean} - optional boolean (default true) if the service should be the primary service
+     */
+    Service.prototype.setPrimaryService = function (isPrimary) {
+        if (isPrimary === void 0) { isPrimary = true; }
+        this.isPrimaryService = isPrimary;
+        this.emit("service-configurationChange" /* SERVICE_CONFIGURATION_CHANGE */);
+    };
+    /**
+     * Marks the service as hidden
+     *
+     * @param isHidden {boolean} - optional boolean (default true) if the service should be marked hidden
+     */
+    Service.prototype.setHiddenService = function (isHidden) {
+        if (isHidden === void 0) { isHidden = true; }
+        this.isHiddenService = isHidden;
+        this.emit("service-configurationChange" /* SERVICE_CONFIGURATION_CHANGE */);
+    };
+    /**
+     * Adds a new link to the specified service. The service MUST be already added to
+     * the SAME accessory.
+     *
+     * @param service - The service this service should link to
+     */
+    Service.prototype.addLinkedService = function (service) {
+        //TODO: Add a check if the service is on the same accessory.
+        if (!this.linkedServices.includes(service)) {
+            this.linkedServices.push(service);
+        }
+        this.emit("service-configurationChange" /* SERVICE_CONFIGURATION_CHANGE */);
+    };
+    /**
+     * Removes a link to the specified service which was previously added with {@link addLinkedService}
+     *
+     * @param service - Previously linked service
+     */
+    Service.prototype.removeLinkedService = function (service) {
+        //TODO: Add a check if the service is on the same accessory.
+        var index = this.linkedServices.indexOf(service);
+        if (index !== -1) {
+            this.linkedServices.splice(index, 1);
+        }
+        this.emit("service-configurationChange" /* SERVICE_CONFIGURATION_CHANGE */);
+    };
+    Service.prototype.removeCharacteristic = function (characteristic) {
+        var index = this.characteristics.indexOf(characteristic);
+        if (index !== -1) {
+            this.characteristics.splice(index, 1);
+            characteristic.removeAllListeners();
+            this.emit("service-configurationChange" /* SERVICE_CONFIGURATION_CHANGE */);
+        }
+    };
     Service.prototype.getCharacteristic = function (name) {
         // returns a characteristic object from the service
         // If  Service.prototype.getCharacteristic(Characteristic.Type)  does not find the characteristic,
         // but the type is in optionalCharacteristics, it adds the characteristic.type to the service and returns it.
+        var e_2, _a, e_3, _b;
         var index, characteristic;
-        for (index in this.characteristics) {
-            characteristic = this.characteristics[index];
-            if (typeof name === 'string' && characteristic.displayName === name) {
-                return characteristic;
-            }
-            else if (typeof name === 'function' && ((characteristic instanceof name) || (name.UUID === characteristic.UUID))) {
-                return characteristic;
-            }
-        }
-        if (typeof name === 'function') {
-            for (index in this.optionalCharacteristics) {
-                characteristic = this.optionalCharacteristics[index];
-                if ((characteristic instanceof name) || (name.UUID === characteristic.UUID)) {
-                    return this.addCharacteristic(name);
+        try {
+            for (var _c = tslib_1.__values(this.characteristics), _d = _c.next(); !_d.done; _d = _c.next()) {
+                var characteristic_1 = _d.value;
+                if (typeof name === 'string' && characteristic_1.displayName === name) {
+                    return characteristic_1;
+                }
+                else if (typeof name === 'function' && ((characteristic_1 instanceof name) || (name.UUID === characteristic_1.UUID))) {
+                    return characteristic_1;
                 }
             }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
+        if (typeof name === 'function') {
+            try {
+                for (var _e = tslib_1.__values(this.optionalCharacteristics), _f = _e.next(); !_f.done; _f = _e.next()) {
+                    var characteristic_2 = _f.value;
+                    if ((characteristic_2 instanceof name) || (name.UUID === characteristic_2.UUID)) {
+                        return this.addCharacteristic(name);
+                    }
+                }
+            }
+            catch (e_3_1) { e_3 = { error: e_3_1 }; }
+            finally {
+                try {
+                    if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
+                }
+                finally { if (e_3) throw e_3.error; }
+            }
+            var instance = this.addCharacteristic(name);
             // Not found in optional Characteristics. Adding anyway, but warning about it if it isn't the Name.
             if (name.UUID !== Characteristic_1.Characteristic.Name.UUID) {
-                console.warn("HAP Warning: Characteristic %s not in required or optional characteristics for service %s. Adding anyway.", name.UUID, this.UUID);
+                this.emitCharacteristicWarningEvent(instance, "warn-message" /* WARN_MESSAGE */, "Characteristic not in required or optional characteristic section for service " + this.constructor.name + ". Adding anyway.");
             }
-            return this.addCharacteristic(name);
+            return instance;
         }
     };
+    Service.prototype.testCharacteristic = function (name) {
+        var e_4, _a;
+        try {
+            // checks for the existence of a characteristic object in the service
+            for (var _b = tslib_1.__values(this.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var characteristic = _c.value;
+                if (typeof name === 'string' && characteristic.displayName === name) {
+                    return true;
+                }
+                else if (typeof name === 'function' && ((characteristic instanceof name) || (name.UUID === characteristic.UUID))) {
+                    return true;
+                }
+            }
+        }
+        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_4) throw e_4.error; }
+        }
+        return false;
+    };
+    Service.prototype.setCharacteristic = function (name, value) {
+        this.getCharacteristic(name).setValue(value);
+        return this; // for chaining
+    };
+    // A function to only updating the remote value, but not firing the 'set' event.
+    Service.prototype.updateCharacteristic = function (name, value) {
+        this.getCharacteristic(name).updateValue(value);
+        return this;
+    };
+    Service.prototype.addOptionalCharacteristic = function (characteristic) {
+        // characteristic might be a constructor like `Characteristic.Brightness` instead of an instance
+        // of Characteristic. Coerce if necessary.
+        if (typeof characteristic === 'function') {
+            // @ts-ignore we are dealing with predefined characteristics here
+            characteristic = new characteristic();
+        }
+        this.optionalCharacteristics.push(characteristic);
+    };
+    // noinspection JSUnusedGlobalSymbols
     /**
      * This method was created to copy all characteristics from another service to this.
      * It's only adopting is currently in homebridge to merge the AccessoryInformation service. So some things
      * my be explicitly tailored towards this use case.
      *
      * It will not remove characteristics which are present currently but not added on the other characteristic.
-     * It will not replace the characteristic if the value is falsey (except of '0' or 'false')
+     * It will not replace the characteristic if the value is falsy (except of '0' or 'false')
      * @param service
+     * @private used by homebridge
      */
     Service.prototype.replaceCharacteristicsFromService = function (service) {
         var _this = this;
@@ -344,40 +289,293 @@ var Service = /** @class */ (function (_super) {
             if (foreignCharacteristic) {
                 delete foreignCharacteristics[characteristic.UUID];
                 if (!foreignCharacteristic.value && foreignCharacteristic.value !== 0 && foreignCharacteristic.value !== false) {
-                    return; // ignore falsey values expect if its the number zero or literally false
+                    return; // ignore falsy values except if its the number zero or literally false
                 }
-                characteristic.props = foreignCharacteristic.props;
-                characteristic.updateValue(foreignCharacteristic.value);
-                var getListeners = foreignCharacteristic.listeners("get" /* GET */);
-                if (getListeners.length) {
-                    // the callback can only be called once so we remove all old listeners
-                    characteristic.removeAllListeners("get" /* GET */);
-                    getListeners.forEach(function (listener) { return characteristic.addListener("get" /* GET */, listener); });
-                }
-                var setListeners = foreignCharacteristic.listeners("set" /* SET */);
-                if (setListeners.length) {
-                    // the callback can only be called once so we remove all old listeners
-                    characteristic.removeAllListeners("set" /* SET */);
-                    setListeners.forEach(function (listener) { return characteristic.addListener("set" /* SET */, listener); });
-                }
+                characteristic.replaceBy(foreignCharacteristic);
             }
         });
         // add all additional characteristics which where not present already
         Object.values(foreignCharacteristics).forEach(function (characteristic) { return _this.addCharacteristic(characteristic); });
     };
+    /**
+     * @private
+     */
+    Service.prototype.getCharacteristicByIID = function (iid) {
+        var e_5, _a;
+        try {
+            for (var _b = tslib_1.__values(this.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var characteristic = _c.value;
+                if (characteristic.iid === iid)
+                    return characteristic;
+            }
+        }
+        catch (e_5_1) { e_5 = { error: e_5_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_5) throw e_5.error; }
+        }
+    };
+    /**
+     * @private
+     */
+    Service.prototype._assignIDs = function (identifierCache, accessoryName, baseIID) {
+        var e_6, _a;
+        if (baseIID === void 0) { baseIID = 0; }
+        // the Accessory Information service must have a (reserved by IdentifierCache) ID of 1
+        if (this.UUID === '0000003E-0000-1000-8000-0026BB765291') {
+            this.iid = 1;
+        }
+        else {
+            // assign our own ID based on our UUID
+            this.iid = baseIID + identifierCache.getIID(accessoryName, this.UUID, this.subtype);
+        }
+        try {
+            // assign IIDs to our Characteristics
+            for (var _b = tslib_1.__values(this.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var characteristic = _c.value;
+                characteristic._assignID(identifierCache, accessoryName, this.UUID, this.subtype);
+            }
+        }
+        catch (e_6_1) { e_6 = { error: e_6_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_6) throw e_6.error; }
+        }
+    };
+    /**
+     * Returns a JSON representation of this service suitable for delivering to HAP clients.
+     * @private used to generate response to /accessories query
+     */
+    Service.prototype.toHAP = function (connection, contactGetHandlers) {
+        var _this = this;
+        if (contactGetHandlers === void 0) { contactGetHandlers = true; }
+        return new Promise(function (resolve) {
+            var e_7, _a, e_8, _b;
+            assert_1.default(_this.iid, "iid cannot be undefined for service '" + _this.displayName + "'");
+            assert_1.default(_this.characteristics.length, "service '" + _this.displayName + "' does not have any characteristics!");
+            var service = {
+                type: uuid_1.toShortForm(_this.UUID),
+                iid: _this.iid,
+                characteristics: [],
+                hidden: _this.isHiddenService ? true : undefined,
+                primary: _this.isPrimaryService ? true : undefined,
+            };
+            if (_this.linkedServices.length) {
+                service.linked = [];
+                try {
+                    for (var _c = tslib_1.__values(_this.linkedServices), _d = _c.next(); !_d.done; _d = _c.next()) {
+                        var linked = _d.value;
+                        if (!linked.iid) {
+                            // we got a linked service which is not added to the accessory
+                            // as it doesn't "exists" we just ignore it.
+                            // we have some (at least one) plugins on homebridge which link to the AccessoryInformation service.
+                            // homebridge always creates it's own AccessoryInformation service and ignores the user supplied one
+                            // thus the link is automatically broken.
+                            debug("iid of linked service '" + linked.displayName + "' " + linked.UUID + " is undefined on service '" + _this.displayName + "'");
+                            continue;
+                        }
+                        service.linked.push(linked.iid);
+                    }
+                }
+                catch (e_7_1) { e_7 = { error: e_7_1 }; }
+                finally {
+                    try {
+                        if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+                    }
+                    finally { if (e_7) throw e_7.error; }
+                }
+            }
+            var missingCharacteristics = new Set();
+            var timeout = setTimeout(function () {
+                var e_9, _a;
+                try {
+                    for (var missingCharacteristics_1 = tslib_1.__values(missingCharacteristics), missingCharacteristics_1_1 = missingCharacteristics_1.next(); !missingCharacteristics_1_1.done; missingCharacteristics_1_1 = missingCharacteristics_1.next()) {
+                        var characteristic = missingCharacteristics_1_1.value;
+                        _this.emitCharacteristicWarningEvent(characteristic, "slow-read" /* SLOW_READ */, "The read handler for the characteristic '" + characteristic.displayName + "' was slow to respond!");
+                    }
+                }
+                catch (e_9_1) { e_9 = { error: e_9_1 }; }
+                finally {
+                    try {
+                        if (missingCharacteristics_1_1 && !missingCharacteristics_1_1.done && (_a = missingCharacteristics_1.return)) _a.call(missingCharacteristics_1);
+                    }
+                    finally { if (e_9) throw e_9.error; }
+                }
+                timeout = setTimeout(function () {
+                    var e_10, _a;
+                    timeout = undefined;
+                    try {
+                        for (var missingCharacteristics_2 = tslib_1.__values(missingCharacteristics), missingCharacteristics_2_1 = missingCharacteristics_2.next(); !missingCharacteristics_2_1.done; missingCharacteristics_2_1 = missingCharacteristics_2.next()) {
+                            var characteristic = missingCharacteristics_2_1.value;
+                            _this.emitCharacteristicWarningEvent(characteristic, "timeout-read" /* TIMEOUT_READ */, "The read handler for the characteristic '" + (characteristic === null || characteristic === void 0 ? void 0 : characteristic.displayName) +
+                                "' didn't respond at all!. Please check that you properly call the callback!");
+                            service.characteristics.push(characteristic.internalHAPRepresentation()); // value is set to null
+                        }
+                    }
+                    catch (e_10_1) { e_10 = { error: e_10_1 }; }
+                    finally {
+                        try {
+                            if (missingCharacteristics_2_1 && !missingCharacteristics_2_1.done && (_a = missingCharacteristics_2.return)) _a.call(missingCharacteristics_2);
+                        }
+                        finally { if (e_10) throw e_10.error; }
+                    }
+                    missingCharacteristics.clear();
+                    resolve(service);
+                }, 6000);
+            }, 3000);
+            var _loop_1 = function (characteristic) {
+                missingCharacteristics.add(characteristic);
+                characteristic.toHAP(connection, contactGetHandlers).then(function (value) {
+                    if (!timeout) {
+                        return; // if timeout is undefined, response was already sent out
+                    }
+                    missingCharacteristics.delete(characteristic);
+                    service.characteristics.push(value);
+                    if (missingCharacteristics.size === 0) {
+                        if (timeout) {
+                            clearTimeout(timeout);
+                            timeout = undefined;
+                        }
+                        resolve(service);
+                    }
+                });
+            };
+            try {
+                for (var _e = tslib_1.__values(_this.characteristics), _f = _e.next(); !_f.done; _f = _e.next()) {
+                    var characteristic = _f.value;
+                    _loop_1(characteristic);
+                }
+            }
+            catch (e_8_1) { e_8 = { error: e_8_1 }; }
+            finally {
+                try {
+                    if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
+                }
+                finally { if (e_8) throw e_8.error; }
+            }
+        });
+    };
+    /**
+     * Returns a JSON representation of this service without characteristic values.
+     * @private used to generate the config hash
+     */
+    Service.prototype.internalHAPRepresentation = function () {
+        var e_11, _a;
+        assert_1.default(this.iid, "iid cannot be undefined for service '" + this.displayName + "'");
+        assert_1.default(this.characteristics.length, "service '" + this.displayName + "' does not have any characteristics!");
+        var service = {
+            type: uuid_1.toShortForm(this.UUID),
+            iid: this.iid,
+            characteristics: this.characteristics.map(function (characteristic) { return characteristic.internalHAPRepresentation(); }),
+            hidden: this.isHiddenService ? true : undefined,
+            primary: this.isPrimaryService ? true : undefined,
+        };
+        if (this.linkedServices.length) {
+            service.linked = [];
+            try {
+                for (var _b = tslib_1.__values(this.linkedServices), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var linked = _c.value;
+                    if (!linked.iid) {
+                        // we got a linked service which is not added to the accessory
+                        // as it doesn't "exists" we just ignore it.
+                        // we have some (at least one) plugins on homebridge which link to the AccessoryInformation service.
+                        // homebridge always creates it's own AccessoryInformation service and ignores the user supplied one
+                        // thus the link is automatically broken.
+                        debug("iid of linked service '" + linked.displayName + "' " + linked.UUID + " is undefined on service '" + this.displayName + "'");
+                        continue;
+                    }
+                    service.linked.push(linked.iid);
+                }
+            }
+            catch (e_11_1) { e_11 = { error: e_11_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_11) throw e_11.error; }
+            }
+        }
+        return service;
+    };
+    /**
+     * @private
+     */
+    Service.prototype.setupCharacteristicEventHandlers = function (characteristic) {
+        var _this = this;
+        // listen for changes in characteristics and bubble them up
+        characteristic.on("change" /* CHANGE */, function (change) {
+            _this.emit("characteristic-change" /* CHARACTERISTIC_CHANGE */, tslib_1.__assign(tslib_1.__assign({}, change), { characteristic: characteristic }));
+        });
+        characteristic.on("characteristic-warning" /* CHARACTERISTIC_WARNING */, this.emitCharacteristicWarningEvent.bind(this, characteristic));
+    };
+    /**
+     * @private
+     */
+    Service.prototype.emitCharacteristicWarningEvent = function (characteristic, type, message, stack) {
+        this.emit("characteristic-warning" /* CHARACTERISTIC_WARNING */, {
+            characteristic: characteristic,
+            type: type,
+            message: message,
+            originatorChain: [this.displayName, characteristic.displayName],
+            stack: stack,
+        });
+    };
+    /**
+     * @private
+     */
+    Service.prototype._sideloadCharacteristics = function (targetCharacteristics) {
+        var e_12, _a;
+        try {
+            for (var targetCharacteristics_1 = tslib_1.__values(targetCharacteristics), targetCharacteristics_1_1 = targetCharacteristics_1.next(); !targetCharacteristics_1_1.done; targetCharacteristics_1_1 = targetCharacteristics_1.next()) {
+                var target = targetCharacteristics_1_1.value;
+                this.setupCharacteristicEventHandlers(target);
+            }
+        }
+        catch (e_12_1) { e_12 = { error: e_12_1 }; }
+        finally {
+            try {
+                if (targetCharacteristics_1_1 && !targetCharacteristics_1_1.done && (_a = targetCharacteristics_1.return)) _a.call(targetCharacteristics_1);
+            }
+            finally { if (e_12) throw e_12.error; }
+        }
+        this.characteristics = targetCharacteristics.slice();
+    };
+    /**
+     * @private
+     */
     Service.serialize = function (service) {
+        var constructorName;
+        if (service.constructor.name !== "Service") {
+            constructorName = service.constructor.name;
+        }
         return {
             displayName: service.displayName,
             UUID: service.UUID,
             subtype: service.subtype,
+            constructorName: constructorName,
             hiddenService: service.isHiddenService,
             primaryService: service.isPrimaryService,
             characteristics: service.characteristics.map(function (characteristic) { return Characteristic_1.Characteristic.serialize(characteristic); }),
             optionalCharacteristics: service.optionalCharacteristics.map(function (characteristic) { return Characteristic_1.Characteristic.serialize(characteristic); }),
         };
     };
+    /**
+     * @private
+     */
     Service.deserialize = function (json) {
-        var service = new Service(json.displayName, json.UUID, json.subtype);
+        var service;
+        if (json.constructorName && json.constructorName.charAt(0).toUpperCase() === json.constructorName.charAt(0)
+            && Service[json.constructorName]) { // MUST start with uppercase character and must exist on Service object
+            var constructor = Service[json.constructorName];
+            service = new constructor(json.displayName, json.subtype);
+        }
+        else {
+            service = new Service(json.displayName, json.UUID, json.subtype);
+        }
         service.isHiddenService = !!json.hiddenService;
         service.isPrimaryService = !!json.primaryService;
         var characteristics = json.characteristics.map(function (serialized) { return Characteristic_1.Characteristic.deserialize(serialized); });
@@ -388,6 +586,6 @@ var Service = /** @class */ (function (_super) {
         return service;
     };
     return Service;
-}(EventEmitter_1.EventEmitter));
+}(events_1.EventEmitter));
 exports.Service = Service;
 //# sourceMappingURL=Service.js.map

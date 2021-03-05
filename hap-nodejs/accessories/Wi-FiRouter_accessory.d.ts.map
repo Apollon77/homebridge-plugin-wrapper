@@ -1,1 +1,1 @@
-{"version":3,"file":"Wi-FiRouter_accessory.d.ts","sourceRoot":"","sources":["../../src/accessories/Wi-FiRouter_accessory.ts"],"names":[],"mappings":"AAAA,OAAO,EACL,SAAS,EAOV,MAAM,IAAI,CAAC;AAGZ,eAAO,MAAM,SAAS,WAAsC,CAAC"}
+{"version":3,"file":"Wi-FiRouter_accessory.d.ts","sourceRoot":"","sources":["../../src/accessories/Wi-FiRouter_accessory.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,SAAS,EAAiE,MAAM,IAAI,CAAC;AAG9F,eAAO,MAAM,SAAS,WAAsC,CAAC"}

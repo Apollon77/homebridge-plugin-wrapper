@@ -1,45 +1,11 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataStreamWriter = exports.DataStreamReader = exports.DataStreamParser = exports.DataFormatTags = exports.UUID = exports.SecondsSince2001 = exports.Float64 = exports.Float32 = exports.Int64 = exports.Int32 = exports.Int16 = exports.Int8 = exports.ValueWrapper = void 0;
-var uuid = __importStar(require("../util/uuid"));
-var hapCrypto = __importStar(require("../util/hapCrypto"));
-var assert_1 = __importDefault(require("assert"));
-var debug_1 = __importDefault(require("debug"));
+var tslib_1 = require("tslib");
+var uuid = tslib_1.__importStar(require("../util/uuid"));
+var hapCrypto = tslib_1.__importStar(require("../util/hapCrypto"));
+var assert_1 = tslib_1.__importDefault(require("assert"));
+var debug_1 = tslib_1.__importDefault(require("debug"));
 // welcome to hell :)
 // in this file lies madness and frustration. and its not only about HDS. also JavaScript is hell
 var debug = debug_1.default("HAP-NodeJS:DataStream:Parser");
@@ -60,7 +26,7 @@ var ValueWrapper = /** @class */ (function () {
 }());
 exports.ValueWrapper = ValueWrapper;
 var Int8 = /** @class */ (function (_super) {
-    __extends(Int8, _super);
+    tslib_1.__extends(Int8, _super);
     function Int8() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -68,7 +34,7 @@ var Int8 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.Int8 = Int8;
 var Int16 = /** @class */ (function (_super) {
-    __extends(Int16, _super);
+    tslib_1.__extends(Int16, _super);
     function Int16() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -76,7 +42,7 @@ var Int16 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.Int16 = Int16;
 var Int32 = /** @class */ (function (_super) {
-    __extends(Int32, _super);
+    tslib_1.__extends(Int32, _super);
     function Int32() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -84,7 +50,7 @@ var Int32 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.Int32 = Int32;
 var Int64 = /** @class */ (function (_super) {
-    __extends(Int64, _super);
+    tslib_1.__extends(Int64, _super);
     function Int64() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -92,7 +58,7 @@ var Int64 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.Int64 = Int64;
 var Float32 = /** @class */ (function (_super) {
-    __extends(Float32, _super);
+    tslib_1.__extends(Float32, _super);
     function Float32() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -100,7 +66,7 @@ var Float32 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.Float32 = Float32;
 var Float64 = /** @class */ (function (_super) {
-    __extends(Float64, _super);
+    tslib_1.__extends(Float64, _super);
     function Float64() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -108,7 +74,7 @@ var Float64 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.Float64 = Float64;
 var SecondsSince2001 = /** @class */ (function (_super) {
-    __extends(SecondsSince2001, _super);
+    tslib_1.__extends(SecondsSince2001, _super);
     function SecondsSince2001() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -116,7 +82,7 @@ var SecondsSince2001 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.SecondsSince2001 = SecondsSince2001;
 var UUID = /** @class */ (function (_super) {
-    __extends(UUID, _super);
+    tslib_1.__extends(UUID, _super);
     function UUID(value) {
         var _this = this;
         assert_1.default(uuid.isValid(value), "invalid uuid format");
@@ -158,8 +124,8 @@ var DataFormatTags;
     DataFormatTags[DataFormatTags["DATA_LENGTH32LE"] = 147] = "DATA_LENGTH32LE";
     DataFormatTags[DataFormatTags["DATA_LENGTH64LE"] = 148] = "DATA_LENGTH64LE";
     DataFormatTags[DataFormatTags["DATA_TERMINATED"] = 159] = "DATA_TERMINATED";
-    DataFormatTags[DataFormatTags["DEDUPLICATION_START"] = 160] = "DEDUPLICATION_START";
-    DataFormatTags[DataFormatTags["DEDUPLICATION_STOP"] = 207] = "DEDUPLICATION_STOP";
+    DataFormatTags[DataFormatTags["COMPRESSION_START"] = 160] = "COMPRESSION_START";
+    DataFormatTags[DataFormatTags["COMPRESSION_STOP"] = 207] = "COMPRESSION_STOP";
     DataFormatTags[DataFormatTags["ARRAY_LENGTH_START"] = 208] = "ARRAY_LENGTH_START";
     DataFormatTags[DataFormatTags["ARRAY_LENGTH_STOP"] = 222] = "ARRAY_LENGTH_STOP";
     DataFormatTags[DataFormatTags["ARRAY_TERMINATED"] = 223] = "ARRAY_TERMINATED";
@@ -167,9 +133,10 @@ var DataFormatTags;
     DataFormatTags[DataFormatTags["DICTIONARY_LENGTH_STOP"] = 238] = "DICTIONARY_LENGTH_STOP";
     DataFormatTags[DataFormatTags["DICTIONARY_TERMINATED"] = 239] = "DICTIONARY_TERMINATED";
 })(DataFormatTags = exports.DataFormatTags || (exports.DataFormatTags = {}));
-var DataStreamParser;
-(function (DataStreamParser) {
-    function decode(buffer) {
+var DataStreamParser = /** @class */ (function () {
+    function DataStreamParser() {
+    }
+    DataStreamParser.decode = function (buffer) {
         var tag = buffer.readTag();
         if (tag === 0 /* INVALID */) {
             throw new Error("HDSDecoder: zero tag detected on index " + buffer.readerIndex);
@@ -254,22 +221,22 @@ var DataStreamParser;
         else if (tag === 159 /* DATA_TERMINATED */) {
             return buffer.readData_terminated();
         }
-        else if (tag >= 160 /* DEDUPLICATION_START */ && tag <= 207 /* DEDUPLICATION_STOP */) {
-            var index = tag - 160 /* DEDUPLICATION_START */;
-            return buffer.deduplicateData(index);
+        else if (tag >= 160 /* COMPRESSION_START */ && tag <= 207 /* COMPRESSION_STOP */) {
+            var index = tag - 160 /* COMPRESSION_START */;
+            return buffer.decompressData(index);
         }
         else if (tag >= 208 /* ARRAY_LENGTH_START */ && tag <= 222 /* ARRAY_LENGTH_STOP */) {
             var length = tag - 208 /* ARRAY_LENGTH_START */;
             var array = [];
             for (var i = 0; i < length; i++) {
-                array.push(decode(buffer));
+                array.push(this.decode(buffer));
             }
             return array;
         }
         else if (tag === 223 /* ARRAY_TERMINATED */) {
             var array = [];
             var element = void 0;
-            while ((element = decode(buffer)) != Magics.TERMINATOR) {
+            while ((element = this.decode(buffer)) != Magics.TERMINATOR) {
                 array.push(element);
             }
             return array;
@@ -278,25 +245,25 @@ var DataStreamParser;
             var length = tag - 224 /* DICTIONARY_LENGTH_START */;
             var dictionary = {};
             for (var i = 0; i < length; i++) {
-                var key = decode(buffer);
-                dictionary[key] = decode(buffer);
+                var key = this.decode(buffer);
+                dictionary[key] = this.decode(buffer);
             }
             return dictionary;
         }
         else if (tag === 239 /* DICTIONARY_TERMINATED */) {
             var dictionary = {};
             var key = void 0;
-            while ((key = decode(buffer)) != Magics.TERMINATOR) {
-                dictionary[key] = decode(buffer); // decode value
+            while ((key = this.decode(buffer)) != Magics.TERMINATOR) {
+                dictionary[key] = this.decode(buffer); // decode value
             }
             return dictionary;
         }
         else {
             throw new Error("HDSDecoder: encountered unknown tag on index " + buffer.readerIndex + ": " + tag.toString(16));
         }
-    }
-    DataStreamParser.decode = decode;
-    function encode(data, buffer) {
+    };
+    DataStreamParser.encode = function (data, buffer) {
+        var _this = this;
         if (data === undefined) {
             throw new Error("HDSEncoder: cannot encode undefined");
         }
@@ -334,7 +301,7 @@ var DataStreamParser;
                         buffer.writeTag(223 /* ARRAY_TERMINATED */);
                     }
                     data.forEach(function (element) {
-                        encode(element, buffer);
+                        _this.encode(element, buffer);
                     });
                     if (length > 12) {
                         buffer.writeTag(3 /* TERMINATOR */);
@@ -381,8 +348,8 @@ var DataStreamParser;
                         buffer.writeTag(239 /* DICTIONARY_TERMINATED */);
                     }
                     entries.forEach(function (entry) {
-                        encode(entry[0], buffer); // encode key
-                        encode(entry[1], buffer); // encode value
+                        _this.encode(entry[0], buffer); // encode key
+                        _this.encode(entry[1], buffer); // encode value
                     });
                     if (entries.length > 14) {
                         buffer.writeTag(3 /* TERMINATOR */);
@@ -392,12 +359,13 @@ var DataStreamParser;
             default:
                 throw new Error("HDSEncoder: no idea how to encode value of type '" + (typeof data) + "': " + data);
         }
-    }
-    DataStreamParser.encode = encode;
-})(DataStreamParser = exports.DataStreamParser || (exports.DataStreamParser = {}));
+    };
+    return DataStreamParser;
+}());
+exports.DataStreamParser = DataStreamParser;
 var DataStreamReader = /** @class */ (function () {
     function DataStreamReader(data) {
-        this.deduplicationData = [];
+        this.trackedCompressedData = [];
         this.data = data;
         this.readerIndex = 0;
     }
@@ -407,14 +375,14 @@ var DataStreamReader = /** @class */ (function () {
             debug("WARNING Finished reading HDS stream, but there are still %d bytes remaining () %s", this.data.length - this.readerIndex, remainingHex);
         }
     };
-    DataStreamReader.prototype.deduplicateData = function (index) {
-        if (index >= this.deduplicationData.length) {
-            throw new Error("HDSDecoder: Tried deduplication of data for an index out of range (index " + index + " and got " + this.deduplicationData.length + " elements)");
+    DataStreamReader.prototype.decompressData = function (index) {
+        if (index >= this.trackedCompressedData.length) {
+            throw new Error("HDSDecoder: Tried decompression of data for an index out of range (index " + index + " and got " + this.trackedCompressedData.length + " elements)");
         }
-        return this.deduplicationData[index];
+        return this.trackedCompressedData[index];
     };
-    DataStreamReader.prototype.cache = function (data) {
-        this.deduplicationData.push(data);
+    DataStreamReader.prototype.trackData = function (data) {
+        this.trackedCompressedData.push(data);
         return data;
     };
     DataStreamReader.prototype.ensureLength = function (bytes) {
@@ -428,32 +396,32 @@ var DataStreamReader = /** @class */ (function () {
         return this.data.readUInt8(this.readerIndex++);
     };
     DataStreamReader.prototype.readTrue = function () {
-        return this.cache(true); // do those tag encoded values get cached?
+        return this.trackData(true); // do those tag encoded values get cached?
     };
     DataStreamReader.prototype.readFalse = function () {
-        return this.cache(false);
+        return this.trackData(false);
     };
     DataStreamReader.prototype.readNegOne = function () {
-        return this.cache(-1);
+        return this.trackData(-1);
     };
     DataStreamReader.prototype.readIntRange = function (tag) {
-        return this.cache(tag - 8 /* INTEGER_RANGE_START_0 */); // integer values from 0-39
+        return this.trackData(tag - 8 /* INTEGER_RANGE_START_0 */); // integer values from 0-39
     };
     DataStreamReader.prototype.readInt8 = function () {
         this.ensureLength(1);
-        return this.cache(this.data.readInt8(this.readerIndex++));
+        return this.trackData(this.data.readInt8(this.readerIndex++));
     };
     DataStreamReader.prototype.readInt16LE = function () {
         this.ensureLength(2);
         var value = this.data.readInt16LE(this.readerIndex);
         this.readerIndex += 2;
-        return this.cache(value);
+        return this.trackData(value);
     };
     DataStreamReader.prototype.readInt32LE = function () {
         this.ensureLength(4);
         var value = this.data.readInt32LE(this.readerIndex);
         this.readerIndex += 4;
-        return this.cache(value);
+        return this.trackData(value);
     };
     DataStreamReader.prototype.readInt64LE = function () {
         this.ensureLength(8);
@@ -463,18 +431,18 @@ var DataStreamReader = /** @class */ (function () {
             value += 0x100000000;
         }
         this.readerIndex += 8;
-        return this.cache(value);
+        return this.trackData(value);
     };
     DataStreamReader.prototype.readFloat32LE = function () {
         this.ensureLength(4);
         var value = this.data.readFloatLE(this.readerIndex);
         this.readerIndex += 4;
-        return this.cache(value);
+        return this.trackData(value);
     };
     DataStreamReader.prototype.readFloat64LE = function () {
         this.ensureLength(8);
         var value = this.data.readDoubleLE(this.readerIndex);
-        return this.cache(value);
+        return this.trackData(value);
     };
     DataStreamReader.prototype.readLength8 = function () {
         this.ensureLength(1);
@@ -503,7 +471,7 @@ var DataStreamReader = /** @class */ (function () {
         this.ensureLength(length);
         var value = this.data.toString('utf8', this.readerIndex, this.readerIndex + length);
         this.readerIndex += length;
-        return this.cache(value);
+        return this.trackData(value);
     };
     DataStreamReader.prototype.readUTF8_Length8 = function () {
         var length = this.readLength8();
@@ -538,13 +506,13 @@ var DataStreamReader = /** @class */ (function () {
         }
         var value = this.data.toString('utf8', this.readerIndex, offset);
         this.readerIndex = offset + 1;
-        return this.cache(value);
+        return this.trackData(value);
     };
     DataStreamReader.prototype.readData = function (length) {
         this.ensureLength(length);
         var value = this.data.slice(this.readerIndex, this.readerIndex + length);
         this.readerIndex += length;
-        return this.cache(value);
+        return this.trackData(value);
     };
     DataStreamReader.prototype.readData_Length8 = function () {
         var length = this.readLength8();
@@ -579,7 +547,7 @@ var DataStreamReader = /** @class */ (function () {
         }
         var value = this.data.slice(this.readerIndex, offset);
         this.readerIndex = offset + 1;
-        return this.cache(value);
+        return this.trackData(value);
     };
     DataStreamReader.prototype.readSecondsSince2001_01_01 = function () {
         // second since 2001-01-01 00:00:00
@@ -589,7 +557,7 @@ var DataStreamReader = /** @class */ (function () {
         this.ensureLength(16);
         var value = uuid.unparse(this.data, this.readerIndex);
         this.readerIndex += 16;
-        return this.cache(value);
+        return this.trackData(value);
     };
     return DataStreamReader;
 }());
@@ -638,16 +606,16 @@ var DataStreamWriter = /** @class */ (function () {
             this.data = Buffer.concat([this.data, Buffer.alloc(chunks * DataStreamWriter.chunkSize)]);
         }
     };
-    DataStreamWriter.prototype.checkDeduplication = function (data) {
+    DataStreamWriter.prototype.compressDataIfPossible = function (data) {
         var index = this.writtenData.indexOf(data);
         if (index < 0) {
             // data is not present yet
             this.writtenData.push(data);
             return false;
         }
-        else if (index <= 207 /* DEDUPLICATION_STOP */ - 160 /* DEDUPLICATION_START */) {
+        else if (index <= 207 /* COMPRESSION_STOP */ - 160 /* COMPRESSION_START */) {
             // data was already written and the index is in the applicable range => shorten the payload
-            this.writeTag(160 /* DEDUPLICATION_START */ + index);
+            this.writeTag(160 /* COMPRESSION_START */ + index);
             return true;
         }
         return false;
@@ -686,7 +654,7 @@ var DataStreamWriter = /** @class */ (function () {
         }
     };
     DataStreamWriter.prototype.writeInt8 = function (int8) {
-        if (this.checkDeduplication(int8)) {
+        if (this.compressDataIfPossible(int8)) {
             return;
         }
         this.ensureLength(2);
@@ -694,7 +662,7 @@ var DataStreamWriter = /** @class */ (function () {
         this.data.writeInt8(int8.value, this.writerIndex++);
     };
     DataStreamWriter.prototype.writeInt16LE = function (int16) {
-        if (this.checkDeduplication(int16)) {
+        if (this.compressDataIfPossible(int16)) {
             return;
         }
         this.ensureLength(3);
@@ -703,7 +671,7 @@ var DataStreamWriter = /** @class */ (function () {
         this.writerIndex += 2;
     };
     DataStreamWriter.prototype.writeInt32LE = function (int32) {
-        if (this.checkDeduplication(int32)) {
+        if (this.compressDataIfPossible(int32)) {
             return;
         }
         this.ensureLength(5);
@@ -712,7 +680,7 @@ var DataStreamWriter = /** @class */ (function () {
         this.writerIndex += 4;
     };
     DataStreamWriter.prototype.writeInt64LE = function (int64) {
-        if (this.checkDeduplication(int64)) {
+        if (this.compressDataIfPossible(int64)) {
             return;
         }
         this.ensureLength(9);
@@ -722,7 +690,7 @@ var DataStreamWriter = /** @class */ (function () {
         this.writerIndex += 8;
     };
     DataStreamWriter.prototype.writeFloat32LE = function (float32) {
-        if (this.checkDeduplication(float32)) {
+        if (this.compressDataIfPossible(float32)) {
             return;
         }
         this.ensureLength(5);
@@ -731,7 +699,7 @@ var DataStreamWriter = /** @class */ (function () {
         this.writerIndex += 4;
     };
     DataStreamWriter.prototype.writeFloat64LE = function (float64) {
-        if (this.checkDeduplication(float64)) {
+        if (this.compressDataIfPossible(float64)) {
             return;
         }
         this.ensureLength(9);
@@ -759,7 +727,7 @@ var DataStreamWriter = /** @class */ (function () {
         this.writerIndex += 8;
     };
     DataStreamWriter.prototype.writeUTF8 = function (utf8) {
-        if (this.checkDeduplication(utf8)) {
+        if (this.compressDataIfPossible(utf8)) {
             return;
         }
         var length = Buffer.byteLength(utf8);
@@ -825,7 +793,7 @@ var DataStreamWriter = /** @class */ (function () {
         this.data.writeUInt8(0, this.writerIndex++);
     };
     DataStreamWriter.prototype.writeData = function (data) {
-        if (this.checkDeduplication(data)) {
+        if (this.compressDataIfPossible(data)) {
             return;
         }
         if (data.length <= 32) {
@@ -885,7 +853,7 @@ var DataStreamWriter = /** @class */ (function () {
         this.writeTag(3 /* TERMINATOR */);
     };
     DataStreamWriter.prototype.writeSecondsSince2001_01_01 = function (seconds) {
-        if (this.checkDeduplication(seconds)) {
+        if (this.compressDataIfPossible(seconds)) {
             return;
         }
         this.ensureLength(9);
@@ -895,7 +863,7 @@ var DataStreamWriter = /** @class */ (function () {
     };
     DataStreamWriter.prototype.writeUUID = function (uuid_string) {
         assert_1.default(uuid.isValid(uuid_string), "supplied uuid is invalid");
-        if (this.checkDeduplication(new UUID(uuid_string))) {
+        if (this.compressDataIfPossible(new UUID(uuid_string))) {
             return;
         }
         this.ensureLength(17);

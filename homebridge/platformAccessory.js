@@ -19,7 +19,6 @@ class PlatformAccessory extends events_1.EventEmitter {
         /**
          * This is a way for Plugin developers to store custom data with their accessory
          */
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.context = {}; // providing something to store
         this._associatedHAPAccessory = PlatformAccessory.injectedAccessory
             ? PlatformAccessory.injectedAccessory
@@ -73,13 +72,28 @@ class PlatformAccessory extends events_1.EventEmitter {
     /**
      *
      * @param cameraSource
-     * @deprecated see {@link Accessory.configureCameraSource}
+     * @deprecated see {@link https://developers.homebridge.io/HAP-NodeJS/classes/accessory.html#configurecamerasource | Accessory.configureCameraSource}
      */
     configureCameraSource(cameraSource) {
         return this._associatedHAPAccessory.configureCameraSource(cameraSource);
     }
+    /**
+     * Configures a new controller for the given accessory.
+     * See {@link https://developers.homebridge.io/HAP-NodeJS/classes/accessory.html#configurecontroller | Accessory.configureController}.
+     *
+     * @param controller
+     */
     configureController(controller) {
         this._associatedHAPAccessory.configureController(controller);
+    }
+    /**
+     * Removes a configured controller from the given accessory.
+     * See {@link https://developers.homebridge.io/HAP-NodeJS/classes/accessory.html#removecontroller | Accessory.removeController}.
+     *
+     * @param controller
+     */
+    removeController(controller) {
+        this._associatedHAPAccessory.removeController(controller);
     }
     // private
     static serialize(accessory) {
