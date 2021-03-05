@@ -96,7 +96,8 @@ function HomebridgeWrapper(config) {
             "name": "Homebridge-Wrapper-Bridge",
             "username": "FF:FF:FF:FF:FF:FF",
             "port": 0,
-            "pin": "0"
+            "pin": "0",
+//            "advertiser": "ciao"
         };
     }
 

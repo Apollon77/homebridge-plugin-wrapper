@@ -352,7 +352,6 @@ export declare class Characteristic extends EventEmitter<Events> {
     static DataStreamHAPTransportInterrupt: typeof HomeKitTypes.Generated.DataStreamHAPTransportInterrupt;
     static EventRetransmissionMaximum: typeof HomeKitTypes.Generated.EventRetransmissionMaximum;
     static EventTransmissionCounters: typeof HomeKitTypes.Generated.EventTransmissionCounters;
-    static HeartBeat: typeof HomeKitTypes.Generated.HeartBeat;
     static MACRetransmissionMaximum: typeof HomeKitTypes.Generated.MACRetransmissionMaximum;
     static MACTransmissionCounters: typeof HomeKitTypes.Generated.MACTransmissionCounters;
     static OperatingStateResponse: typeof HomeKitTypes.Generated.OperatingStateResponse;

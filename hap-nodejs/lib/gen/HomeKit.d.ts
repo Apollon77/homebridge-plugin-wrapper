@@ -1297,13 +1297,6 @@ export declare class EventTransmissionCounters extends Characteristic {
     constructor();
 }
 /**
- * Characteristic "Heart Beat"
- */
-export declare class HeartBeat extends Characteristic {
-    static readonly UUID: string;
-    constructor();
-}
-/**
  * Characteristic "MAC Retransmission Maximum"
  */
 export declare class MACRetransmissionMaximum extends Characteristic {

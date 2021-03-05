@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
         return extendStatics(d, b);
     };
     return function (d, b) {
@@ -27,7 +27,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -94,8 +94,6 @@ var Categories;
     Categories[Categories["TARGET_CONTROLLER"] = 32] = "TARGET_CONTROLLER";
     Categories[Categories["ROUTER"] = 33] = "ROUTER";
     Categories[Categories["AUDIO_RECEIVER"] = 34] = "AUDIO_RECEIVER";
-    Categories[Categories["TV_SET_TOP_BOX"] = 35] = "TV_SET_TOP_BOX";
-    Categories[Categories["TV_STREAMING_STICK"] = 36] = "TV_STREAMING_STICK";
 })(Categories = exports.Categories || (exports.Categories = {}));
 var AccessoryEventTypes;
 (function (AccessoryEventTypes) {

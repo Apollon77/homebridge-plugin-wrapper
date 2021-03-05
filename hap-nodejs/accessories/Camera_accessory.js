@@ -1,7 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var __1 = require("..");
 var child_process_1 = require("child_process");
+var ip_1 = __importDefault(require("ip"));
 var cameraUUID = __1.uuid.generate('hap-nodejs:accessories:ip-camera');
 var camera = exports.accessory = new __1.Accessory('IPCamera', cameraUUID);
 // @ts-ignore
@@ -19,15 +23,6 @@ var FFMPEGH264LevelNames = [
     "3.2",
     "4.0"
 ];
-var ports = new Set();
-function getPort() {
-    for (var i = 5011;; i++) {
-        if (!ports.has(i)) {
-            ports.add(i);
-            return i;
-        }
-    }
-}
 var ExampleCamera = /** @class */ (function () {
     function ExampleCamera() {
         this.ffmpegDebugOutput = false;
@@ -66,22 +61,23 @@ var ExampleCamera = /** @class */ (function () {
         var sessionId = request.sessionID;
         var targetAddress = request.targetAddress;
         var video = request.video;
+        var videoPort = video.port;
         var videoCryptoSuite = video.srtpCryptoSuite; // could be used to support multiple crypto suite (or support no suite for debugging)
         var videoSrtpKey = video.srtp_key;
         var videoSrtpSalt = video.srtp_salt;
         var videoSSRC = __1.CameraController.generateSynchronisationSource();
-        var localPort = getPort();
         var sessionInfo = {
             address: targetAddress,
-            videoPort: video.port,
-            localVideoPort: localPort,
+            videoPort: videoPort,
             videoCryptoSuite: videoCryptoSuite,
             videoSRTP: Buffer.concat([videoSrtpKey, videoSrtpSalt]),
             videoSSRC: videoSSRC,
         };
+        var currentAddress = ip_1.default.address("public", request.addressVersion); // ipAddress version must match
         var response = {
+            address: currentAddress,
             video: {
-                port: localPort,
+                port: videoPort,
                 ssrc: videoSSRC,
                 srtp_key: videoSrtpKey,
                 srtp_salt: videoSrtpSalt,
@@ -95,7 +91,7 @@ var ExampleCamera = /** @class */ (function () {
         var _this = this;
         var sessionId = request.sessionID;
         switch (request.type) {
-            case "start" /* START */: {
+            case "start" /* START */:
                 var sessionInfo = this.pendingSessions[sessionId];
                 var video = request.video;
                 var profile = FFMPEGH264ProfileNames[video.profile];
@@ -109,15 +105,13 @@ var ExampleCamera = /** @class */ (function () {
                 var mtu = video.mtu; // maximum transmission unit
                 var address = sessionInfo.address;
                 var videoPort = sessionInfo.videoPort;
-                var localVideoPort = sessionInfo.localVideoPort;
                 var ssrc = sessionInfo.videoSSRC;
                 var cryptoSuite = sessionInfo.videoCryptoSuite;
                 var videoSRTP = sessionInfo.videoSRTP.toString("base64");
                 console.log("Starting video stream (" + width + "x" + height + ", " + fps + " fps, " + maxBitrate + " kbps, " + mtu + " mtu)...");
-                var videoffmpegCommand = "-re -f lavfi -i testsrc=s=" + width + "x" + height + ":r=" + fps + " -map 0:0 " +
-                    ("-c:v h264 -pix_fmt yuv420p -r " + fps + " -an -sn -dn -b:v " + maxBitrate + "k ") +
-                    ("-profile:v " + profile + " -level:v " + level + " ") +
-                    ("-payload_type " + payloadType + " -ssrc " + ssrc + " -f rtp ");
+                var videoffmpegCommand = "-f lavfi -i testsrc=size=" + width + "x" + height + ":rate=" + fps + " -map 0:0 " +
+                    ("-c:v libx264 -pix_fmt yuv420p -r " + fps + " -an -sn -dn -b:v " + maxBitrate + "k -bufsize " + 2 * maxBitrate + "k -maxrate " + maxBitrate + "k ") +
+                    ("-payload_type " + payloadType + " -ssrc " + ssrc + " -f rtp "); // -profile:v ${profile} -level:v ${level}
                 if (cryptoSuite !== 2 /* NONE */) {
                     var suite = void 0;
                     switch (cryptoSuite) {
@@ -130,14 +124,13 @@ var ExampleCamera = /** @class */ (function () {
                     }
                     videoffmpegCommand += "-srtp_out_suite " + suite + " -srtp_out_params " + videoSRTP + " s";
                 }
-                videoffmpegCommand += "rtp://" + address + ":" + videoPort + "?rtcpport=" + videoPort + "&localrtcpport=" + localVideoPort + "&pkt_size=" + mtu;
+                videoffmpegCommand += "rtp://" + address + ":" + videoPort + "?rtcpport=" + videoPort + "&localrtcpport=" + videoPort + "&pkt_size=" + mtu;
                 if (this.ffmpegDebugOutput) {
                     console.log("FFMPEG command: ffmpeg " + videoffmpegCommand);
                 }
                 var ffmpegVideo = child_process_1.spawn('ffmpeg', videoffmpegCommand.split(' '), { env: process.env });
                 var started_1 = false;
                 ffmpegVideo.stderr.on('data', function (data) {
-                    console.log(data.toString("utf8"));
                     if (!started_1) {
                         started_1 = true;
                         console.log("FFMPEG: received first frame");
@@ -166,23 +159,20 @@ var ExampleCamera = /** @class */ (function () {
                         }
                     }
                 });
-                this.ongoingSessions[sessionId] = {
-                    localVideoPort: localVideoPort,
-                    process: ffmpegVideo,
-                };
+                this.ongoingSessions[sessionId] = ffmpegVideo;
                 delete this.pendingSessions[sessionId];
                 break;
-            }
             case "reconfigure" /* RECONFIGURE */:
                 // not supported by this example
                 console.log("Received (unsupported) request to reconfigure to: " + JSON.stringify(request.video));
                 callback();
                 break;
             case "stop" /* STOP */:
-                var ongoingSession = this.ongoingSessions[sessionId];
-                ports.delete(ongoingSession.localVideoPort);
+                var ffmpegProcess = this.ongoingSessions[sessionId];
                 try {
-                    ongoingSession.process.kill('SIGKILL');
+                    if (ffmpegProcess) {
+                        ffmpegProcess.kill('SIGKILL');
+                    }
                 }
                 catch (e) {
                     console.log("Error occurred terminating the video process!");
