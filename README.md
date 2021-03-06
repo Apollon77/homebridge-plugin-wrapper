@@ -12,16 +12,18 @@ Windows: [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/Apollon
 [![NPM](https://nodei.co/npm/homebridge-plugin-wrapper.png?downloads=true)](https://nodei.co/npm/homebridge-plugin-wrapper/)
 
 ## Why a Homebridge Wrapper?
-Homebridge is a great project with currently 1200 available plugins and many
+Homebridge is a great project with currently more than 1200 available plugins, and many
 active developers that provide integrations for many IoT devices.
 
 So the idea was to allow other Node-JS based projects to use the work done by
-all the Homebridge-Plugin developers in their projects. First of all I use it
+all the Homebridge-Plugin developers in their projects. I use it
 for ioBroker (https://iobroker.net).
+
+Also, very important is to note, that this project will NOT provide any "Bridge", it just interacts on data level with the plugins.
 
 ## How it works?
 This project contains copies and slightly changed files from Homebridge and
-HAP-NodeJS and only minimal dependecies. Especially the whole MDNS and
+HAP-NodeJS and only minimal dependencies. Especially the whole MDNS and
 Encryption stuff is not included because using the Wrapper is not publishing
 the bridge (because not needed).
 
@@ -35,7 +37,7 @@ If you have a problem with this please contact me via an issue and we can try to
 ## Example?
 In the example folder you find a very easy example.
 For this to work please install homebridge-sun-position to your testing directory to get the needed plugin.
-Then you can start the example via **node example.js** and it outputs all available characteristics.
+Then you can start the example via **node example.js**, and it outputs all available characteristics.
 The example file also contain an example how to get and set a value.
 
 ## How to use it?
@@ -43,7 +45,7 @@ Basically you create an object instance and providing a configuration object to 
 * logger: an object with *info* and *debug* functions
 * homebridgeConfigPath: a directory to store Homebridge Persist-Files
 * wrapperConfig: the Homebridge configuration in "wrapperConfig".
-* characteristicPollingInterval: a number in ms in which intervall all values will be read to always stay up to date. This can be used if plugins do not send updates from itself
+* characteristicPollingInterval: a number in ms in which interval all values will be read to always stay up to date. This can be used if plugins do not send updates from itself
 
 See the example file.
 
@@ -55,10 +57,12 @@ To really start you call *init* method and at the end *finish* to clean up.
 
 The example contains code how to get and set values.
 
+## What will NOT work?
+* Since homebridge 1.3.x it is possible to define child bridges for the devices. This idea basically makes no sense when using this library. This means that a configuration with child bridges will fork separate processes, but in fact the library can not access those data, so please do not configure it that way.
+* The homebridge UI/config plugins are not working.
+
 ## What's changed on Homebridge/HAP-NodeJS?
 * Homeebridge: version.js to return the version of the files "static" instead of a dynamic lookup
-* HAP-NodeJS: HAPServer.js only has minimal functions because not needed
-* HAP-NodeJS: Advertiser.js only has minimal functions because not needed
 * Mocked away: qrcode-terminal, and some more
 * In Accessory.js the MAX settings for accessories and services are increased
 
