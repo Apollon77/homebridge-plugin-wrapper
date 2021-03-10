@@ -75,6 +75,7 @@ var CharacteristicWarningType;
     CharacteristicWarningType["TIMEOUT_READ"] = "timeout-read";
     CharacteristicWarningType["WARN_MESSAGE"] = "warn-message";
     CharacteristicWarningType["ERROR_MESSAGE"] = "error-message";
+    CharacteristicWarningType["DEBUG_MESSAGE"] = "debug-message";
 })(CharacteristicWarningType = exports.CharacteristicWarningType || (exports.CharacteristicWarningType = {}));
 var MDNSAdvertiser;
 (function (MDNSAdvertiser) {

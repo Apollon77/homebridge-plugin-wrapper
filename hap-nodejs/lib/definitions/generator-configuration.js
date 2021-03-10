@@ -72,7 +72,7 @@ exports.CharacteristicOverriding = new Map([
             generated.units = "percentage";
         }],
     ["temperature.current", function (generated) {
-            generated.minValue = -273.15;
+            generated.minValue = -270;
         }],
     ["characteristic-value-transition-control", function (generated) {
             generated.properties |= 128 /* WRITE_RESPONSE */;

@@ -9,6 +9,7 @@ var IpcIncomingEvent;
 })(IpcIncomingEvent = exports.IpcIncomingEvent || (exports.IpcIncomingEvent = {}));
 var IpcOutgoingEvent;
 (function (IpcOutgoingEvent) {
+    IpcOutgoingEvent["SERVER_STATUS_UPDATE"] = "serverStatusUpdate";
     IpcOutgoingEvent["CHILD_BRIDGE_METADATA_RESPONSE"] = "childBridgeMetadataResponse";
     IpcOutgoingEvent["CHILD_BRIDGE_STATUS_UPDATE"] = "childBridgeStatusUpdate";
 })(IpcOutgoingEvent = exports.IpcOutgoingEvent || (exports.IpcOutgoingEvent = {}));

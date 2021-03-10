@@ -810,7 +810,7 @@ export declare class Characteristic extends EventEmitter {
      * must be returned.
      * @param value - Value supplied by the HomeKit controller
      */
-    private validClientSuppliedValue;
+    private validateClientSuppliedValue;
     /**
      * Checks if the value received from the API call is valid.
      * It adjust the value where it makes sense, prints a warning where values may be rejected with an error

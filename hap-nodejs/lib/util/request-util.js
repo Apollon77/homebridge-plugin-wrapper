@@ -60,6 +60,8 @@ function numericLowerBound(format) {
     switch (format) {
         case "int" /* INT */:
             return -2147483648;
+        case "float" /* FLOAT */:
+            return -Number.MAX_VALUE;
         case "uint8" /* UINT8 */:
         case "uint16" /* UINT16 */:
         case "uint32" /* UINT32 */:
@@ -74,6 +76,8 @@ function numericUpperBound(format) {
     switch (format) {
         case "int" /* INT */:
             return 2147483647;
+        case "float" /* FLOAT */:
+            return Number.MAX_VALUE;
         case "uint8" /* UINT8 */:
             return 255;
         case "uint16" /* UINT16 */:

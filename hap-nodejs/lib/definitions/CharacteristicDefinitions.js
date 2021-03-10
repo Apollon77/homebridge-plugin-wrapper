@@ -1047,7 +1047,7 @@ var CurrentTemperature = /** @class */ (function (_super) {
             format: "float" /* FLOAT */,
             perms: ["ev" /* NOTIFY */, "pr" /* PAIRED_READ */],
             unit: "celsius" /* CELSIUS */,
-            minValue: -273.15,
+            minValue: -270,
             maxValue: 100,
             minStep: 0.1,
         }) || this;

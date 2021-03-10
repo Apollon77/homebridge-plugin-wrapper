@@ -352,17 +352,21 @@ var Characteristic = /** @class */ (function (_super) {
                 props.minValue = undefined;
             }
             else if (!request_util_1.isNumericFormat(this.props.format)) {
-                this.characteristicWarning("Characteristic Property `minValue` can only be set for characteristics with numeric format, but not for " + this.props.format, "error-message" /* ERROR_MESSAGE */);
+                this.characteristicWarning("Characteristic Property 'minValue' can only be set for characteristics with numeric format, but not for " + this.props.format, "error-message" /* ERROR_MESSAGE */);
                 props.minValue = undefined;
             }
-            else if (request_util_1.isUnsignedNumericFormat(this.props.format)) {
+            else if (typeof props.minValue !== 'number' || !Number.isFinite(props.minValue)) {
+                this.characteristicWarning("Characteristic Property 'minValue' must be a finite number, received \"" + props.minValue + "\" (" + typeof props.minValue + ")", "error-message" /* ERROR_MESSAGE */);
+                props.minValue = undefined;
+            }
+            else {
                 if (props.minValue < request_util_1.numericLowerBound(this.props.format)) {
-                    this.characteristicWarning("Characteristic Property `minValue` was set to " + props.minValue + ", but for numeric format " +
+                    this.characteristicWarning("Characteristic Property 'minValue' was set to " + props.minValue + ", but for numeric format " +
                         this.props.format + " minimum possible is " + request_util_1.numericLowerBound(this.props.format), "error-message" /* ERROR_MESSAGE */);
                     props.minValue = request_util_1.numericLowerBound(this.props.format);
                 }
                 else if (props.minValue > request_util_1.numericUpperBound(this.props.format)) {
-                    this.characteristicWarning("Characteristic Property `minValue` was set to " + props.minValue + ", but for numeric format " +
+                    this.characteristicWarning("Characteristic Property 'minValue' was set to " + props.minValue + ", but for numeric format " +
                         this.props.format + " maximum possible is " + request_util_1.numericUpperBound(this.props.format), "error-message" /* ERROR_MESSAGE */);
                     props.minValue = request_util_1.numericLowerBound(this.props.format);
                 }
@@ -375,17 +379,21 @@ var Characteristic = /** @class */ (function (_super) {
                 props.maxValue = undefined;
             }
             else if (!request_util_1.isNumericFormat(this.props.format)) {
-                this.characteristicWarning("Characteristic Property `maxValue` can only be set for characteristics with numeric format, but not for " + this.props.format, "error-message" /* ERROR_MESSAGE */);
+                this.characteristicWarning("Characteristic Property 'maxValue' can only be set for characteristics with numeric format, but not for " + this.props.format, "error-message" /* ERROR_MESSAGE */);
                 props.maxValue = undefined;
             }
-            else if (request_util_1.isUnsignedNumericFormat(this.props.format)) {
+            else if (typeof props.maxValue !== 'number' || !Number.isFinite(props.maxValue)) {
+                this.characteristicWarning("Characteristic Property 'maxValue' must be a finite number, received \"" + props.maxValue + "\" (" + typeof props.maxValue + ")", "error-message" /* ERROR_MESSAGE */);
+                props.maxValue = undefined;
+            }
+            else {
                 if (props.maxValue > request_util_1.numericUpperBound(this.props.format)) {
-                    this.characteristicWarning("Characteristic Property `maxValue` was set to " + props.maxValue + ", but for numeric format " +
+                    this.characteristicWarning("Characteristic Property 'maxValue' was set to " + props.maxValue + ", but for numeric format " +
                         this.props.format + " maximum possible is " + request_util_1.numericUpperBound(this.props.format), "error-message" /* ERROR_MESSAGE */);
                     props.maxValue = request_util_1.numericUpperBound(this.props.format);
                 }
                 else if (props.maxValue < request_util_1.numericLowerBound(this.props.format)) {
-                    this.characteristicWarning("Characteristic Property `maxValue` was set to " + props.maxValue + ", but for numeric format " +
+                    this.characteristicWarning("Characteristic Property 'maxValue' was set to " + props.maxValue + ", but for numeric format " +
                         this.props.format + " minimum possible is " + request_util_1.numericUpperBound(this.props.format), "error-message" /* ERROR_MESSAGE */);
                     props.maxValue = request_util_1.numericUpperBound(this.props.format);
                 }
@@ -646,7 +654,7 @@ var Characteristic = /** @class */ (function (_super) {
      */
     Characteristic.prototype.handleGetRequest = function (connection, context) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var value, oldValue, error_1;
+            var value, oldValue, error_1, hapStatusError;
             var _this = this;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
@@ -690,9 +698,10 @@ var Characteristic = /** @class */ (function (_super) {
                     case 3:
                         error_1 = _a.sent();
                         if (typeof error_1 === "number") {
-                            this.statusCode = error_1;
+                            hapStatusError = new hapStatusError_1.HapStatusError(error_1);
+                            this.statusCode = hapStatusError.hapStatus;
                             // noinspection JSDeprecatedSymbols
-                            this.status = new hapStatusError_1.HapStatusError(error_1);
+                            this.status = hapStatusError;
                         }
                         else if (error_1 instanceof hapStatusError_1.HapStatusError) {
                             this.statusCode = error_1.hapStatus;
@@ -724,9 +733,10 @@ var Characteristic = /** @class */ (function (_super) {
                                     _this.emit("get" /* GET */, once_1.once(function (status, value) {
                                         if (status) {
                                             if (typeof status === "number") {
-                                                _this.statusCode = status;
+                                                var hapStatusError = new hapStatusError_1.HapStatusError(status);
+                                                _this.statusCode = hapStatusError.hapStatus;
                                                 // noinspection JSDeprecatedSymbols
-                                                _this.status = new hapStatusError_1.HapStatusError(status);
+                                                _this.status = hapStatusError;
                                             }
                                             else if (status instanceof hapStatusError_1.HapStatusError) {
                                                 _this.statusCode = status.hapStatus;
@@ -779,7 +789,7 @@ var Characteristic = /** @class */ (function (_super) {
      */
     Characteristic.prototype.handleSetRequest = function (value, connection, context) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var oldValue, writeResponse, error_2;
+            var oldValue, writeResponse, error_2, hapStatusError;
             var _this = this;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
@@ -787,14 +797,16 @@ var Characteristic = /** @class */ (function (_super) {
                         this.statusCode = 0 /* SUCCESS */;
                         // noinspection JSDeprecatedSymbols
                         this.status = null;
-                        if (connection !== undefined && !this.validClientSuppliedValue(value)) {
+                        if (connection !== undefined) {
                             // if connection is undefined, the set "request" comes from the setValue method.
                             // for setValue a value of "null" is allowed and checked via validateUserInput.
-                            return [2 /*return*/, Promise.reject(-70410 /* INVALID_VALUE_IN_REQUEST */)];
-                        }
-                        if (this.props.format === "bool" /* BOOL */ && typeof value === "number") {
-                            // we already validate in validClientSuppliedValue that a number value can only be 0 or 1.
-                            value = value === 1;
+                            try {
+                                value = this.validateClientSuppliedValue(value);
+                            }
+                            catch (e) {
+                                debug("[" + this.displayName + "]", e.message);
+                                return [2 /*return*/, Promise.reject(-70410 /* INVALID_VALUE_IN_REQUEST */)];
+                            }
                         }
                         oldValue = this.value;
                         if (!this.setHandler) return [3 /*break*/, 4];
@@ -816,7 +828,7 @@ var Characteristic = /** @class */ (function (_super) {
                         }
                         else {
                             if (writeResponse != null) {
-                                this.characteristicWarning("SET handler returned write response value, though the characteristic doesn't support write response");
+                                this.characteristicWarning("SET handler returned write response value, though the characteristic doesn't support write response", "debug-message" /* DEBUG_MESSAGE */);
                             }
                             this.value = value;
                             this.emit("change" /* CHANGE */, { originator: connection, oldValue: oldValue, newValue: value, reason: "write" /* WRITE */, context: context });
@@ -826,9 +838,10 @@ var Characteristic = /** @class */ (function (_super) {
                     case 3:
                         error_2 = _a.sent();
                         if (typeof error_2 === "number") {
-                            this.statusCode = error_2;
+                            hapStatusError = new hapStatusError_1.HapStatusError(error_2);
+                            this.statusCode = hapStatusError.hapStatus;
                             // noinspection JSDeprecatedSymbols
-                            this.status = new hapStatusError_1.HapStatusError(error_2);
+                            this.status = hapStatusError;
                         }
                         else if (error_2 instanceof hapStatusError_1.HapStatusError) {
                             this.statusCode = error_2.hapStatus;
@@ -854,9 +867,10 @@ var Characteristic = /** @class */ (function (_super) {
                                         _this.emit("set" /* SET */, value, once_1.once(function (status, writeResponse) {
                                             if (status) {
                                                 if (typeof status === "number") {
-                                                    _this.statusCode = status;
+                                                    var hapStatusError = new hapStatusError_1.HapStatusError(status);
+                                                    _this.statusCode = hapStatusError.hapStatus;
                                                     // noinspection JSDeprecatedSymbols
-                                                    _this.status = new hapStatusError_1.HapStatusError(status);
+                                                    _this.status = hapStatusError;
                                                 }
                                                 else if (status instanceof hapStatusError_1.HapStatusError) {
                                                     _this.statusCode = status.hapStatus;
@@ -882,7 +896,7 @@ var Characteristic = /** @class */ (function (_super) {
                                             }
                                             else {
                                                 if (writeResponse != null) {
-                                                    _this.characteristicWarning("SET handler returned write response value, though the characteristic doesn't support write response");
+                                                    _this.characteristicWarning("SET handler returned write response value, though the characteristic doesn't support write response", "debug-message" /* DEBUG_MESSAGE */);
                                                 }
                                                 _this.value = value;
                                                 resolve();
@@ -967,7 +981,7 @@ var Characteristic = /** @class */ (function (_super) {
                         if (((_a = this.props.validValues) === null || _a === void 0 ? void 0 : _a.length) && typeof this.props.validValues[0] === 'number') {
                             return this.props.validValues[0];
                         }
-                        if (typeof this.props.minValue === 'number') {
+                        if (typeof this.props.minValue === 'number' && Number.isFinite(this.props.minValue)) {
                             return this.props.minValue;
                         }
                         return 0;
@@ -983,129 +997,81 @@ var Characteristic = /** @class */ (function (_super) {
      * must be returned.
      * @param value - Value supplied by the HomeKit controller
      */
-    Characteristic.prototype.validClientSuppliedValue = function (value) {
+    Characteristic.prototype.validateClientSuppliedValue = function (value) {
         if (value == undefined) {
-            return false;
+            throw new Error("Client supplied invalid value for " + this.props.format + ": undefined");
         }
-        var numericMin = undefined;
-        var numericMax = undefined;
         switch (this.props.format) {
-            case "bool" /* BOOL */:
-                if (!(typeof value === "boolean" || value == 0 || value == 1)) {
-                    return false;
+            case "bool" /* BOOL */: {
+                if (typeof value === 'boolean') {
+                    return value;
                 }
-                break;
-            case "int" /* INT */: // 32-bit signed int
-                if (typeof value === "boolean") {
-                    value = value ? 1 : 0;
+                if (typeof value === 'number' && (value === 1 || value === 0)) {
+                    return Boolean(value);
                 }
-                if (typeof value !== "number") {
-                    return false;
-                }
-                numericMin = maxWithUndefined(this.props.minValue, request_util_1.numericLowerBound("int" /* INT */));
-                numericMax = minWithUndefined(this.props.maxValue, request_util_1.numericUpperBound("int" /* INT */));
-                break;
+                throw new Error("Client supplied invalid type for " + this.props.format + ": \"" + value + "\" (" + typeof value + ")");
+            }
+            case "int" /* INT */:
             case "float" /* FLOAT */:
-                if (typeof value === "boolean") {
-                    value = value ? 1 : 0;
-                }
-                if (typeof value !== "number") {
-                    return false;
-                }
-                if (this.props.minValue != null) {
-                    numericMin = this.props.minValue;
-                }
-                if (this.props.maxValue != null) {
-                    numericMax = this.props.maxValue;
-                }
-                break;
             case "uint8" /* UINT8 */:
-                if (typeof value === "boolean") {
-                    value = value ? 1 : 0;
-                }
-                if (typeof value !== "number") {
-                    return false;
-                }
-                numericMin = maxWithUndefined(this.props.minValue, request_util_1.numericLowerBound("uint8" /* UINT8 */));
-                numericMax = minWithUndefined(this.props.maxValue, request_util_1.numericUpperBound("uint8" /* UINT8 */));
-                break;
             case "uint16" /* UINT16 */:
-                if (typeof value === "boolean") {
-                    value = value ? 1 : 0;
-                }
-                if (typeof value !== "number") {
-                    return false;
-                }
-                numericMin = maxWithUndefined(this.props.minValue, request_util_1.numericLowerBound("uint16" /* UINT16 */));
-                numericMax = minWithUndefined(this.props.maxValue, request_util_1.numericUpperBound("uint16" /* UINT16 */));
-                break;
             case "uint32" /* UINT32 */:
+            case "uint64" /* UINT64 */: {
                 if (typeof value === "boolean") {
                     value = value ? 1 : 0;
                 }
-                if (typeof value !== "number") {
-                    return false;
+                if (typeof value !== "number" || !Number.isFinite(value)) {
+                    throw new Error("Client supplied invalid type for " + this.props.format + ": \"" + value + "\" (" + typeof value + ")");
                 }
-                numericMin = maxWithUndefined(this.props.minValue, request_util_1.numericLowerBound("uint32" /* UINT32 */));
-                numericMax = minWithUndefined(this.props.maxValue, request_util_1.numericUpperBound("uint32" /* UINT32 */));
-                break;
-            case "uint64" /* UINT64 */:
-                if (typeof value === "boolean") {
-                    value = value ? 1 : 0;
+                var numericMin = maxWithUndefined(this.props.minValue, request_util_1.numericLowerBound(this.props.format));
+                var numericMax = minWithUndefined(this.props.maxValue, request_util_1.numericUpperBound(this.props.format));
+                if (typeof numericMin === 'number' && value < numericMin) {
+                    throw new Error("Client supplied value of " + value + " is less than the minimum allowed value of " + numericMin);
                 }
-                if (typeof value !== "number") {
-                    return false;
+                if (typeof numericMax === 'number' && value > numericMax) {
+                    throw new Error("Client supplied value of " + value + " is greater than the maximum allowed value of " + numericMax);
                 }
-                numericMin = maxWithUndefined(this.props.minValue, request_util_1.numericLowerBound("uint64" /* UINT64 */));
-                numericMax = minWithUndefined(this.props.maxValue, request_util_1.numericUpperBound("uint64" /* UINT64 */));
-                break;
+                if (this.props.validValues && !this.props.validValues.includes(value)) {
+                    throw new Error("Client supplied value of " + value + " is not in " + this.props.validValues.toString());
+                }
+                if (this.props.validValueRanges && this.props.validValueRanges.length === 2) {
+                    if (value < this.props.validValueRanges[0]) {
+                        throw new Error("Client supplied value of " + value + " is less than the minimum allowed value of " + this.props.validValueRanges[0]);
+                    }
+                    if (value > this.props.validValueRanges[1]) {
+                        throw new Error("Client supplied value of " + value + " is greater than the maximum allowed value of " + this.props.validValueRanges[1]);
+                    }
+                }
+                return value;
+            }
             case "string" /* STRING */: {
                 if (typeof value !== "string") {
-                    return false;
+                    throw new Error("Client supplied invalid type for " + this.props.format + ": \"" + value + "\" (" + typeof value + ")");
                 }
                 var maxLength = this.props.maxLen != null ? this.props.maxLen : 64; // default is 64; max is 256 which is set in setProps
                 if (value.length > maxLength) {
-                    return false;
+                    throw new Error("Client supplied value length of " + value.length + " exceeds maximum length allowed of " + maxLength);
                 }
-                break;
+                return value;
             }
             case "data" /* DATA */: {
                 if (typeof value !== "string") {
-                    return false;
+                    throw new Error("Client supplied invalid type for " + this.props.format + ": \"" + value + "\" (" + typeof value + ")");
                 }
                 // we don't validate base64 here
                 var maxLength = this.props.maxDataLen != null ? this.props.maxDataLen : 0x200000; // default is 0x200000
                 if (value.length > maxLength) {
-                    return false;
+                    throw new Error("Client supplied value length of " + value.length + " exceeds maximum length allowed of " + maxLength);
                 }
-                break;
+                return value;
             }
             case "tlv8" /* TLV8 */:
                 if (typeof value !== "string") {
-                    return false;
+                    throw new Error("Client supplied invalid type for " + this.props.format + ": \"" + value + "\" (" + typeof value + ")");
                 }
-                break;
+                return value;
         }
-        if (typeof value === "number") {
-            if (numericMin != null && value < numericMin) {
-                return false;
-            }
-            if (numericMax != null && value > numericMax) {
-                return false;
-            }
-            if (this.props.validValues && !this.props.validValues.includes(value)) {
-                return false;
-            }
-            if (this.props.validValueRanges && this.props.validValueRanges.length === 2) {
-                if (value < this.props.validValueRanges[0]) {
-                    return false;
-                }
-                else if (value > this.props.validValueRanges[1]) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return value;
     };
     /**
      * Checks if the value received from the API call is valid.
@@ -1146,154 +1112,77 @@ var Characteristic = /** @class */ (function (_super) {
                 return value;
             }
         }
-        var numericMin = undefined;
-        var numericMax = undefined;
-        var stepValue = undefined;
         switch (this.props.format) {
             case "bool" /* BOOL */: {
                 if (typeof value === "boolean") {
                     return value;
                 }
-                else if (typeof value === "number") {
+                if (typeof value === "number") {
                     return value === 1;
                 }
-                else if (typeof value === "string") {
+                if (typeof value === "string") {
                     return value === "1" || value === "true";
                 }
-                else {
-                    this.characteristicWarning("characteristic value expected boolean and received " + typeof value);
-                    return false;
-                }
+                this.characteristicWarning("characteristic value expected boolean and received " + typeof value);
+                return false;
             }
-            case "int" /* INT */: {
-                if (typeof value === "boolean") {
-                    value = value ? 1 : 0;
-                }
-                if (typeof value === "string") {
-                    // this.characteristicWarning(`characteristic was supplied illegal value: string instead of number. Supplying illegal values will throw errors in the future!`);
-                    value = parseInt(value, 10);
-                }
-                if (typeof value === 'number' && isNaN(value)) {
-                    this.characteristicWarning("characteristic was expected valid number and received NaN");
-                    value = typeof this.value === 'number' ? this.value : this.props.minValue || 0;
-                }
-                if (typeof value !== "number") {
-                    this.characteristicWarning("characteristic value expected number and received " + typeof value);
-                    value = typeof this.value === 'number' ? this.value : this.props.minValue || 0;
-                }
-                numericMin = maxWithUndefined(this.props.minValue, request_util_1.numericLowerBound("int" /* INT */));
-                numericMax = minWithUndefined(this.props.maxValue, request_util_1.numericUpperBound("int" /* INT */));
-                stepValue = maxWithUndefined(this.props.minStep, 1);
-                break;
-            }
-            case "float" /* FLOAT */: {
-                if (typeof value === "boolean") {
-                    value = value ? 1 : 0;
-                }
-                if (typeof value === "string") {
-                    // this.characteristicWarning(`characteristic was supplied illegal value: string instead of float. Supplying illegal values will throw errors in the future!`);
-                    value = parseFloat(value);
-                }
-                if (typeof value === 'number' && isNaN(value)) {
-                    this.characteristicWarning("characteristic was expected valid number and received NaN");
-                    value = typeof this.value === 'number' ? this.value : this.props.minValue || 0;
-                }
-                if (typeof value !== "number") {
-                    this.characteristicWarning("characteristic value expected float and received " + typeof value);
-                    value = typeof this.value === 'number' ? this.value : this.props.minValue || 0;
-                }
-                if (this.props.minValue != null) {
-                    numericMin = this.props.minValue;
-                }
-                if (this.props.maxValue != null) {
-                    numericMax = this.props.maxValue;
-                }
-                stepValue = this.props.minStep;
-                break;
-            }
-            case "uint8" /* UINT8 */: {
-                if (typeof value === "boolean") {
-                    value = value ? 1 : 0;
-                }
-                if (typeof value === "string") {
-                    // this.characteristicWarning(`characteristic was supplied illegal value: string instead of number. Supplying illegal values will throw errors in the future!`);
-                    value = parseInt(value, 10);
-                }
-                if (typeof value === 'number' && isNaN(value)) {
-                    this.characteristicWarning("characteristic was expected valid number and received NaN");
-                    value = typeof this.value === 'number' ? this.value : this.props.minValue || 0;
-                }
-                if (typeof value !== "number") {
-                    this.characteristicWarning("characteristic value expected number and received " + typeof value);
-                    value = typeof this.value === 'number' ? this.value : this.props.minValue || 0;
-                }
-                numericMin = maxWithUndefined(this.props.minValue, request_util_1.numericLowerBound("uint8" /* UINT8 */));
-                numericMax = minWithUndefined(this.props.maxValue, request_util_1.numericUpperBound("uint8" /* UINT8 */));
-                stepValue = maxWithUndefined(this.props.minStep, 1);
-                break;
-            }
-            case "uint16" /* UINT16 */: {
-                if (typeof value === "boolean") {
-                    value = value ? 1 : 0;
-                }
-                if (typeof value === "string") {
-                    // this.characteristicWarning(`characteristic was supplied illegal value: string instead of number. Supplying illegal values will throw errors in the future!`);
-                    value = parseInt(value, 10);
-                }
-                if (typeof value === 'number' && isNaN(value)) {
-                    this.characteristicWarning("characteristic was expected valid number and received NaN");
-                    value = typeof this.value === 'number' ? this.value : this.props.minValue || 0;
-                }
-                if (typeof value !== "number") {
-                    this.characteristicWarning("characteristic value expected number and received " + typeof value);
-                    value = typeof this.value === 'number' ? this.value : this.props.minValue || 0;
-                }
-                numericMin = maxWithUndefined(this.props.minValue, request_util_1.numericLowerBound("uint16" /* UINT16 */));
-                numericMax = minWithUndefined(this.props.maxValue, request_util_1.numericUpperBound("uint16" /* UINT16 */));
-                stepValue = maxWithUndefined(this.props.minStep, 1);
-                break;
-            }
-            case "uint32" /* UINT32 */: {
-                if (typeof value === "boolean") {
-                    value = value ? 1 : 0;
-                }
-                if (typeof value === "string") {
-                    // this.characteristicWarning(`characteristic was supplied illegal value: string instead of number. Supplying illegal values will throw errors in the future!`);
-                    value = parseInt(value, 10);
-                }
-                if (typeof value === 'number' && isNaN(value)) {
-                    this.characteristicWarning("characteristic was expected valid number and received NaN");
-                    value = typeof this.value === 'number' ? this.value : this.props.minValue || 0;
-                }
-                if (typeof value !== "number") {
-                    this.characteristicWarning("characteristic value expected number and received " + typeof value);
-                    value = typeof this.value === 'number' ? this.value : this.props.minValue || 0;
-                }
-                numericMin = maxWithUndefined(this.props.minValue, request_util_1.numericLowerBound("uint32" /* UINT32 */));
-                numericMax = minWithUndefined(this.props.maxValue, request_util_1.numericUpperBound("uint32" /* UINT32 */));
-                stepValue = maxWithUndefined(this.props.minStep, 1);
-                break;
-            }
+            case "int" /* INT */:
+            case "float" /* FLOAT */:
+            case "uint8" /* UINT8 */:
+            case "uint16" /* UINT16 */:
+            case "uint32" /* UINT32 */:
             case "uint64" /* UINT64 */: {
                 if (typeof value === "boolean") {
                     value = value ? 1 : 0;
                 }
                 if (typeof value === "string") {
-                    // this.characteristicWarning(`characteristic was supplied illegal value: string instead of number. Supplying illegal values will throw errors in the future!`);
-                    value = parseInt(value, 10);
+                    value = this.props.format === "float" /* FLOAT */ ? parseFloat(value) : parseInt(value, 10);
                 }
-                if (typeof value === 'number' && isNaN(value)) {
-                    this.characteristicWarning("characteristic was expected valid number and received NaN");
+                if (typeof value !== 'number' || !Number.isFinite(value)) {
+                    this.characteristicWarning("characteristic value expected valid finite number and received \"" + value + "\" (" + typeof value + ")");
                     value = typeof this.value === 'number' ? this.value : this.props.minValue || 0;
                 }
-                if (typeof value !== "number") {
-                    this.characteristicWarning("characteristic value expected number and received " + typeof value);
-                    value = typeof this.value === 'number' ? this.value : this.props.minValue || 0;
+                var numericMin = maxWithUndefined(this.props.minValue, request_util_1.numericLowerBound(this.props.format));
+                var numericMax = minWithUndefined(this.props.maxValue, request_util_1.numericUpperBound(this.props.format));
+                var stepValue = undefined;
+                if (this.props.format === "float" /* FLOAT */) {
+                    stepValue = this.props.minStep;
                 }
-                numericMin = maxWithUndefined(this.props.minValue, request_util_1.numericLowerBound("uint64" /* UINT64 */));
-                numericMax = minWithUndefined(this.props.maxValue, request_util_1.numericUpperBound("uint64" /* UINT64 */));
-                stepValue = maxWithUndefined(this.props.minStep, 1);
-                break;
+                else {
+                    stepValue = maxWithUndefined(this.props.minStep, 1);
+                }
+                if (numericMin != null && value < numericMin) {
+                    this.characteristicWarning("characteristic was supplied illegal value: number " + value + " exceeded minimum of " + numericMin);
+                    value = numericMin;
+                }
+                if (numericMax != null && value > numericMax) {
+                    this.characteristicWarning("characteristic was supplied illegal value: number " + value + " exceeded maximum of " + numericMax);
+                    value = numericMax;
+                }
+                if (this.props.validValues && !this.props.validValues.includes(value)) {
+                    this.characteristicWarning("characteristic value " + value + " is not contained in valid values array");
+                    return this.props.validValues.includes(this.value) ? this.value : (this.props.validValues[0] || 0);
+                }
+                if (this.props.validValueRanges && this.props.validValueRanges.length === 2) {
+                    if (value < this.props.validValueRanges[0]) {
+                        this.characteristicWarning("characteristic was supplied illegal value: number " + value + " not contained in valid value range of " + this.props.validValueRanges + ", supplying illegal values will throw errors in the future");
+                        value = this.props.validValueRanges[0];
+                    }
+                    else if (value > this.props.validValueRanges[1]) {
+                        this.characteristicWarning("characteristic was supplied illegal value: number " + value + " not contained in valid value range of " + this.props.validValueRanges + ", supplying illegal values will throw errors in the future");
+                        value = this.props.validValueRanges[1];
+                    }
+                }
+                if (stepValue != undefined) {
+                    if (stepValue === 1) {
+                        value = Math.round(value);
+                    }
+                    else if (stepValue > 1) {
+                        value = Math.round(value);
+                        value = value - (value % stepValue);
+                    } // for stepValue < 1 rounding is done only when formatting the response. We can't store the "perfect" .step anyways
+                }
+                return value;
             }
             case "string" /* STRING */: {
                 if (typeof value === "number") {
@@ -1320,7 +1209,7 @@ var Characteristic = /** @class */ (function (_super) {
                     throw new Error("characteristic with DATA format must have string value");
                 }
                 if (this.props.maxDataLen != null && value.length > this.props.maxDataLen) {
-                    // can't cut it as we would basically yet binary rubbish afterwards
+                    // can't cut it as we would basically set binary rubbish afterwards
                     throw new Error("characteristic with DATA format exceeds specified maxDataLen");
                 }
                 return value;
@@ -1330,39 +1219,6 @@ var Characteristic = /** @class */ (function (_super) {
                     return this.value;
                 }
                 return value; // we trust that this is valid tlv8
-        }
-        if (typeof value === "number") {
-            if (numericMin != null && value < numericMin) {
-                this.characteristicWarning("characteristic was supplied illegal value: number " + value + " exceeded minimum of " + numericMin);
-                value = numericMin;
-            }
-            if (numericMax != null && value > numericMax) {
-                this.characteristicWarning("characteristic was supplied illegal value: number " + value + " exceeded maximum of " + numericMax);
-                value = numericMax;
-            }
-            if (this.props.validValues && !this.props.validValues.includes(value)) {
-                this.characteristicWarning("characteristic value " + value + " is not contained in valid values array");
-                return this.props.validValues.includes(this.value) ? this.value : (this.props.validValues[0] || 0);
-            }
-            if (this.props.validValueRanges && this.props.validValueRanges.length === 2) {
-                if (value < this.props.validValueRanges[0]) {
-                    this.characteristicWarning("characteristic was supplied illegal value: number " + value + " not contained in valid value range of " + this.props.validValueRanges + ", supplying illegal values will throw errors in the future");
-                    value = this.props.validValueRanges[0];
-                }
-                else if (value > this.props.validValueRanges[1]) {
-                    this.characteristicWarning("characteristic was supplied illegal value: number " + value + " not contained in valid value range of " + this.props.validValueRanges + ", supplying illegal values will throw errors in the future");
-                    value = this.props.validValueRanges[1];
-                }
-            }
-            if (stepValue != undefined) {
-                if (stepValue === 1) {
-                    value = Math.round(value);
-                }
-                else if (stepValue > 1) {
-                    value = Math.round(value);
-                    value = value - (value % stepValue);
-                } // for stepValue < 1 rounding is done only when formatting the response. We can't store the "perfect" .step anyways
-            }
         }
         // hopefully it shouldn't get to this point
         if (value === undefined) {

@@ -22,7 +22,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Server = void 0;
+exports.Server = exports.ServerStatus = void 0;
 const fs_1 = __importDefault(require("fs"));
 const chalk_1 = __importDefault(require("chalk"));
 const qrcode_terminal_1 = __importDefault(require("qrcode-terminal"));
@@ -36,16 +36,35 @@ const pluginManager_1 = require("./pluginManager");
 const bridgeService_1 = require("./bridgeService");
 const api_1 = require("./api");
 const log = logger_1.Logger.internal;
+var ServerStatus;
+(function (ServerStatus) {
+    /**
+     * When the server is starting up
+     */
+    ServerStatus["PENDING"] = "pending";
+    /**
+     * When the server is online and has published the main bridge
+     */
+    ServerStatus["OK"] = "ok";
+    /**
+     * When the server is shutting down
+     */
+    ServerStatus["DOWN"] = "down";
+})(ServerStatus = exports.ServerStatus || (exports.ServerStatus = {}));
 class Server {
     constructor(options = {}) {
         this.options = options;
         // used to keep track of child bridges
         this.childBridges = new Map();
+        // current server status
+        this.serverStatus = "pending" /* PENDING */;
         this.config = Server.loadConfig();
         // object we feed to Plugins and BridgeService
         this.api = new api_1.HomebridgeAPI();
         this.ipcService = new ipcService_1.IpcService();
         this.externalPortService = new externalPortService_1.ExternalPortService(this.config.ports);
+        // set status to pending
+        this.setServerStatus("pending" /* PENDING */);
         // create new plugin manager
         const pluginManagerOptions = {
             activePlugins: this.config.plugins,
@@ -61,6 +80,20 @@ class Server {
         // shallow copy the homebridge options to the bridge options object
         Object.assign(bridgeConfig, this.options);
         this.bridgeService = new bridgeService_1.BridgeService(this.api, this.pluginManager, this.externalPortService, bridgeConfig, this.config.bridge, this.config);
+        // watch bridge events to check when server is online
+        this.bridgeService.bridge.on("listening" /* LISTENING */, () => {
+            this.setServerStatus("ok" /* OK */);
+        });
+    }
+    /**
+     * Set the current server status and update parent via IPC
+     * @param status
+     */
+    setServerStatus(status) {
+        this.serverStatus = status;
+        this.ipcService.sendMessage("serverStatusUpdate" /* SERVER_STATUS_UPDATE */, {
+            status: this.serverStatus,
+        });
     }
     async start() {
         if (this.config.bridge.disableIpc !== true) {
@@ -90,6 +123,7 @@ class Server {
     }
     teardown() {
         this.bridgeService.teardown();
+        this.setServerStatus("down" /* DOWN */);
     }
     publishBridge() {
         this.bridgeService.publishBridge();

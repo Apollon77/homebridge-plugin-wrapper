@@ -62,7 +62,7 @@ The example contains code how to get and set values.
 * The homebridge UI/config plugins are not working.
 
 ## What's changed on Homebridge/HAP-NodeJS?
-* Homeebridge: version.js to return the version of the files "static" instead of a dynamic lookup
+* Homebridge: version.js to return the version of the files "static" instead of a dynamic lookup
 * Mocked away: qrcode-terminal, and some more
 * In Accessory.js the MAX settings for accessories and services are increased
 
@@ -72,7 +72,7 @@ The example contains code how to get and set values.
 ## Changelog
 
 ### __WORK IN PROGRESS__
-* upgrade to homebridge 1.3.2 (and hap-nodejs 0.9.2)
+* upgrade to homebridge 1.3.3 (and hap-nodejs 0.9.3)
 
 ### 2.0.3 (2020-11-29)
 * upgrade to homebridge 1.1.6 (and hap-nodejs 0.7.9)
