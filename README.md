@@ -72,7 +72,7 @@ The example contains code how to get and set values.
 ## Changelog
 
 ### __WORK IN PROGRESS__
-* upgrade to homebridge 1.3.3 (and hap-nodejs 0.9.3)
+* upgrade to homebridge 1.3.4 (and hap-nodejs 0.9.4)
 
 ### 2.0.3 (2020-11-29)
 * upgrade to homebridge 1.1.6 (and hap-nodejs 0.7.9)

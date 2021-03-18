@@ -267,8 +267,8 @@ export declare class RTPStreamManagement {
     private static _supportedVideoStreamConfiguration;
     private checkForLegacyAudioCodecRepresentation;
     private _supportedAudioStreamConfiguration;
-    private static initialSetupEndpointsResponse;
-    private static initialSelectedStreamConfiguration;
+    private resetSetupEndpointsResponse;
+    private resetSelectedStreamConfiguration;
 }
 /**
  * @deprecated - only there for backwards compatibility, please use {@see RTPStreamManagement} directly

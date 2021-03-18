@@ -1087,6 +1087,9 @@ var Characteristic = /** @class */ (function (_super) {
                 this.characteristicWarning("characteristic must have a non null value otherwise HomeKit will reject this accessory, ignoring new value", "error-message" /* ERROR_MESSAGE */);
                 return this.value; // don't change the value
             }
+            if (this.getDefaultValue() === null) {
+                return value; // any format which has default value null, is allowed to have null as a value (e.g. TLV8 or DATA formats)
+            }
             /**
              * A short disclaimer here.
              * null is actually a perfectly valid value for characteristics to have.

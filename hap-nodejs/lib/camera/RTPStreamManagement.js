@@ -248,6 +248,8 @@ var RTPStreamManagement = /** @class */ (function () {
         this.videoOnly = false;
         this.sessionIdentifier = undefined;
         this.streamStatus = 0 /* AVAILABLE */; // use _updateStreamStatus to update this property
+        this.selectedConfiguration = ""; // base64 representation of the currently selected configuration
+        this.setupEndpointsResponse = ""; // response of the SetupEndpoints Characteristic
         this.delegate = delegate;
         this.requireProxy = options.proxy || false;
         this.disableAudioProxy = options.disable_audio_proxy || false;
@@ -266,10 +268,10 @@ var RTPStreamManagement = /** @class */ (function () {
         this.supportedRTPConfiguration = RTPStreamManagement._supportedRTPConfiguration(this.supportedCryptoSuites);
         this.supportedVideoStreamConfiguration = RTPStreamManagement._supportedVideoStreamConfiguration(options.video);
         this.supportedAudioStreamConfiguration = this._supportedAudioStreamConfiguration(options.audio);
-        this.selectedConfiguration = RTPStreamManagement.initialSelectedStreamConfiguration();
-        this.setupEndpointsResponse = RTPStreamManagement.initialSetupEndpointsResponse();
         this.service = service || this.constructService(id);
         this.setupServiceHandlers();
+        this.resetSetupEndpointsResponse();
+        this.resetSelectedStreamConfiguration();
     }
     RTPStreamManagement.prototype.forceStop = function () {
         this.handleSessionClosed();
@@ -287,8 +289,8 @@ var RTPStreamManagement = /** @class */ (function () {
         // This is now handled automatically. Thus we don't need to do anything anymore.
     };
     RTPStreamManagement.prototype.handleFactoryReset = function () {
-        this.selectedConfiguration = RTPStreamManagement.initialSelectedStreamConfiguration();
-        this.setupEndpointsResponse = RTPStreamManagement.initialSetupEndpointsResponse();
+        this.resetSelectedStreamConfiguration();
+        this.resetSetupEndpointsResponse();
         // on a factory reset the assumption is that all connections were already terminated and thus "handleStopStream" was already called
     };
     RTPStreamManagement.prototype.destroy = function () {
@@ -327,8 +329,8 @@ var RTPStreamManagement = /** @class */ (function () {
         });
     };
     RTPStreamManagement.prototype.handleSessionClosed = function () {
-        this.selectedConfiguration = RTPStreamManagement.initialSelectedStreamConfiguration();
-        this.setupEndpointsResponse = RTPStreamManagement.initialSetupEndpointsResponse();
+        this.resetSelectedStreamConfiguration();
+        this.resetSetupEndpointsResponse();
         if (this.activeConnectionClosedListener && this.activeConnection) {
             this.activeConnection.removeListener("closed" /* CLOSED */, this.activeConnectionClosedListener);
             this.activeConnectionClosedListener = undefined;
@@ -864,11 +866,13 @@ var RTPStreamManagement = /** @class */ (function () {
         });
         return tlv.encode(1 /* AUDIO_CODEC_CONFIGURATION */, codecConfigurations, 2 /* COMFORT_NOISE_SUPPORT */, comfortNoise ? 1 : 0).toString("base64");
     };
-    RTPStreamManagement.initialSetupEndpointsResponse = function () {
-        return tlv.encode(2 /* STATUS */, 2 /* ERROR */).toString("base64");
+    RTPStreamManagement.prototype.resetSetupEndpointsResponse = function () {
+        this.setupEndpointsResponse = tlv.encode(2 /* STATUS */, 2 /* ERROR */).toString("base64");
+        this.service.updateCharacteristic(Characteristic_1.Characteristic.SetupEndpoints, this.setupEndpointsResponse);
     };
-    RTPStreamManagement.initialSelectedStreamConfiguration = function () {
-        return tlv.encode(1 /* SESSION_CONTROL */, tlv.encode(2 /* COMMAND */, SessionControlCommand.SUSPEND_SESSION)).toString("base64");
+    RTPStreamManagement.prototype.resetSelectedStreamConfiguration = function () {
+        this.selectedConfiguration = tlv.encode(1 /* SESSION_CONTROL */, tlv.encode(2 /* COMMAND */, SessionControlCommand.SUSPEND_SESSION)).toString("base64");
+        this.service.updateCharacteristic(Characteristic_1.Characteristic.SelectedRTPStreamConfiguration, this.selectedConfiguration);
     };
     /**
      * @deprecated Please use the SRTPCryptoSuites const enum above. Scheduled to be removed in 2021-06.
