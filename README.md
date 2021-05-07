@@ -66,7 +66,7 @@ The example contains code how to get and set values.
 
 ## Changelog
 
-### __WORK IN PROGRESS__
+### 2.1.1 (2021-05-08)
 * fix internal homebridge version file to reflect 1.3.4
 
 ### 2.1.0 (2021-03-24)
