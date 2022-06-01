@@ -40,7 +40,7 @@
     "mocha": "^9.0.1",
     "chai": "^4.3.4",
     "istanbul": "^0.4.5",
-    "sinon": "^11.1.1",
+    "sinon": "^14.0.0",
     "nock": "^13.1.0",
     "homebridge-sun-position": "^0.2.2",
     "homebridge-http-webhooks": "^0.1.15"
