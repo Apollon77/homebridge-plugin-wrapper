@@ -5,6 +5,5 @@ npm-debug.log
 coverage
 .idea
 config.json
-/accessories/cachedAccessories
-persist
-accessories
+accessories/
+persist/
