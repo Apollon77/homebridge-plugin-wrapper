@@ -3,8 +3,8 @@ test
 appveyor.yml
 .node-persist/
 coverage
-package-lock.json
+/package-lock.json
 .idea
-config.json
-persist
-accessories
+/config.json
+/persist
+/accessories
