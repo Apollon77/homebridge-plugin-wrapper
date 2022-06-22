@@ -99,33 +99,33 @@ describe('Homebridge Wrapper tests ...', function() {
             				{
             				"id": "switch1",
             				"name": "Switch name 1",
-            				"on_url": "http://localhost:9080/switch1?on",
+            				"on_url": "http://127.0.0.1:9080/switch1?on",
             				"on_method": "GET",
-            				"off_url": "http://localhost:9080/switch1?off",
+            				"off_url": "http://127.0.0.1:9080/switch1?off",
             				"off_method": "GET"
             				},
             				{
             				"id": "switch2",
             				"name": "Switch name 2",
-            				"on_url": "http://localhost:9080/switch2?on",
+            				"on_url": "http://127.0.0.1:9080/switch2?on",
             				"on_method": "GET",
-            				"off_url": "http://localhost:9080/switch2?off",
+            				"off_url": "http://127.0.0.1:9080/switch2?off",
             				"off_method": "GET"
             				},
             				{
             				"id": "switch3",
             				"name": "Switch name 3",
-            				"on_url": "http://localhost:9080/switch3?on",
+            				"on_url": "http://127.0.0.1:9080/switch3?on",
             				"on_method": "GET",
-            				"off_url": "http://localhost:9080/switch3?off",
+            				"off_url": "http://127.0.0.1:9080/switch3?off",
             				"off_method": "GET"
             				},
             				{
             				"id": "switch4",
             				"name": "Switch name*3",
-            				"on_url": "http://localhost:9080/switch3-2?on",
+            				"on_url": "http://127.0.0.1:9080/switch3-2?on",
             				"on_method": "GET",
-            				"off_url": "http://localhost:9080/switch3-2?off",
+            				"off_url": "http://127.0.0.1:9080/switch3-2?off",
             				"off_method": "GET"
             				}
             			],
@@ -133,7 +133,7 @@ describe('Homebridge Wrapper tests ...', function() {
             				{
             				"id": "pushbutton1",
             				"name": "Push button name 1",
-            				"push_url": "http://localhost:9080/pushbutton1?push",
+            				"push_url": "http://127.0.0.1:9080/pushbutton1?push",
             				"push_method": "GET"
             				}
             			],
@@ -141,9 +141,9 @@ describe('Homebridge Wrapper tests ...', function() {
             				{
             				"id": "light1",
             				"name": "Light name 1",
-            				"on_url": "http://localhost:9080/light1?on",
+            				"on_url": "http://127.0.0.1:9080/light1?on",
             				"on_method": "GET",
-            				"off_url": "http://localhost:9080/light1?off",
+            				"off_url": "http://127.0.0.1:9080/light1?off",
             				"off_method": "GET"
             				}
             			],
@@ -151,17 +151,17 @@ describe('Homebridge Wrapper tests ...', function() {
             				{
             				"id": "thermostat1",
             				"name": "Thermostat name 1",
-            				"set_target_temperature_url": "http://localhost:9080/thermostat1?targettemperature=%f",
-            				"set_target_heating_cooling_state_url": "http://localhost:9080/thermostat1??targetstate=%b"
+            				"set_target_temperature_url": "http://127.0.0.1:9080/thermostat1?targettemperature=%f",
+            				"set_target_heating_cooling_state_url": "http://127.0.0.1:9080/thermostat1??targetstate=%b"
             				}
             			],
             			"outlets": [
             				{
             				"id": "outlet1",
             				"name": "Outlet name 1",
-            				"on_url": "http://localhost:9080/outlet1?on",
+            				"on_url": "http://127.0.0.1:9080/outlet1?on",
             				"on_method": "GET",
-            				"off_url": "http://localhost:9080/outlet1?off",
+            				"off_url": "http://127.0.0.1:9080/outlet1?off",
             				"off_method": "GET"
             				}
             			]
@@ -226,7 +226,7 @@ describe('Homebridge Wrapper tests ...', function() {
     it('Tests Homebridge Wrapper: Test Change from inside', function (done) {
         this.timeout(10000); // because of first install from npm
 
-        request('http://localhost:61828/?accessoryId=switch1&state=true', function (error, response, body) {
+        request('http://127.0.0.1:61828/?accessoryId=switch1&state=true', function (error, response, body) {
             expect(error).to.be.null;
             expect(response && response.statusCode).to.be.equal(200);
 
@@ -267,7 +267,7 @@ describe('Homebridge Wrapper tests ...', function() {
         this.timeout(50000); // because of first install from npm
 
         lastHTTPRequest = null;
-        request('http://localhost:61828/?accessoryId=switch1&state=false', function (error, response, body) {
+        request('http://127.0.0.1:61828/?accessoryId=switch1&state=false', function (error, response, body) {
             expect(error).to.be.null;
             expect(response && response.statusCode).to.be.equal(200);
 
