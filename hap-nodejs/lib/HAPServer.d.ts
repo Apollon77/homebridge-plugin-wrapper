@@ -1,9 +1,9 @@
 /// <reference types="node" />
 import { EventEmitter } from "events";
 import { AccessoriesResponse, CharacteristicsReadRequest, CharacteristicsReadResponse, CharacteristicsWriteRequest, CharacteristicsWriteResponse, ResourceRequest } from "../internal-types";
-import { CharacteristicValue, Nullable, VoidCallback } from '../types';
+import { CharacteristicValue, Nullable, VoidCallback } from "../types";
 import { AccessoryInfo, PairingInformation, PermissionTypes } from "./model/AccessoryInfo";
-import { HAPConnection, HAPUsername } from './util/eventedhttp';
+import { HAPConnection, HAPUsername } from "./util/eventedhttp";
 /**
  * TLV error codes for the {@link TLVValues.ERROR_CODE} field.
  */

@@ -4,7 +4,7 @@ import { MDNSServerOptions, ServiceTxt } from "@homebridge/ciao";
 import { InterfaceName, IPAddress } from "@homebridge/ciao/lib/NetworkManager";
 import { MulticastOptions } from "bonjour-hap";
 import { EventEmitter } from "events";
-import { AccessoryInfo } from './model/AccessoryInfo';
+import { AccessoryInfo } from "./model/AccessoryInfo";
 /**
  * This enum lists all bitmasks for all known status flags.
  * When the bit for the given bitmask is set, it represents the state described by the name.
@@ -34,9 +34,9 @@ export interface ServiceNetworkOptions {
      * If defined it restricts the service to be advertised on the specified
      * ip addresses or interface names.
      *
-     * If a interface name is specified, ANY address on that given interface will be advertised
-     * (if a IP address of the given interface is also given in the array, it will be overridden).
-     * If a IP address is specified, the service will only be advertised for the given addresses.
+     * If an interface name is specified, ANY address on that given interface will be advertised
+     * (if an IP address of the given interface is also given in the array, it will be overridden).
+     * If an IP address is specified, the service will only be advertised for the given addresses.
      *
      * Interface names and addresses can be mixed in the array.
      * If an ip address is given, the ip address must be valid at the time of service creation.
@@ -54,7 +54,7 @@ export interface ServiceNetworkOptions {
 }
 export interface Advertiser {
     initPort(port: number): void;
-    startAdvertising(): void;
+    startAdvertising(): Promise<void>;
     updateAdvertisement(silent?: boolean): void;
     destroy(): void;
 }
@@ -96,8 +96,28 @@ export declare class BonjourHAPAdvertiser extends EventEmitter implements Advert
     private destroyed;
     constructor(accessoryInfo: AccessoryInfo, responderOptions?: MulticastOptions, serviceOptions?: ServiceNetworkOptions);
     initPort(port: number): void;
-    startAdvertising(): void;
+    startAdvertising(): Promise<void>;
     updateAdvertisement(silent?: boolean): void;
     destroy(): void;
+}
+/**
+ * Advertiser based on the Avahi D-Bus library.
+ * For (very crappy) docs on the interface, see the XML files at: https://github.com/lathiat/avahi/tree/master/avahi-daemon.
+ */
+export declare class AvahiAdvertiser extends EventEmitter implements Advertiser {
+    private readonly accessoryInfo;
+    private readonly setupHash;
+    private port?;
+    private bus?;
+    private path?;
+    constructor(accessoryInfo: AccessoryInfo);
+    private createTxt;
+    initPort(port: number): void;
+    startAdvertising(): Promise<void>;
+    updateAdvertisement(silent?: boolean): Promise<void>;
+    destroy(): Promise<void>;
+    static isAvailable(): Promise<boolean>;
+    private static messageBusConnectionResult;
+    private static avahiInvoke;
 }
 //# sourceMappingURL=Advertiser.d.ts.map

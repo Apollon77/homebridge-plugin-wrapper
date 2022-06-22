@@ -165,7 +165,11 @@ describe('Homebridge Wrapper tests ...', function() {
             				"off_method": "GET"
             				}
             			]
-            		}
+            		},
+                    {
+                        platform: "ExampleHomebridgePlugin",
+                        name: "ExampleHomebridgePlugin"
+                    }
                 ]
             }
         };
@@ -200,18 +204,19 @@ describe('Homebridge Wrapper tests ...', function() {
 
             setTimeout(function() {
                 done();
-            }, 5000);
+            }, 7000);
         })
     });
 
     it('Tests Homebridge Wrapper: Verify Init', function (done) {
         this.timeout(10000); // because of first install from npm
 
-        expect(Object.keys(allValues).length).to.be.equal(304);
-        expect(Object.keys(allChars).length).to.be.equal(304);
+        expect(Object.keys(allValues).length).to.be.equal(389);
+        expect(Object.keys(allChars).length).to.be.equal(389);
         expect(allValues['Switch name 1/Switch name 1/On']).to.be.false;
         expect(allValues['Sun/0000003E-0000-1000-8000-0026BB765291/Model']).to.be.equal('Sun Position');
         expect(allValues['Sun/Sun/Altitude']).to.exist;
+        expect(allValues['Bedroom/0000003E-0000-1000-8000-0026BB765291/Manufacturer']).to.be.equal('Default-Manufacturer');
 
         expect(fs.existsSync('./config.json')).to.be.true;
 

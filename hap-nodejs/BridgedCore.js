@@ -1,16 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
-var path_1 = tslib_1.__importDefault(require("path"));
-var node_persist_1 = tslib_1.__importDefault(require("node-persist"));
+var path_1 = (0, tslib_1.__importDefault)(require("path"));
+var node_persist_1 = (0, tslib_1.__importDefault)(require("node-persist"));
 var _1 = require("./");
-console.log("HAP-NodeJS starting...");
+console.log("HAP-NodeJS v".concat((0, _1.HAPLibraryVersion)(), " starting..."));
 console.warn("DEPRECATION NOTICE: The use of Core and BridgeCore are deprecated and are scheduled to be remove in October 2020. " +
     "For more information and some guidance on how to migrate, have a look at https://github.com/homebridge/HAP-NodeJS/wiki/Deprecation-of-Core-and-BridgeCore");
 // Initialize our storage system
 node_persist_1.default.initSync();
 // Start by creating our Bridge which will host all loaded Accessories
-var bridge = new _1.Bridge('Node Bridge', _1.uuid.generate("Node Bridge"));
+var bridge = new _1.Bridge("Node Bridge", _1.uuid.generate("Node Bridge"));
 // Listen for bridge identification event
 bridge.on("identify" /* IDENTIFY */, function (paired, callback) {
     console.log("Node Bridge identify");
@@ -28,9 +28,10 @@ bridge.publish({
     username: "CC:22:3D:E3:CE:F6",
     port: 51826,
     pincode: "031-45-154",
-    category: 2 /* BRIDGE */
+    category: 2 /* BRIDGE */,
 });
-var signals = { 'SIGINT': 2, 'SIGTERM': 15 };
+var signals = { "SIGINT": 2, "SIGTERM": 15 };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 Object.keys(signals).forEach(function (signal) {
     process.on(signal, function () {
         bridge.unpublish();

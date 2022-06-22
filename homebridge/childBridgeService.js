@@ -39,6 +39,10 @@ var ChildProcessMessageEventType;
      * Sent from the parent with the port allocation response
      */
     ChildProcessMessageEventType["PORT_ALLOCATED"] = "portAllocated";
+    /**
+     * Sent from the child to update it's current status
+     */
+    ChildProcessMessageEventType["STATUS_UPDATE"] = "status";
 })(ChildProcessMessageEventType = exports.ChildProcessMessageEventType || (exports.ChildProcessMessageEventType = {}));
 var ChildBridgeStatus;
 (function (ChildBridgeStatus) {
@@ -73,6 +77,9 @@ class ChildBridgeService {
         this.args = [];
         this.shuttingDown = false;
         this.lastBridgeStatus = "pending" /* PENDING */;
+        this.pairedStatus = null;
+        this.manuallyStopped = false;
+        this.setupUri = null;
         this.pluginConfig = [];
         this.log = logger_1.Logger.withPrefix(this.plugin.getPluginIdentifier());
         this.api.on("shutdown", () => {
@@ -112,7 +119,7 @@ class ChildBridgeService {
     }
     set bridgeStatus(value) {
         this.lastBridgeStatus = value;
-        this.ipcService.sendMessage("childBridgeStatusUpdate" /* CHILD_BRIDGE_STATUS_UPDATE */, this.getMetadata());
+        this.sendStatusUpdate();
     }
     /**
      * Start the child bridge process
@@ -135,7 +142,7 @@ class ChildBridgeService {
             this.bridgeStatus = "down" /* DOWN */;
             this.log.error("Child process error", e);
         });
-        this.child.on("close", (code, signal) => {
+        this.child.once("close", (code, signal) => {
             this.bridgeStatus = "down" /* DOWN */;
             this.handleProcessClose(code, signal);
         });
@@ -168,6 +175,12 @@ class ChildBridgeService {
                 }
                 case "portRequest" /* PORT_REQUEST */: {
                     this.handlePortRequest(message.data);
+                    break;
+                }
+                case "status" /* STATUS_UPDATE */: {
+                    this.pairedStatus = message.data.paired;
+                    this.setupUri = message.data.setupUri;
+                    this.sendStatusUpdate();
                     break;
                 }
             }
@@ -261,7 +274,7 @@ class ChildBridgeService {
                 ports: this.homebridgeConfig.ports,
                 disabledPlugins: [],
                 accessories: [],
-                platforms: [],
+                platforms: [], // not used by child bridges
             },
         });
     }
@@ -291,12 +304,54 @@ class ChildBridgeService {
         }
     }
     /**
+     * Trigger sending child bridge metdata to the process parent via IPC
+     */
+    sendStatusUpdate() {
+        this.ipcService.sendMessage("childBridgeStatusUpdate" /* CHILD_BRIDGE_STATUS_UPDATE */, this.getMetadata());
+    }
+    /**
      * Restarts the child bridge process
      */
-    restartBridge() {
-        this.log.warn("Restarting child bridge...");
-        this.refreshConfig();
-        this.teardown();
+    restartChildBridge() {
+        if (this.manuallyStopped) {
+            this.startChildBridge();
+        }
+        else {
+            this.log.warn("Restarting child bridge...");
+            this.refreshConfig();
+            this.teardown();
+        }
+    }
+    /**
+     * Stops the child bridge, not starting it again
+     */
+    stopChildBridge() {
+        var _a;
+        if (!this.shuttingDown) {
+            this.log.warn("Stopping child bridge (will not restart)...");
+            this.shuttingDown = true;
+            this.manuallyStopped = true;
+            (_a = this.child) === null || _a === void 0 ? void 0 : _a.removeAllListeners("close");
+            this.teardown();
+        }
+        else {
+            this.log.warn("Bridge already shutting down or stopped.");
+        }
+    }
+    /**
+     * Starts the child bridge, only if it was manually stopped and is no longer running
+     */
+    startChildBridge() {
+        if (this.manuallyStopped && this.bridgeStatus === "down" /* DOWN */ && (!this.child || !this.child.connected)) {
+            this.log.warn("Starting child bridge...");
+            this.refreshConfig();
+            this.startChildProcess();
+            this.shuttingDown = false;
+            this.manuallyStopped = false;
+        }
+        else {
+            this.log.warn("Cannot start child bridge, it is still running or was not manually stopped");
+        }
     }
     /**
      * Read the config.json file from disk and refresh the plugin config block for just this plugin
@@ -337,11 +392,15 @@ class ChildBridgeService {
         var _a;
         return {
             status: this.bridgeStatus,
+            paired: this.pairedStatus,
+            setupUri: this.setupUri,
             username: this.bridgeConfig.username,
+            pin: this.bridgeConfig.pin || this.homebridgeConfig.bridge.pin,
             name: this.bridgeConfig.name || this.displayName || this.plugin.getPluginIdentifier(),
             plugin: this.plugin.getPluginIdentifier(),
             identifier: this.identifier,
             pid: (_a = this.child) === null || _a === void 0 ? void 0 : _a.pid,
+            manuallyStopped: this.manuallyStopped,
         };
     }
 }

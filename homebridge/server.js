@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -70,6 +74,7 @@ class Server {
             activePlugins: this.config.plugins,
             disabledPlugins: this.config.disabledPlugins,
             customPluginPath: options.customPluginPath,
+            strictPluginResolution: options.strictPluginResolution,
         };
         this.pluginManager = new pluginManager_1.PluginManager(this.api, pluginManagerOptions);
         // create new bridge service
@@ -81,8 +86,16 @@ class Server {
         Object.assign(bridgeConfig, this.options);
         this.bridgeService = new bridgeService_1.BridgeService(this.api, this.pluginManager, this.externalPortService, bridgeConfig, this.config.bridge, this.config);
         // watch bridge events to check when server is online
-        this.bridgeService.bridge.on("listening" /* LISTENING */, () => {
+        this.bridgeService.bridge.on("advertised" /* ADVERTISED */, () => {
             this.setServerStatus("ok" /* OK */);
+        });
+        // watch for the paired event to update the server status
+        this.bridgeService.bridge.on("paired" /* PAIRED */, () => {
+            this.setServerStatus(this.serverStatus);
+        });
+        // watch for the unpaired event to update the server status
+        this.bridgeService.bridge.on("unpaired" /* UNPAIRED */, () => {
+            this.setServerStatus(this.serverStatus);
         });
     }
     /**
@@ -90,9 +103,15 @@ class Server {
      * @param status
      */
     setServerStatus(status) {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
         this.serverStatus = status;
         this.ipcService.sendMessage("serverStatusUpdate" /* SERVER_STATUS_UPDATE */, {
             status: this.serverStatus,
+            paired: (_d = (_c = (_b = (_a = this.bridgeService) === null || _a === void 0 ? void 0 : _a.bridge) === null || _b === void 0 ? void 0 : _b._accessoryInfo) === null || _c === void 0 ? void 0 : _c.paired()) !== null && _d !== void 0 ? _d : null,
+            setupUri: (_g = (_f = (_e = this.bridgeService) === null || _e === void 0 ? void 0 : _e.bridge) === null || _f === void 0 ? void 0 : _f.setupURI()) !== null && _g !== void 0 ? _g : null,
+            name: ((_j = (_h = this.bridgeService) === null || _h === void 0 ? void 0 : _h.bridge) === null || _j === void 0 ? void 0 : _j.displayName) || this.config.bridge.name,
+            username: this.config.bridge.username,
+            pin: this.config.bridge.pin,
         });
     }
     async start() {
@@ -103,7 +122,7 @@ class Server {
         // load the cached accessories
         await this.bridgeService.loadCachedPlatformAccessoriesFromDisk();
         // initialize plugins
-        this.pluginManager.initializeInstalledPlugins();
+        await this.pluginManager.initializeInstalledPlugins();
         if (this.config.platforms.length > 0) {
             promises.push(...this.loadPlatforms());
         }
@@ -136,7 +155,6 @@ class Server {
             name: "Homebridge",
             username: "CC:22:3D:E3:CE:30",
             pin: "031-45-154",
-            advertiser: "bonjour-hap" /* BONJOUR */,
         };
         if (!fs_1.default.existsSync(configPath)) {
             log.warn("config.json (%s) not found.", configPath);
@@ -179,18 +197,27 @@ class Server {
         }
         config.accessories = config.accessories || [];
         config.platforms = config.platforms || [];
+        if (!Array.isArray(config.accessories)) {
+            log.error("Value provided for accessories must be an array[]");
+            config.accessories = [];
+        }
+        if (!Array.isArray(config.platforms)) {
+            log.error("Value provided for platforms must be an array[]");
+            config.platforms = [];
+        }
         log.info("Loaded config.json with %s accessories and %s platforms.", config.accessories.length, config.platforms.length);
         if (config.bridge.advertiser) {
             if (![
                 "bonjour-hap" /* BONJOUR */,
                 "ciao" /* CIAO */,
+                "avahi" /* AVAHI */,
             ].includes(config.bridge.advertiser)) {
-                config.bridge.advertiser = "bonjour-hap" /* BONJOUR */;
-                log.error(`Value provided in bridge.advertiser is not valid, reverting to "${"bonjour-hap" /* BONJOUR */}".`);
+                config.bridge.advertiser = undefined;
+                log.error("Value provided in bridge.advertiser is not valid, reverting to platform default.");
             }
         }
         else {
-            config.bridge.advertiser = "bonjour-hap" /* BONJOUR */;
+            config.bridge.advertiser = undefined;
         }
         // Warn existing Homebridge 1.3.0 beta users they need to swap to bridge.advertiser
         if (config.mdns && config.mdns.legacyAdvertiser === false && config.bridge.advertiser === "bonjour-hap" /* BONJOUR */) {
@@ -290,6 +317,10 @@ class Server {
             const displayName = platformConfig.name || platformIdentifier;
             let plugin;
             let constructor;
+            // do not load homebridge-config-ui-x when running in service mode
+            if (platformIdentifier === "config" && process.env.UIX_SERVICE_MODE === "1") {
+                return;
+            }
             try {
                 plugin = this.pluginManager.getPluginForPlatform(platformIdentifier);
             }
@@ -379,7 +410,21 @@ class Server {
         this.ipcService.on("restartChildBridge" /* RESTART_CHILD_BRIDGE */, (username) => {
             if (typeof username === "string") {
                 const childBridge = this.childBridges.get(username.toUpperCase());
-                childBridge === null || childBridge === void 0 ? void 0 : childBridge.restartBridge();
+                childBridge === null || childBridge === void 0 ? void 0 : childBridge.restartChildBridge();
+            }
+        });
+        // handle stop child bridge event
+        this.ipcService.on("stopChildBridge" /* STOP_CHILD_BRIDGE */, (username) => {
+            if (typeof username === "string") {
+                const childBridge = this.childBridges.get(username.toUpperCase());
+                childBridge === null || childBridge === void 0 ? void 0 : childBridge.stopChildBridge();
+            }
+        });
+        // handle start child bridge event
+        this.ipcService.on("startChildBridge" /* START_CHILD_BRIDGE */, (username) => {
+            if (typeof username === "string") {
+                const childBridge = this.childBridges.get(username.toUpperCase());
+                childBridge === null || childBridge === void 0 ? void 0 : childBridge.startChildBridge();
             }
         });
         this.ipcService.on("childBridgeMetadataRequest" /* CHILD_BRIDGE_METADATA_REQUEST */, () => {

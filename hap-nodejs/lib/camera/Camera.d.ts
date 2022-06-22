@@ -1,7 +1,7 @@
 /// <reference types="node" />
-import { Service } from '../Service';
+import { Service } from "../Service";
 import { CameraStreamingDelegate, PrepareStreamCallback, PrepareStreamRequest, PrepareStreamResponse, SnapshotRequest, SnapshotRequestCallback, StreamController, StreamingRequest, StreamRequest, StreamRequestCallback } from "../..";
-import { NodeCallback, SessionIdentifier } from '../../types';
+import { NodeCallback, SessionIdentifier } from "../../types";
 /**
  * @deprecated
  */

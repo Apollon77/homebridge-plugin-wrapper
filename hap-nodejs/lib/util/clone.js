@@ -8,10 +8,11 @@ var tslib_1 = require("tslib");
  */
 function clone(object, extend) {
     var e_1, _a, e_2, _b;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     var cloned = {};
     try {
-        for (var _c = tslib_1.__values(Object.entries(object)), _d = _c.next(); !_d.done; _d = _c.next()) {
-            var _e = tslib_1.__read(_d.value, 2), key = _e[0], value = _e[1];
+        for (var _c = (0, tslib_1.__values)(Object.entries(object)), _d = _c.next(); !_d.done; _d = _c.next()) {
+            var _e = (0, tslib_1.__read)(_d.value, 2), key = _e[0], value = _e[1];
             cloned[key] = value;
         }
     }
@@ -24,8 +25,8 @@ function clone(object, extend) {
     }
     if (extend) {
         try {
-            for (var _f = tslib_1.__values(Object.entries(extend)), _g = _f.next(); !_g.done; _g = _f.next()) {
-                var _h = tslib_1.__read(_g.value, 2), key = _h[0], value = _h[1];
+            for (var _f = (0, tslib_1.__values)(Object.entries(extend)), _g = _f.next(); !_g.done; _g = _f.next()) {
+                var _h = (0, tslib_1.__read)(_g.value, 2), key = _h[0], value = _h[1];
                 cloned[key] = value;
             }
         }

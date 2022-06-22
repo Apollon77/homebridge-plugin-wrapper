@@ -2,18 +2,18 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HAPServer = exports.HAPServerEventTypes = exports.HAPPairingHTTPCode = exports.HAPHTTPCode = exports.Status = exports.Codes = exports.IsKnownHAPStatusError = exports.HAPStatus = exports.TLVErrorCode = void 0;
 var tslib_1 = require("tslib");
-var crypto_1 = tslib_1.__importDefault(require("crypto"));
-var debug_1 = tslib_1.__importDefault(require("debug"));
+var crypto_1 = (0, tslib_1.__importDefault)(require("crypto"));
+var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
 var events_1 = require("events");
 var fast_srp_hap_1 = require("fast-srp-hap");
-var tweetnacl_1 = tslib_1.__importDefault(require("tweetnacl"));
+var tweetnacl_1 = (0, tslib_1.__importDefault)(require("tweetnacl"));
 var url_1 = require("url");
 var internal_types_1 = require("../internal-types");
 var eventedhttp_1 = require("./util/eventedhttp");
-var hapCrypto = tslib_1.__importStar(require("./util/hapCrypto"));
+var hapCrypto = (0, tslib_1.__importStar)(require("./util/hapCrypto"));
 var once_1 = require("./util/once");
-var tlv = tslib_1.__importStar(require("./util/tlv"));
-var debug = debug_1.default('HAP-NodeJS:HAPServer');
+var tlv = (0, tslib_1.__importStar)(require("./util/tlv"));
+var debug = (0, debug_1.default)("HAP-NodeJS:HAPServer");
 var TLVValues;
 (function (TLVValues) {
     // noinspection JSUnusedGlobalSymbols
@@ -215,7 +215,7 @@ var HAPServerEventTypes;
  * See eventedhttp.js for more detail on the implementation of this protocol.
  */
 var HAPServer = /** @class */ (function (_super) {
-    tslib_1.__extends(HAPServer, _super);
+    (0, tslib_1.__extends)(HAPServer, _super);
     function HAPServer(accessoryInfo) {
         var _this = _super.call(this) || this;
         _this.unsuccessfulPairAttempts = 0; // after 100 unsuccessful attempts the server won't accept any further attempts. Will currently be reset on a reboot
@@ -271,13 +271,13 @@ var HAPServer = /** @class */ (function (_super) {
         var _this = this;
         debug("[%s] HAP Request: %s %s", this.accessoryInfo.username, request.method, request.url);
         var buffers = [];
-        request.on('data', function (data) { return buffers.push(data); });
-        request.on('end', function () {
+        request.on("data", function (data) { return buffers.push(data); });
+        request.on("end", function () {
             var url = new url_1.URL(request.url, "http://hap-nodejs.local"); // parse the url (query strings etc)
             var handler = _this.getHandler(url); // TODO check that content-type is supported by the handler?
             if (!handler) {
                 debug("[%s] WARNING: Handler for %s not implemented", _this.accessoryInfo.username, request.url);
-                response.writeHead(404 /* NOT_FOUND */, { 'Content-Type': 'application/hap+json' });
+                response.writeHead(404 /* NOT_FOUND */, { "Content-Type": "application/hap+json" });
                 response.end(JSON.stringify({ status: -70409 /* RESOURCE_DOES_NOT_EXIST */ }));
             }
             else {
@@ -287,7 +287,7 @@ var HAPServer = /** @class */ (function (_super) {
                 }
                 catch (error) {
                     debug("[%s] Error executing route handler: %s", _this.accessoryInfo.username, error.stack);
-                    response.writeHead(500 /* INTERNAL_SERVER_ERROR */, { 'Content-Type': 'application/hap+json' });
+                    response.writeHead(500 /* INTERNAL_SERVER_ERROR */, { "Content-Type": "application/hap+json" });
                     response.end(JSON.stringify({ status: -70403 /* RESOURCE_BUSY */ })); // resource busy try again, does somehow fit?
                 }
             }
@@ -329,7 +329,7 @@ var HAPServer = /** @class */ (function (_super) {
             response.end(JSON.stringify({ status: -70401 /* INSUFFICIENT_PRIVILEGES */ }));
             return;
         }
-        this.emit("identify" /* IDENTIFY */, once_1.once(function (err) {
+        this.emit("identify" /* IDENTIFY */, (0, once_1.once)(function (err) {
             if (!err) {
                 debug("[%s] Identification success", _this.accessoryInfo.username);
                 response.writeHead(204 /* NO_CONTENT */);
@@ -357,13 +357,13 @@ var HAPServer = /** @class */ (function (_super) {
         }
         var tlvData = tlv.decode(data);
         var sequence = tlvData[6 /* SEQUENCE_NUM */][0]; // value is single byte with sequence number
-        if (sequence == 1 /* M1 */) {
+        if (sequence === 1 /* M1 */) {
             this.handlePairSetupM1(connection, request, response);
         }
-        else if (sequence == 3 /* M3 */ && connection._pairSetupState === 2 /* M2 */) {
+        else if (sequence === 3 /* M3 */ && connection._pairSetupState === 2 /* M2 */) {
             this.handlePairSetupM3(connection, request, response, tlvData);
         }
-        else if (sequence == 5 /* M5 */ && connection._pairSetupState === 4 /* M4 */) {
+        else if (sequence === 5 /* M5 */ && connection._pairSetupState === 4 /* M4 */) {
             this.handlePairSetupM5(connection, request, response, tlvData);
         }
         else {
@@ -483,7 +483,7 @@ var HAPServer = /** @class */ (function (_super) {
         var message = tlv.encode(1 /* USERNAME */, usernameData, 3 /* PUBLIC_KEY */, serverLTPK, 10 /* PROOF */, serverProof);
         var encrypted = hapCrypto.chacha20_poly1305_encryptAndSeal(hkdfEncKey, Buffer.from("PS-Msg06"), null, message);
         // finally, notify listeners that we have been paired with a client
-        this.emit("pair" /* PAIR */, clientUsername.toString(), clientLTPK, once_1.once(function (err) {
+        this.emit("pair" /* PAIR */, clientUsername.toString(), clientLTPK, (0, once_1.once)(function (err) {
             if (err) {
                 debug("[%s] Error adding pairing info: %s", _this.accessoryInfo.username, err.message);
                 response.writeHead(200 /* OK */, { "Content-Type": "application/pairing+tlv8" });
@@ -500,10 +500,12 @@ var HAPServer = /** @class */ (function (_super) {
     HAPServer.prototype.handlePairVerify = function (connection, url, request, data, response) {
         var tlvData = tlv.decode(data);
         var sequence = tlvData[6 /* SEQUENCE_NUM */][0]; // value is single byte with sequence number
-        if (sequence == 1 /* M1 */)
+        if (sequence === 1 /* M1 */) {
             this.handlePairVerifyM1(connection, request, response, tlvData);
-        else if (sequence == 3 /* M3 */ && connection._pairVerifyState === 2 /* M2 */)
+        }
+        else if (sequence === 3 /* M3 */ && connection._pairVerifyState === 2 /* M2 */) {
             this.handlePairVerifyM2(connection, request, response, tlvData);
+        }
         else {
             // Invalid state/sequence number
             response.writeHead(400 /* BAD_REQUEST */, { "Content-Type": "application/pairing+tlv8" });
@@ -609,7 +611,7 @@ var HAPServer = /** @class */ (function (_super) {
             var identifier = objects[1 /* IDENTIFIER */].toString();
             var publicKey = objects[3 /* PUBLIC_KEY */];
             var permissions = objects[11 /* PERMISSIONS */][0];
-            this.emit("add-pairing" /* ADD_PAIRING */, connection, identifier, publicKey, permissions, once_1.once(function (error) {
+            this.emit("add-pairing" /* ADD_PAIRING */, connection, identifier, publicKey, permissions, (0, once_1.once)(function (error) {
                 if (error > 0) {
                     debug("[%s] Pairings: failed ADD_PAIRING with code %d", _this.accessoryInfo.username, error);
                     response.writeHead(200 /* OK */, { "Content-Type": "application/pairing+tlv8" });
@@ -623,7 +625,7 @@ var HAPServer = /** @class */ (function (_super) {
         }
         else if (method === 4 /* REMOVE_PAIRING */) {
             var identifier = objects[1 /* IDENTIFIER */].toString();
-            this.emit("remove-pairing" /* REMOVE_PAIRING */, connection, identifier, once_1.once(function (error) {
+            this.emit("remove-pairing" /* REMOVE_PAIRING */, connection, identifier, (0, once_1.once)(function (error) {
                 if (error > 0) {
                     debug("[%s] Pairings: failed REMOVE_PAIRING with code %d", _this.accessoryInfo.username, error);
                     response.writeHead(200 /* OK */, { "Content-Type": "application/pairing+tlv8" });
@@ -636,13 +638,14 @@ var HAPServer = /** @class */ (function (_super) {
             }));
         }
         else if (method === 5 /* LIST_PAIRINGS */) {
-            this.emit("list-pairings" /* LIST_PAIRINGS */, connection, once_1.once(function (error, data) {
+            this.emit("list-pairings" /* LIST_PAIRINGS */, connection, (0, once_1.once)(function (error, data) {
                 if (error > 0) {
                     debug("[%s] Pairings: failed LIST_PAIRINGS with code %d", _this.accessoryInfo.username, error);
                     response.writeHead(200 /* OK */, { "Content-Type": "application/pairing+tlv8" });
                     response.end(tlv.encode(6 /* STATE */, 2 /* M2 */, 7 /* ERROR_CODE */, error));
                     return;
                 }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 var tlvList = [];
                 data.forEach(function (value, index) {
                     if (index > 0) {
@@ -650,7 +653,7 @@ var HAPServer = /** @class */ (function (_super) {
                     }
                     tlvList.push(1 /* IDENTIFIER */, value.username, 3 /* PUBLIC_KEY */, value.publicKey, 11 /* PERMISSIONS */, value.permission);
                 });
-                var list = tlv.encode.apply(tlv, tslib_1.__spread([6 /* STATE */, 2 /* M2 */], tlvList));
+                var list = tlv.encode.apply(tlv, (0, tslib_1.__spreadArray)([6 /* STATE */, 2 /* M2 */], (0, tslib_1.__read)(tlvList), false));
                 response.writeHead(200 /* OK */, { "Content-Type": "application/pairing+tlv8" });
                 response.end(list);
                 debug("[%s] Pairings: successfully executed LIST_PAIRINGS", _this.accessoryInfo.username);
@@ -664,7 +667,7 @@ var HAPServer = /** @class */ (function (_super) {
             return;
         }
         // call out to listeners to retrieve the latest accessories JSON
-        this.emit("accessories" /* ACCESSORIES */, connection, once_1.once(function (error, result) {
+        this.emit("accessories" /* ACCESSORIES */, connection, (0, once_1.once)(function (error, result) {
             if (error) {
                 response.writeHead(error.httpCode, { "Content-Type": "application/hap+json" });
                 response.end(JSON.stringify({ status: error.status }));
@@ -692,12 +695,12 @@ var HAPServer = /** @class */ (function (_super) {
             }
             var ids = [];
             try {
-                for (var _b = tslib_1.__values(idParam.split(",")), _c = _b.next(); !_c.done; _c = _b.next()) { // ["1.9","2.14"]
+                for (var _b = (0, tslib_1.__values)(idParam.split(",")), _c = _b.next(); !_c.done; _c = _b.next()) { // ["1.9","2.14"]
                     var entry = _c.value;
                     var split = entry.split("."); // ["1","9"]
                     ids.push({
                         aid: parseInt(split[0], 10),
-                        iid: parseInt(split[1], 10),
+                        iid: parseInt(split[1], 10), // (characteristic) instance Id
                     });
                 }
             }
@@ -710,22 +713,23 @@ var HAPServer = /** @class */ (function (_super) {
             }
             var readRequest = {
                 ids: ids,
-                includeMeta: internal_types_1.consideredTrue(searchParams.get("meta")),
-                includePerms: internal_types_1.consideredTrue(searchParams.get("perms")),
-                includeType: internal_types_1.consideredTrue(searchParams.get("type")),
-                includeEvent: internal_types_1.consideredTrue(searchParams.get("ev")),
+                includeMeta: (0, internal_types_1.consideredTrue)(searchParams.get("meta")),
+                includePerms: (0, internal_types_1.consideredTrue)(searchParams.get("perms")),
+                includeType: (0, internal_types_1.consideredTrue)(searchParams.get("type")),
+                includeEvent: (0, internal_types_1.consideredTrue)(searchParams.get("ev")),
             };
-            this.emit("get-characteristics" /* GET_CHARACTERISTICS */, connection, readRequest, once_1.once(function (error, readResponse) {
+            this.emit("get-characteristics" /* GET_CHARACTERISTICS */, connection, readRequest, (0, once_1.once)(function (error, readResponse) {
                 var e_2, _a, e_3, _b;
                 if (error) {
                     response.writeHead(error.httpCode, { "Content-Type": "application/hap+json" });
                     response.end(JSON.stringify({ status: error.status }));
                     return;
                 }
+                // typescript can't type that this exists if error doesnt
                 var characteristics = readResponse.characteristics;
                 var errorOccurred = false; // determine if we send a 207 Multi-Status
                 try {
-                    for (var characteristics_1 = tslib_1.__values(characteristics), characteristics_1_1 = characteristics_1.next(); !characteristics_1_1.done; characteristics_1_1 = characteristics_1.next()) {
+                    for (var characteristics_1 = (0, tslib_1.__values)(characteristics), characteristics_1_1 = characteristics_1.next(); !characteristics_1_1.done; characteristics_1_1 = characteristics_1.next()) {
                         var data_1 = characteristics_1_1.value;
                         if (data_1.status) {
                             errorOccurred = true;
@@ -742,7 +746,7 @@ var HAPServer = /** @class */ (function (_super) {
                 }
                 if (errorOccurred) { // on a 207 Multi-Status EVERY characteristic MUST include a status property
                     try {
-                        for (var characteristics_2 = tslib_1.__values(characteristics), characteristics_2_1 = characteristics_2.next(); !characteristics_2_1.done; characteristics_2_1 = characteristics_2.next()) {
+                        for (var characteristics_2 = (0, tslib_1.__values)(characteristics), characteristics_2_1 = characteristics_2.next(); !characteristics_2_1.done; characteristics_2_1 = characteristics_2.next()) {
                             var data_2 = characteristics_2_1.value;
                             if (!data_2.status) { // a status is undefined if the request was successful
                                 data_2.status = 0 /* SUCCESS */; // a value of zero indicates success
@@ -764,7 +768,7 @@ var HAPServer = /** @class */ (function (_super) {
         }
         else if (request.method === "PUT") {
             if (!connection.isAuthenticated()) {
-                if (!request.headers || (request.headers && request.headers["authorization"] !== this.accessoryInfo.pincode)) {
+                if (!request.headers || (request.headers && request.headers.authorization !== this.accessoryInfo.pincode)) {
                     response.writeHead(470 /* CONNECTION_AUTHORIZATION_REQUIRED */, { "Content-Type": "application/hap+json" });
                     response.end(JSON.stringify({ status: -70401 /* INSUFFICIENT_PRIVILEGES */ }));
                     return;
@@ -776,17 +780,18 @@ var HAPServer = /** @class */ (function (_super) {
                 return;
             }
             var writeRequest = JSON.parse(data.toString("utf8"));
-            this.emit("set-characteristics" /* SET_CHARACTERISTICS */, connection, writeRequest, once_1.once(function (error, writeResponse) {
+            this.emit("set-characteristics" /* SET_CHARACTERISTICS */, connection, writeRequest, (0, once_1.once)(function (error, writeResponse) {
                 var e_4, _a, e_5, _b;
                 if (error) {
                     response.writeHead(error.httpCode, { "Content-Type": "application/hap+json" });
                     response.end(JSON.stringify({ status: error.status }));
                     return;
                 }
+                // typescript can't type that this exists if error doesnt
                 var characteristics = writeResponse.characteristics;
                 var multiStatus = false;
                 try {
-                    for (var characteristics_3 = tslib_1.__values(characteristics), characteristics_3_1 = characteristics_3.next(); !characteristics_3_1.done; characteristics_3_1 = characteristics_3.next()) {
+                    for (var characteristics_3 = (0, tslib_1.__values)(characteristics), characteristics_3_1 = characteristics_3.next(); !characteristics_3_1.done; characteristics_3_1 = characteristics_3.next()) {
                         var data_3 = characteristics_3_1.value;
                         if (data_3.status || data_3.value !== undefined) {
                             // also send multiStatus on write response requests
@@ -804,7 +809,7 @@ var HAPServer = /** @class */ (function (_super) {
                 }
                 if (multiStatus) {
                     try {
-                        for (var characteristics_4 = tslib_1.__values(characteristics), characteristics_4_1 = characteristics_4.next(); !characteristics_4_1.done; characteristics_4_1 = characteristics_4.next()) { // on a 207 Multi-Status EVERY characteristic MUST include a status property
+                        for (var characteristics_4 = (0, tslib_1.__values)(characteristics), characteristics_4_1 = characteristics_4.next(); !characteristics_4_1.done; characteristics_4_1 = characteristics_4.next()) { // on a 207 Multi-Status EVERY characteristic MUST include a status property
                             var data_4 = characteristics_4_1.value;
                             if (data_4.status === undefined) {
                                 data_4.status = 0 /* SUCCESS */;
@@ -841,8 +846,8 @@ var HAPServer = /** @class */ (function (_super) {
             response.end(JSON.stringify({ status: -70401 /* INSUFFICIENT_PRIVILEGES */ }));
             return;
         }
-        if (request.method == "PUT") {
-            if (data.length == 0) {
+        if (request.method === "PUT") {
+            if (data.length === 0) {
                 response.writeHead(400 /* BAD_REQUEST */, { "Content-Type": "application/hap+json" });
                 response.end(JSON.stringify({ status: -70410 /* INVALID_VALUE_IN_REQUEST */ }));
                 return;
@@ -850,8 +855,9 @@ var HAPServer = /** @class */ (function (_super) {
             var prepareRequest_1 = JSON.parse(data.toString());
             if (prepareRequest_1.pid && prepareRequest_1.ttl) {
                 debug("[%s] Received prepare write request with pid %d and ttl %d", this.accessoryInfo.username, prepareRequest_1.pid, prepareRequest_1.ttl);
-                if (connection.timedWriteTimeout) // clear any currently existing timeouts
+                if (connection.timedWriteTimeout) { // clear any currently existing timeouts
                     clearTimeout(connection.timedWriteTimeout);
+                }
                 connection.timedWritePid = prepareRequest_1.pid;
                 connection.timedWriteTimeout = setTimeout(function () {
                     debug("[%s] Timed write request timed out for pid %d", _this.accessoryInfo.username, prepareRequest_1.pid);
@@ -888,7 +894,7 @@ var HAPServer = /** @class */ (function (_super) {
             }
             var resourceRequest = JSON.parse(data.toString());
             // call out to listeners to retrieve the resource, snapshot only right now
-            this.emit("request-resource" /* REQUEST_RESOURCE */, resourceRequest, once_1.once(function (error, resource) {
+            this.emit("request-resource" /* REQUEST_RESOURCE */, resourceRequest, (0, once_1.once)(function (error, resource) {
                 if (error) {
                     response.writeHead(error.httpCode, { "Content-Type": "application/hap+json" });
                     response.end(JSON.stringify({ status: error.status }));

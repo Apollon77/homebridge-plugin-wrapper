@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.writeUInt64LE = exports.chacha20_poly1305_encryptAndSeal = exports.chacha20_poly1305_decryptAndVerify = exports.layerDecrypt = exports.layerEncrypt = exports.HKDF = exports.generateCurve25519SharedSecKey = exports.generateCurve25519KeyPair = void 0;
+exports.layerDecrypt = exports.layerEncrypt = exports.chacha20_poly1305_encryptAndSeal = exports.chacha20_poly1305_decryptAndVerify = exports.writeUInt64LE = exports.HKDF = exports.generateCurve25519SharedSecKey = exports.generateCurve25519KeyPair = void 0;
 var tslib_1 = require("tslib");
-var assert_1 = tslib_1.__importDefault(require("assert"));
-var crypto_1 = tslib_1.__importDefault(require("crypto"));
-var futoin_hkdf_1 = tslib_1.__importDefault(require("futoin-hkdf"));
-var tweetnacl_1 = tslib_1.__importDefault(require("tweetnacl"));
+var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
+var crypto_1 = (0, tslib_1.__importDefault)(require("crypto"));
+var futoin_hkdf_1 = (0, tslib_1.__importDefault)(require("futoin-hkdf"));
+var tweetnacl_1 = (0, tslib_1.__importDefault)(require("tweetnacl"));
 if (!crypto_1.default.getCiphers().includes("chacha20-poly1305")) {
     assert_1.default.fail("The cipher 'chacha20-poly1305' is not supported with your current running nodejs version v" + process.version + ". " +
         "At least a nodejs version of v10.17.0 (excluding v11.0 and v11.1) is required!");
@@ -19,9 +19,69 @@ function generateCurve25519SharedSecKey(priKey, pubKey) {
 }
 exports.generateCurve25519SharedSecKey = generateCurve25519SharedSecKey;
 function HKDF(hashAlg, salt, ikm, info, size) {
-    return futoin_hkdf_1.default(ikm, size, { hash: hashAlg, salt: salt, info: info });
+    return (0, futoin_hkdf_1.default)(ikm, size, { hash: hashAlg, salt: salt, info: info });
 }
 exports.HKDF = HKDF;
+var MAX_UINT32 = 0x00000000FFFFFFFF;
+var MAX_INT53 = 0x001FFFFFFFFFFFFF;
+function uintHighLow(number) {
+    (0, assert_1.default)(number > -1 && number <= MAX_INT53, "number out of range");
+    (0, assert_1.default)(Math.floor(number) === number, "number must be an integer");
+    var high = 0;
+    var signbit = number & 0xFFFFFFFF;
+    var low = signbit < 0 ? (number & 0x7FFFFFFF) + 0x80000000 : signbit;
+    if (number > MAX_UINT32) {
+        high = (number - low) / (MAX_UINT32 + 1);
+    }
+    return [high, low];
+}
+function writeUInt64LE(number, buffer, offset) {
+    if (offset === void 0) { offset = 0; }
+    var hl = uintHighLow(number);
+    buffer.writeUInt32LE(hl[1], offset);
+    buffer.writeUInt32LE(hl[0], offset + 4);
+}
+exports.writeUInt64LE = writeUInt64LE;
+//Security Layer Enc/Dec
+function chacha20_poly1305_decryptAndVerify(key, nonce, aad, ciphertext, authTag) {
+    if (nonce.length < 12) { // openssl 3.x.x requires 98 bits nonce length
+        nonce = Buffer.concat([
+            Buffer.alloc(12 - nonce.length, 0),
+            nonce,
+        ]);
+    }
+    // @ts-expect-error: types for this are really broken
+    var decipher = crypto_1.default.createDecipheriv("chacha20-poly1305", key, nonce, { authTagLength: 16 });
+    if (aad) {
+        decipher.setAAD(aad);
+    }
+    decipher.setAuthTag(authTag);
+    var plaintext = decipher.update(ciphertext);
+    decipher.final(); // final call verifies integrity using the auth tag. Throws error if something was manipulated!
+    return plaintext;
+}
+exports.chacha20_poly1305_decryptAndVerify = chacha20_poly1305_decryptAndVerify;
+function chacha20_poly1305_encryptAndSeal(key, nonce, aad, plaintext) {
+    if (nonce.length < 12) { // openssl 3.x.x requires 98 bits nonce length
+        nonce = Buffer.concat([
+            Buffer.alloc(12 - nonce.length, 0),
+            nonce,
+        ]);
+    }
+    // @ts-expect-error: types for this are really broken
+    var cipher = crypto_1.default.createCipheriv("chacha20-poly1305", key, nonce, { authTagLength: 16 });
+    if (aad) {
+        cipher.setAAD(aad);
+    }
+    var ciphertext = cipher.update(plaintext);
+    cipher.final(); // final call creates the auth tag
+    var authTag = cipher.getAuthTag();
+    return {
+        ciphertext: ciphertext,
+        authTag: authTag,
+    };
+}
+exports.chacha20_poly1305_encryptAndSeal = chacha20_poly1305_encryptAndSeal;
 function layerEncrypt(data, encryption) {
     var result = Buffer.alloc(0);
     var total = data.length;
@@ -61,80 +121,4 @@ function layerDecrypt(packet, encryption) {
     return result;
 }
 exports.layerDecrypt = layerDecrypt;
-function chacha20_poly1305_decryptAndVerify(key, nonce, aad, ciphertext, authTag) {
-    // @ts-ignore types for this a really broken
-    var decipher = crypto_1.default.createDecipheriv("chacha20-poly1305", key, nonce, { authTagLength: 16 });
-    if (aad) {
-        decipher.setAAD(aad);
-    }
-    decipher.setAuthTag(authTag);
-    var plaintext = decipher.update(ciphertext);
-    decipher.final(); // final call verifies integrity using the auth tag. Throws error if something was manipulated!
-    return plaintext;
-}
-exports.chacha20_poly1305_decryptAndVerify = chacha20_poly1305_decryptAndVerify;
-function chacha20_poly1305_encryptAndSeal(key, nonce, aad, plaintext) {
-    // @ts-ignore types for this a really broken
-    var cipher = crypto_1.default.createCipheriv("chacha20-poly1305", key, nonce, { authTagLength: 16 });
-    if (aad) {
-        cipher.setAAD(aad);
-    }
-    var ciphertext = cipher.update(plaintext);
-    cipher.final(); // final call creates the auth tag
-    var authTag = cipher.getAuthTag();
-    return {
-        ciphertext: ciphertext,
-        authTag: authTag,
-    };
-}
-exports.chacha20_poly1305_encryptAndSeal = chacha20_poly1305_encryptAndSeal;
-var MAX_UINT32 = 0x00000000FFFFFFFF;
-var MAX_INT53 = 0x001FFFFFFFFFFFFF;
-function onesComplement(number) {
-    number = ~number;
-    if (number < 0) {
-        number = (number & 0x7FFFFFFF) + 0x80000000;
-    }
-    return number;
-}
-function uintHighLow(number) {
-    assert_1.default(number > -1 && number <= MAX_INT53, "number out of range");
-    assert_1.default(Math.floor(number) === number, "number must be an integer");
-    var high = 0;
-    var signbit = number & 0xFFFFFFFF;
-    var low = signbit < 0 ? (number & 0x7FFFFFFF) + 0x80000000 : signbit;
-    if (number > MAX_UINT32) {
-        high = (number - low) / (MAX_UINT32 + 1);
-    }
-    return [high, low];
-}
-function intHighLow(number) {
-    if (number > -1) {
-        return uintHighLow(number);
-    }
-    var hl = uintHighLow(-number);
-    var high = onesComplement(hl[0]);
-    var low = onesComplement(hl[1]);
-    if (low === MAX_UINT32) {
-        high += 1;
-        low = 0;
-    }
-    else {
-        low += 1;
-    }
-    return [high, low];
-}
-function writeUInt64BE(number, buffer, offset) {
-    if (offset === void 0) { offset = 0; }
-    var hl = uintHighLow(number);
-    buffer.writeUInt32BE(hl[0], offset);
-    buffer.writeUInt32BE(hl[1], offset + 4);
-}
-function writeUInt64LE(number, buffer, offset) {
-    if (offset === void 0) { offset = 0; }
-    var hl = uintHighLow(number);
-    buffer.writeUInt32LE(hl[1], offset);
-    buffer.writeUInt32LE(hl[0], offset + 4);
-}
-exports.writeUInt64LE = writeUInt64LE;
 //# sourceMappingURL=hapCrypto.js.map

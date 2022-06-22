@@ -7,6 +7,7 @@ export declare class Plugin {
     private readonly pluginName;
     private readonly scope?;
     private readonly pluginPath;
+    private readonly isESM;
     disabled: boolean;
     readonly version: string;
     private readonly main;
@@ -24,7 +25,7 @@ export declare class Plugin {
     getPlatformConstructor(platformIdentifier: PlatformIdentifier | PlatformName): PlatformPluginConstructor;
     assignDynamicPlatform(platformIdentifier: PlatformIdentifier | PlatformName, platformPlugin: DynamicPlatformPlugin): void;
     getActiveDynamicPlatform(platformName: PlatformName): DynamicPlatformPlugin | undefined;
-    load(): void;
-    initialize(api: API): void;
+    load(): Promise<void>;
+    initialize(api: API): void | Promise<void>;
 }
 //# sourceMappingURL=plugin.d.ts.map

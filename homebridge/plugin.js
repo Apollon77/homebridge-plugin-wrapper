@@ -6,11 +6,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Plugin = void 0;
 const path_1 = __importDefault(require("path"));
 const assert_1 = __importDefault(require("assert"));
+const url_1 = require("url");
 const semver_1 = require("semver");
 const version_1 = __importDefault(require("./version"));
 const logger_1 = require("./logger");
 const pluginManager_1 = require("./pluginManager");
 const log = logger_1.Logger.internal;
+// Workaround for https://github.com/microsoft/TypeScript/issues/43329
+const _importDynamic = new Function("modulePath", "return import(modulePath)");
 /**
  * Represents a loaded Homebridge plugin.
  */
@@ -24,7 +27,37 @@ class Plugin {
         this.scope = scope;
         this.pluginPath = path;
         this.version = packageJSON.version || "0.0.0";
-        this.main = packageJSON.main || "./index.js"; // figure out the main module - index.js unless otherwise specified
+        this.main = "";
+        // figure out the main module
+        // exports is available - https://nodejs.org/dist/latest-v14.x/docs/api/packages.html#packages_package_entry_points
+        if (packageJSON.exports) {
+            // main entrypoint - https://nodejs.org/dist/latest-v14.x/docs/api/packages.html#packages_main_entry_point_export
+            if (typeof packageJSON.exports === "string") {
+                this.main = packageJSON.exports;
+            }
+            else { // subpath export - https://nodejs.org/dist/latest-v14.x/docs/api/packages.html#packages_subpath_exports
+                // conditional exports - https://nodejs.org/dist/latest-v14.x/docs/api/packages.html#packages_conditional_exports
+                const exports = packageJSON.exports.import || packageJSON.exports.require || packageJSON.exports.node || packageJSON.exports.default || packageJSON.exports["."];
+                // check if conditional export is nested
+                if (typeof exports !== "string") {
+                    if (exports.import) {
+                        this.main = exports.import;
+                    }
+                    else {
+                        this.main = exports.require || exports.node || exports.default;
+                    }
+                }
+                else {
+                    this.main = exports;
+                }
+            }
+        }
+        // exports search was not successful, fallback to package.main, using index.js as fallback
+        if (!this.main) {
+            this.main = packageJSON.main || "./index.js";
+        }
+        // check if it is a ESM module
+        this.isESM = this.main.endsWith(".mjs") || (this.main.endsWith(".js") && packageJSON.type === "module");
         // very temporary fix for first wave of plugins
         if (packageJSON.peerDependencies && (!packageJSON.engines || !packageJSON.engines.homebridge)) {
             packageJSON.engines = packageJSON.engines || {};
@@ -95,9 +128,9 @@ class Plugin {
         // we always use the last registered
         return platforms && platforms[0];
     }
-    load() {
+    async load() {
         const context = this.loadContext;
-        assert_1.default(context, "Reached illegal state. Plugin state is undefined!");
+        (0, assert_1.default)(context, "Reached illegal state. Plugin state is undefined!");
         this.loadContext = undefined; // free up memory
         // pluck out the HomeBridge version requirement
         if (!context.engines || !context.engines.homebridge) {
@@ -106,16 +139,16 @@ class Plugin {
         const versionRequired = context.engines.homebridge;
         const nodeVersionRequired = context.engines.node;
         // make sure the version is satisfied by the currently running version of HomeBridge
-        if (!semver_1.satisfies(version_1.default(), versionRequired, { includePrerelease: true })) {
+        if (!(0, semver_1.satisfies)((0, version_1.default)(), versionRequired, { includePrerelease: true })) {
             // TODO - change this back to an error
             log.error(`The plugin "${this.pluginName}" requires a Homebridge version of ${versionRequired} which does \
-not satisfy the current Homebridge version of ${version_1.default()}. You may need to update this plugin (or Homebridge) to a newer version. \
+not satisfy the current Homebridge version of ${(0, version_1.default)()}. You may need to update this plugin (or Homebridge) to a newer version. \
 You may face unexpected issues or stability problems running this plugin.`);
         }
         // make sure the version is satisfied by the currently running version of Node
-        if (nodeVersionRequired && !semver_1.satisfies(process.version, nodeVersionRequired)) {
+        if (nodeVersionRequired && !(0, semver_1.satisfies)(process.version, nodeVersionRequired)) {
             log.warn(`The plugin "${this.pluginName}" requires Node.js version of ${nodeVersionRequired} which does \
-not satisfy the current Node.js version of ${process.version}. You may need to upgrade your installation of Node.js - see https://git.io/JTKEF`);
+not satisfy the current Node.js version of ${process.version}. You may need to upgrade your installation of Node.js - see https://homebridge.io/w/JTKEF`);
         }
         const dependencies = context.dependencies || {};
         if (dependencies.homebridge || dependencies["hap-nodejs"]) {
@@ -126,7 +159,9 @@ major incompatibility issues and thus is considered bad practice. Please inform 
         const mainPath = path_1.default.join(this.pluginPath, this.main);
         // try to require() it and grab the exported initialization hook
         // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const pluginModules = require(mainPath);
+        // pathToFileURL(specifier).href to turn a path into a "file url"
+        // see https://github.com/nodejs/node/issues/31710
+        const pluginModules = this.isESM ? await _importDynamic((0, url_1.pathToFileURL)(mainPath).href) : require(mainPath);
         if (typeof pluginModules === "function") {
             this.pluginInitializer = pluginModules;
         }
@@ -141,7 +176,7 @@ major incompatibility issues and thus is considered bad practice. Please inform 
         if (!this.pluginInitializer) {
             throw new Error("Tried to initialize a plugin which hasn't been loaded yet!");
         }
-        this.pluginInitializer(api);
+        return this.pluginInitializer(api);
     }
 }
 exports.Plugin = Plugin;

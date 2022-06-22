@@ -78,6 +78,7 @@ function HomebridgeWrapper(config) {
         }
     });
     mock('@homebridge/ciao', function() {});
+    mock('@homebridge/dbus-native', function() {});
     mock(path.join(__dirname, '/homebridge/version.js'), path.join(__dirname, '/homebridge-version.js'));
 
 
@@ -134,14 +135,7 @@ function HomebridgeWrapper(config) {
             this._origPublish.call(this, info, allowInsecureRequest);
         };
 
-        this.addBridgedAccessory = function(accessory, deferUpdate) {
-            // Вызов метода родительского класса
-            // Calling the method of the parent class
-            accessory = this._origAddBridgedAccessory.call(this, accessory, deferUpdate);
-            that.logger.debug('Homebridge Wrapper Bridge addBridgedAccessory ' + customStringify(accessory)); //OK
-
-            that.emit('addAccessory', accessory);
-
+        this.__wrapperAccessoryLogic = function(accessory, external) {
             function handleCharacteristicPolling(accessory, service, characteristic) {
                 var pollingInterval;
                 if (that.characteristicPollingList && (characteristic.displayName in that.characteristicPollingList)) {
@@ -182,6 +176,12 @@ function HomebridgeWrapper(config) {
                 handleCharacteristicPolling(accessory, service, characteristic);
             }
 
+            if (external) {
+                that.emit('addExternalAccessory', accessory);
+            } else {
+                that.emit('addAccessory', accessory);
+            }
+
             for (var index in accessory.services) {
                 var service = accessory.services[index];
                 for (var chindex in service.characteristics) {
@@ -191,7 +191,15 @@ function HomebridgeWrapper(config) {
                     registerEventsForCharacteristic(accessory, service, service.optionalCharacteristics[chindex]);
                 }
             }
+        }
 
+        this.addBridgedAccessory = function(accessory, deferUpdate) {
+            // Вызов метода родительского класса
+            // Calling the method of the parent class
+            accessory = this._origAddBridgedAccessory.call(this, accessory, deferUpdate);
+            that.logger.debug('Homebridge Wrapper Bridge addBridgedAccessory ' + customStringify(accessory)); //OK
+
+            this.__wrapperAccessoryLogic(accessory);
             return accessory;
         };
     }
@@ -253,6 +261,15 @@ HomebridgeWrapper.prototype.init = function init() {
     };
     this.server = new Server(serverOpts);
     this.server.bridgeService.bridge = new this.WrapperBridge(this.server.config.bridge.name, hap.uuid.generate("HomeBridge"));
+    this.server.bridgeService.bridge.on("characteristic-warning" /* CHARACTERISTIC_WARNING */, () => {
+    });
+    const origHandlePublishExternalAccessories = this.server.bridgeService.handlePublishExternalAccessories;
+    this.server.bridgeService.handlePublishExternalAccessories = async accessories => {
+        for (const accessory of accessories) {
+            this.server.bridgeService.bridge.__wrapperAccessoryLogic(accessory, true);
+        }
+        return origHandlePublishExternalAccessories.call(this.server.bridgeService, accessories);
+    }
 
     this.server.start();
 };

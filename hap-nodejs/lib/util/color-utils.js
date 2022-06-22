@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ColorUtils = void 0;
 var tslib_1 = require("tslib");
-var assert_1 = tslib_1.__importDefault(require("assert"));
+var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
 var lookupTable = new Map([
     [100, [19, 222.1]],
     [101, [18.7, 222.2]],
@@ -427,7 +427,7 @@ var ColorUtils = /** @class */ (function () {
         }
         colorTemperature = Math.round(colorTemperature); // ensure integer
         var hueAndTemperature = lookupTable.get(colorTemperature);
-        assert_1.default(colorTemperature != undefined, "lookup for temperature " + colorTemperature + " did not yield any results");
+        (0, assert_1.default)(colorTemperature != null, "lookup for temperature " + colorTemperature + " did not yield any results");
         if (roundResults) {
             hueAndTemperature[0] = Math.round(hueAndTemperature[0]);
             hueAndTemperature[1] = Math.round(hueAndTemperature[1]);

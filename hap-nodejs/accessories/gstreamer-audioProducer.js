@@ -2,11 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GStreamerAudioProducer = void 0;
 var tslib_1 = require("tslib");
-var assert_1 = tslib_1.__importDefault(require("assert"));
-var debug_1 = tslib_1.__importDefault(require("debug"));
+var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
+var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
 var child_process_1 = require("child_process");
-var __1 = require("..");
-var debug = debug_1.default("HAP-NodeJS:Remote:GStreamer");
+var debug = (0, debug_1.default)("HAP-NodeJS:Remote:GStreamer");
 var AudioType;
 (function (AudioType) {
     AudioType[AudioType["GENERIC"] = 2049] = "GENERIC";
@@ -40,16 +39,16 @@ var GStreamerAudioProducer = /** @class */ (function () {
     function GStreamerAudioProducer(frameHandler, errorHandler, options) {
         var e_1, _a;
         this.options = {
-            alsaSrc: "plughw:1"
+            alsaSrc: "plughw:1",
         };
         this.running = false;
         this.frameHandler = frameHandler;
         this.errorHandler = errorHandler;
         if (options) {
             try {
-                for (var _b = tslib_1.__values(Object.entries(options)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var _d = tslib_1.__read(_c.value, 2), key = _d[0], value = _d[1];
-                    // @ts-ignore
+                for (var _b = (0, tslib_1.__values)(Object.entries(options)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var _d = (0, tslib_1.__read)(_c.value, 2), key = _d[0], value = _d[1];
+                    // @ts-expect-error: type mismatch
                     GStreamerAudioProducer.options[key] = value;
                 }
             }
@@ -68,7 +67,7 @@ var GStreamerAudioProducer = /** @class */ (function () {
             throw new Error("Gstreamer already running");
         }
         var codecParameters = selectedAudioConfiguration.parameters;
-        assert_1.default(selectedAudioConfiguration.codecType === 3 /* OPUS */);
+        (0, assert_1.default)(selectedAudioConfiguration.codecType === 3 /* OPUS */);
         var bitrateType = 1 /* VARIABLE */;
         switch (codecParameters.bitrate) {
             case 1 /* CONSTANT */:
@@ -104,11 +103,11 @@ var GStreamerAudioProducer = /** @class */ (function () {
             "bandwidth=" + bandwidth + " " +
             "frame-size=" + packetTime + " ! " +
             "fdsink fd=1";
-        this.process = child_process_1.spawn("gst-launch-1.0", args.split(" "), { env: process.env });
+        this.process = (0, child_process_1.spawn)("gst-launch-1.0", args.split(" "), { env: process.env });
         this.process.on("error", function (error) {
             if (_this.running) {
                 debug("Failed to spawn gstreamer process: " + error.message);
-                _this.errorHandler(__1.DataSendCloseReason.CANCELLED);
+                _this.errorHandler(3 /* CANCELLED */);
             }
             else {
                 debug("Failed to kill gstreamer process: " + error.message);
@@ -119,18 +118,18 @@ var GStreamerAudioProducer = /** @class */ (function () {
                 return;
             }
             /*
-                This listener seems to get called with only one opus frame most of the time.
-                Though it happens regularly that another or many more frames get appended.
-                This causes some problems as opus frames don't contain their data length in the "header".
-                Opus relies on the container format to specify the length of the frame.
-                Although sometimes multiple opus frames are squashed together the decoder seems to be able
-                to handle that as it just creates a not very noticeable distortion.
-                If we would want to make this perfect we would need to write a nodejs c++ submodule or something
-                to interface directly with gstreamer api.
-             */
+                      This listener seems to get called with only one opus frame most of the time.
+                      Though it happens regularly that another or many more frames get appended.
+                      This causes some problems as opus frames don't contain their data length in the "header".
+                      Opus relies on the container format to specify the length of the frame.
+                      Although sometimes multiple opus frames are squashed together the decoder seems to be able
+                      to handle that as it just creates a not very noticeable distortion.
+                      If we would want to make this perfect we would need to write a nodejs c++ submodule or something
+                      to interface directly with gstreamer api.
+                   */
             _this.frameHandler({
                 data: data,
-                rms: 0.25 // only way currently to extract rms from gstreamer is by interfacing with the api directly (nodejs c++ submodule could be a solution)
+                rms: 0.25, // only way currently to extract rms from gstreamer is by interfacing with the api directly (nodejs c++ submodule could be a solution)
             });
         });
         this.process.stderr.on("data", function (data) {
@@ -139,7 +138,7 @@ var GStreamerAudioProducer = /** @class */ (function () {
         this.process.on("exit", function (code, signal) {
             if (signal !== "SIGTERM") { // if we receive SIGTERM, process exited gracefully (we stopped it)
                 debug("GStreamer process unexpectedly exited with code %d (signal: %s)", code, signal);
-                _this.errorHandler(__1.DataSendCloseReason.UNEXPECTED_FAILURE);
+                _this.errorHandler(5 /* UNEXPECTED_FAILURE */);
             }
         });
     };

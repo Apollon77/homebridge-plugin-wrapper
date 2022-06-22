@@ -12,7 +12,7 @@ var __1 = require("..");
  *
  * AdaptiveLighting setup is pretty much at the end of the file, don't miss it.
  */
-var lightUUID = __1.uuid.generate('hap-nodejs:accessories:light-adaptive-lighting');
+var lightUUID = __1.uuid.generate("hap-nodejs:accessories:light-adaptive-lighting");
 var accessory = exports.accessory = new __1.Accessory("Light Example", lightUUID);
 // this section stores the basic state of the lightbulb
 var on = false;
@@ -21,11 +21,10 @@ var colorTemperature = 140; // 140 is the lowest color temperature in mired as b
 var hue = 0; // we start with white color
 var saturation = 0;
 // Add properties for publishing (in case we're using Core.js and not BridgedCore.js)
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 accessory.username = "AA:BB:CC:DD:EE:FF";
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 accessory.pincode = "031-45-154";
-// @ts-ignore
 accessory.category = 5 /* LIGHTBULB */;
 accessory.getService(__1.Service.AccessoryInformation)
     .setCharacteristic(__1.Characteristic.Manufacturer, "HAP-NodeJS")

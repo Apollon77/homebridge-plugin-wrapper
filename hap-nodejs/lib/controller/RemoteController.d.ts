@@ -1,8 +1,8 @@
 /// <reference types="node" />
 import { EventEmitter } from "events";
 import { Accessory } from "../Accessory";
-import { DataSendCloseReason, DataStreamConnection, DataStreamProtocolHandler, EventHandler, RequestHandler } from "../datastream";
-import type { AudioStreamManagement, DataStreamTransportManagement, Siri, TargetControl, TargetControlManagement } from '../definitions';
+import { HDSProtocolSpecificErrorReason, DataStreamConnection, DataStreamProtocolHandler, EventHandler, RequestHandler } from "../datastream";
+import type { AudioStreamManagement, DataStreamTransportManagement, Siri, TargetControl, TargetControlManagement } from "../definitions";
 import { ControllerIdentifier, ControllerServiceMap, SerializableController, StateChangeDelegate } from "./Controller";
 export declare const enum ButtonType {
     UNDEFINED = 0,
@@ -92,7 +92,7 @@ export declare type AudioFrame = {
     rms: number;
 };
 export declare type FrameHandler = (frame: AudioFrame) => void;
-export declare type ErrorHandler = (error: DataSendCloseReason) => void;
+export declare type ErrorHandler = (error: HDSProtocolSpecificErrorReason) => void;
 export interface SiriAudioStreamProducer {
     startAudioProduction(selectedAudioConfiguration: AudioCodecConfiguration): void;
     stopAudioProduction(): void;
@@ -377,7 +377,7 @@ export declare class SiriAudioSession extends EventEmitter {
     private handleSiriAudioFrame;
     private handleProducerError;
     handleDataSendAckEvent(endOfStream: boolean): void;
-    handleDataSendCloseEvent(reason: DataSendCloseReason): void;
+    handleDataSendCloseEvent(reason: HDSProtocolSpecificErrorReason): void;
     private sendDataSendCloseEvent;
     private handleDataStreamConnectionClosed;
     private closed;

@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var __1 = require("..");
-var speakerUUID = __1.uuid.generate('hap-nodejs:accessories:smart-speaker');
-var speaker = exports.accessory = new __1.Accessory('SmartSpeaker', speakerUUID);
-// @ts-ignore
+var speakerUUID = __1.uuid.generate("hap-nodejs:accessories:smart-speaker");
+var speaker = exports.accessory = new __1.Accessory("SmartSpeaker", speakerUUID);
+// @ts-expect-error: Core/BridgeCore API
 speaker.username = "89:A8:E4:1E:95:EE";
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 speaker.pincode = "676-54-344";
 speaker.category = 26 /* SPEAKER */;
-var service = new __1.Service.SmartSpeaker('Smart Speaker', '');
+var service = new __1.Service.SmartSpeaker("Smart Speaker", "");
 var currentMediaState = __1.Characteristic.CurrentMediaState.PAUSE;
 var targetMediaState = __1.Characteristic.TargetMediaState.PAUSE;
 // ConfigureName is used to listen for Name changes inside the Home App.
@@ -37,7 +37,7 @@ service.getCharacteristic(__1.Characteristic.TargetMediaState)
     .updateValue(targetMediaState);
 service.getCharacteristic(__1.Characteristic.ConfiguredName)
     .on("set" /* SET */, function (value, callback) {
-    console.log("Name was changed to: '" + value + "'");
+    console.log("Name was changed to: '".concat(value, "'"));
     callback();
 });
 speaker.addService(service);

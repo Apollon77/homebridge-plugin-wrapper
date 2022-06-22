@@ -2,14 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SiriAudioSession = exports.SiriAudioSessionEvents = exports.HomeKitRemoteController = exports.RemoteController = exports.RemoteControllerEvents = exports.TargetUpdates = exports.AudioSamplerate = exports.AudioBitrate = exports.AudioCodecTypes = exports.ButtonState = exports.TargetCategory = exports.ButtonType = void 0;
 var tslib_1 = require("tslib");
-var assert_1 = tslib_1.__importDefault(require("assert"));
-var debug_1 = tslib_1.__importDefault(require("debug"));
+var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
+var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
 var events_1 = require("events");
 var Characteristic_1 = require("../Characteristic");
 var datastream_1 = require("../datastream");
 var Service_1 = require("../Service");
-var tlv = tslib_1.__importStar(require("../util/tlv"));
-var debug = debug_1.default('HAP-NodeJS:Remote:Controller');
+var tlv = (0, tslib_1.__importStar)(require("../util/tlv"));
+var debug = (0, debug_1.default)("HAP-NodeJS:Remote:Controller");
 var TargetControlCommands;
 (function (TargetControlCommands) {
     TargetControlCommands[TargetControlCommands["MAXIMUM_TARGETS"] = 1] = "MAXIMUM_TARGETS";
@@ -186,7 +186,7 @@ var RemoteControllerEvents;
  * Handles everything needed to implement a fully working HomeKit remote controller.
  */
 var RemoteController = /** @class */ (function (_super) {
-    tslib_1.__extends(RemoteController, _super);
+    (0, tslib_1.__extends)(RemoteController, _super);
     /**
      * Creates a new RemoteController.
      * If siri voice input is supported the constructor to an SiriAudioStreamProducer needs to be supplied.
@@ -198,6 +198,7 @@ var RemoteController = /** @class */ (function (_super) {
      * @param producerOptions - if supplied this argument will be supplied as third argument of the SiriAudioStreamProducer
      *                          constructor. This should be used to supply configurations to the stream producer.
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/explicit-module-boundary-types
     function RemoteController(audioProducerConstructor, producerOptions) {
         var _this = _super.call(this) || this;
         _this.buttons = {}; // internal mapping of buttonId to buttonType for supported buttons
@@ -220,7 +221,7 @@ var RemoteController = /** @class */ (function (_super) {
                 bitrate: 0 /* VARIABLE */,
                 samplerate: 1 /* KHZ_16 */,
                 rtpTime: 20,
-            }
+            },
         };
         _this.selectedAudioConfigurationString = RemoteController.buildSelectedAudioConfigurationTLV({
             audioCodecConfiguration: _this.selectedAudioConfiguration,
@@ -278,8 +279,8 @@ var RemoteController = /** @class */ (function (_super) {
     RemoteController.prototype.getTargetIdentifierByName = function (name) {
         var e_1, _a;
         try {
-            for (var _b = tslib_1.__values(Object.entries(this.targetConfigurations)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var _d = tslib_1.__read(_c.value, 2), activeIdentifier = _d[0], configuration = _d[1];
+            for (var _b = (0, tslib_1.__values)(Object.entries(this.targetConfigurations)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var _d = (0, tslib_1.__read)(_c.value, 2), activeIdentifier = _d[0], configuration = _d[1];
                 if (configuration.targetName === name) {
                     return parseInt(activeIdentifier, 10);
                 }
@@ -339,12 +340,12 @@ var RemoteController = /** @class */ (function (_super) {
             maximumTargets: 10,
             ticksPerSecond: 1000,
             supportedButtonConfiguration: [],
-            hardwareImplemented: this.audioSupported // siri is only allowed for hardware implemented remotes
+            hardwareImplemented: this.audioSupported, // siri is only allowed for hardware implemented remotes
         };
         var supportedButtons = [
             1 /* MENU */, 2 /* PLAY_PAUSE */, 3 /* TV_HOME */, 4 /* SELECT */,
             5 /* ARROW_UP */, 6 /* ARROW_RIGHT */, 7 /* ARROW_DOWN */, 8 /* ARROW_LEFT */,
-            9 /* VOLUME_UP */, 10 /* VOLUME_DOWN */, 12 /* POWER */, 13 /* GENERIC */
+            9 /* VOLUME_UP */, 10 /* VOLUME_DOWN */, 12 /* POWER */, 13 /* GENERIC */,
         ];
         if (this.audioSupported) { // add siri button if this remote supports it
             supportedButtons.push(11 /* SIRI */);
@@ -352,7 +353,7 @@ var RemoteController = /** @class */ (function (_super) {
         supportedButtons.forEach(function (button) {
             var buttonConfiguration = {
                 buttonID: 100 + button,
-                buttonType: button
+                buttonType: button,
             };
             configuration.supportedButtonConfiguration.push(buttonConfiguration);
             _this.buttons[button] = buttonConfiguration.buttonID; // also saving mapping of type to id locally
@@ -368,13 +369,14 @@ var RemoteController = /** @class */ (function (_super) {
                     channels: 1,
                     bitrate: 0 /* VARIABLE */,
                     samplerate: 1 /* KHZ_16 */,
-                }
+                },
             },
         };
     };
     // --------------------------------- TARGET CONTROL ----------------------------------
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     RemoteController.prototype.handleTargetControlWrite = function (value, callback) {
-        var data = Buffer.from(value, 'base64');
+        var data = Buffer.from(value, "base64");
         var objects = tlv.decode(data);
         var operation = objects[1 /* OPERATION */][0];
         var targetConfiguration = undefined;
@@ -449,7 +451,7 @@ var RemoteController = /** @class */ (function (_super) {
         if (targetConfiguration.buttonConfiguration) {
             debug("%d button configurations were updated for target '%s' (%d)", Object.keys(targetConfiguration.buttonConfiguration).length, configuredTarget.targetName, configuredTarget.targetIdentifier);
             try {
-                for (var _b = tslib_1.__values(Object.values(targetConfiguration.buttonConfiguration)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                for (var _b = (0, tslib_1.__values)(Object.values(targetConfiguration.buttonConfiguration)), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var configuration = _c.value;
                     var savedConfiguration = configuredTarget.buttonConfiguration[configuration.buttonID];
                     savedConfiguration.buttonType = configuration.buttonType;
@@ -583,25 +585,24 @@ var RemoteController = /** @class */ (function (_super) {
         }
         var buttonIdTlv = tlv.encode(1 /* BUTTON_ID */, buttonID);
         var buttonStateTlv = tlv.encode(2 /* BUTTON_STATE */, buttonState);
-        var timestampTlv = tlv.encode(3 /* TIMESTAMP */, tlv.writeUInt64(new Date().getTime())
-        // timestamp should be uint64. bigint though is only supported by node 10.4.0 and above
-        // thus we just interpret timestamp as a regular number
-        );
+        var timestampTlv = tlv.encode(3 /* TIMESTAMP */, tlv.writeUInt64(new Date().getTime()));
         var activeIdentifierTlv = tlv.encode(4 /* ACTIVE_IDENTIFIER */, tlv.writeUInt32(this.activeIdentifier));
         this.lastButtonEvent = Buffer.concat([
-            buttonIdTlv, buttonStateTlv, timestampTlv, activeIdentifierTlv
-        ]).toString('base64');
+            buttonIdTlv, buttonStateTlv, timestampTlv, activeIdentifierTlv,
+        ]).toString("base64");
         this.targetControlService.getCharacteristic(Characteristic_1.Characteristic.ButtonEvent).sendEventNotification(this.lastButtonEvent);
     };
     RemoteController.prototype.parseTargetConfigurationTLV = function (data) {
         var configTLV = tlv.decode(data);
         var identifier = tlv.readUInt32(configTLV[1 /* TARGET_IDENTIFIER */]);
         var name = undefined;
-        if (configTLV[2 /* TARGET_NAME */])
+        if (configTLV[2 /* TARGET_NAME */]) {
             name = configTLV[2 /* TARGET_NAME */].toString();
+        }
         var category = undefined;
-        if (configTLV[3 /* TARGET_CATEGORY */])
+        if (configTLV[3 /* TARGET_CATEGORY */]) {
             category = tlv.readUInt16(configTLV[3 /* TARGET_CATEGORY */]);
+        }
         var buttonConfiguration = {};
         if (configTLV[4 /* BUTTON_CONFIGURATION */]) {
             var buttonConfigurationTLV = tlv.decodeList(configTLV[4 /* BUTTON_CONFIGURATION */], 1 /* BUTTON_ID */);
@@ -613,13 +614,13 @@ var RemoteController = /** @class */ (function (_super) {
                     buttonName = entry[3 /* BUTTON_NAME */].toString();
                 }
                 else {
-                    // @ts-ignore
+                    // @ts-expect-error: forceConsistentCasingInFileNames compiler option
                     buttonName = ButtonType[buttonType];
                 }
                 buttonConfiguration[buttonId] = {
                     buttonID: buttonId,
                     buttonType: buttonType,
-                    buttonName: buttonName
+                    buttonName: buttonName,
                 };
             });
         }
@@ -627,27 +628,28 @@ var RemoteController = /** @class */ (function (_super) {
             targetIdentifier: identifier,
             targetName: name,
             targetCategory: category,
-            buttonConfiguration: buttonConfiguration
+            buttonConfiguration: buttonConfiguration,
         };
     };
     RemoteController.prototype.updatedTargetConfiguration = function () {
         var e_3, _a, e_4, _b;
+        var _c;
         var bufferList = [];
         try {
-            for (var _c = tslib_1.__values(Object.values(this.targetConfigurations)), _d = _c.next(); !_d.done; _d = _c.next()) {
-                var configuration = _d.value;
+            for (var _d = (0, tslib_1.__values)(Object.values(this.targetConfigurations)), _e = _d.next(); !_e.done; _e = _d.next()) {
+                var configuration = _e.value;
                 var targetIdentifier = tlv.encode(1 /* TARGET_IDENTIFIER */, tlv.writeUInt32(configuration.targetIdentifier));
                 var targetName = tlv.encode(2 /* TARGET_NAME */, configuration.targetName);
                 var targetCategory = tlv.encode(3 /* TARGET_CATEGORY */, tlv.writeUInt16(configuration.targetCategory));
                 var buttonConfigurationBuffers = [];
                 try {
-                    for (var _e = (e_4 = void 0, tslib_1.__values(configuration.buttonConfiguration.values())), _f = _e.next(); !_f.done; _f = _e.next()) {
-                        var value = _f.value;
+                    for (var _f = (e_4 = void 0, (0, tslib_1.__values)(configuration.buttonConfiguration.values())), _g = _f.next(); !_g.done; _g = _f.next()) {
+                        var value = _g.value;
                         var tlvBuffer = tlv.encode(1 /* BUTTON_ID */, value.buttonID, 2 /* BUTTON_TYPE */, tlv.writeUInt16(value.buttonType));
                         if (value.buttonName) {
                             tlvBuffer = Buffer.concat([
                                 tlvBuffer,
-                                tlv.encode(3 /* BUTTON_NAME */, value.buttonName)
+                                tlv.encode(3 /* BUTTON_NAME */, value.buttonName),
                             ]);
                         }
                         buttonConfigurationBuffers.push(tlvBuffer);
@@ -656,7 +658,7 @@ var RemoteController = /** @class */ (function (_super) {
                 catch (e_4_1) { e_4 = { error: e_4_1 }; }
                 finally {
                     try {
-                        if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
+                        if (_g && !_g.done && (_b = _f.return)) _b.call(_f);
                     }
                     finally { if (e_4) throw e_4.error; }
                 }
@@ -668,12 +670,12 @@ var RemoteController = /** @class */ (function (_super) {
         catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
-                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+                if (_e && !_e.done && (_a = _d.return)) _a.call(_d);
             }
             finally { if (e_3) throw e_3.error; }
         }
-        this.targetConfigurationsString = Buffer.concat(bufferList).toString('base64');
-        this.stateChangeDelegate && this.stateChangeDelegate();
+        this.targetConfigurationsString = Buffer.concat(bufferList).toString("base64");
+        (_c = this.stateChangeDelegate) === null || _c === void 0 ? void 0 : _c.call(this);
     };
     RemoteController.prototype.buildTargetControlSupportedConfigurationTLV = function (configuration) {
         var maximumTargets = tlv.encode(1 /* MAXIMUM_TARGETS */, configuration.maximumTargets);
@@ -685,11 +687,12 @@ var RemoteController = /** @class */ (function (_super) {
         });
         var supportedButtonConfiguration = tlv.encode(3 /* SUPPORTED_BUTTON_CONFIGURATION */, Buffer.concat(supportedButtonConfigurationBuffers));
         var type = tlv.encode(4 /* TYPE */, configuration.hardwareImplemented ? 1 : 0);
-        return Buffer.concat([maximumTargets, ticksPerSecond, supportedButtonConfiguration, type]).toString('base64');
+        return Buffer.concat([maximumTargets, ticksPerSecond, supportedButtonConfiguration, type]).toString("base64");
     };
     // --------------------------------- SIRI/DATA STREAM --------------------------------
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     RemoteController.prototype.handleTargetControlWhoAmI = function (connection, message) {
-        var targetIdentifier = message["identifier"];
+        var targetIdentifier = message.identifier;
         this.dataStreamConnections.set(targetIdentifier, connection);
         debug("Discovered HDS connection for targetIdentifier %s", targetIdentifier);
         connection.addProtocolHandler("dataSend" /* DATA_SEND */, this);
@@ -713,6 +716,7 @@ var RemoteController = /** @class */ (function (_super) {
             debug("Tried opening Siri audio stream however target is not connected via HDS");
             return;
         }
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         var audioSession = new SiriAudioSession(connection, this.selectedAudioConfiguration, this.audioProducerConstructor, this.audioProducerOptions);
         if (!this.activeAudioSession) {
             this.activeAudioSession = audioSession;
@@ -738,9 +742,10 @@ var RemoteController = /** @class */ (function (_super) {
         }
         debug("handleSiriAudioStop called although no audio session was started");
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     RemoteController.prototype.handleDataSendAckEvent = function (message) {
-        var streamId = message["streamId"];
-        var endOfStream = message["endOfStream"];
+        var streamId = message.streamId;
+        var endOfStream = message.endOfStream;
         if (this.activeAudioSession && this.activeAudioSession.streamId === streamId) {
             this.activeAudioSession.handleDataSendAckEvent(endOfStream);
         }
@@ -751,9 +756,10 @@ var RemoteController = /** @class */ (function (_super) {
             debug("Received dataSend acknowledgment event for unknown streamId '%s'", streamId);
         }
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     RemoteController.prototype.handleDataSendCloseEvent = function (message) {
-        var streamId = message["streamId"];
-        var reason = message["reason"];
+        var streamId = message.streamId;
+        var reason = message.reason;
         if (this.activeAudioSession && this.activeAudioSession.streamId === streamId) {
             this.activeAudioSession.handleDataSendCloseEvent(reason);
         }
@@ -776,8 +782,8 @@ var RemoteController = /** @class */ (function (_super) {
     RemoteController.prototype.handleDataStreamConnectionClosed = function (connection) {
         var e_5, _a;
         try {
-            for (var _b = tslib_1.__values(this.dataStreamConnections), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var _d = tslib_1.__read(_c.value, 2), targetIdentifier = _d[0], connection0 = _d[1];
+            for (var _b = (0, tslib_1.__values)(this.dataStreamConnections), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var _d = (0, tslib_1.__read)(_c.value, 2), targetIdentifier = _d[0], connection0 = _d[1];
                 if (connection === connection0) {
                     debug("HDS connection disconnected for targetIdentifier %s", targetIdentifier);
                     this.dataStreamConnections.delete(targetIdentifier);
@@ -794,8 +800,9 @@ var RemoteController = /** @class */ (function (_super) {
         }
     };
     // ------------------------------- AUDIO CONFIGURATION -------------------------------
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     RemoteController.prototype.handleSelectedAudioConfigurationWrite = function (value, callback) {
-        var data = Buffer.from(value, 'base64');
+        var data = Buffer.from(value, "base64");
         var objects = tlv.decode(data);
         var selectedAudioStreamConfiguration = tlv.decode(objects[1 /* SELECTED_AUDIO_INPUT_STREAM_CONFIGURATION */]);
         var codec = selectedAudioStreamConfiguration[1 /* CODEC_TYPE */][0];
@@ -809,8 +816,8 @@ var RemoteController = /** @class */ (function (_super) {
                 channels: channels,
                 bitrate: bitrate,
                 samplerate: samplerate,
-                rtpTime: 20
-            }
+                rtpTime: 20,
+            },
         };
         this.selectedAudioConfigurationString = RemoteController.buildSelectedAudioConfigurationTLV({
             audioCodecConfiguration: this.selectedAudioConfiguration,
@@ -820,12 +827,12 @@ var RemoteController = /** @class */ (function (_super) {
     RemoteController.buildSupportedAudioConfigurationTLV = function (configuration) {
         var codecConfigurationTLV = RemoteController.buildCodecConfigurationTLV(configuration.audioCodecConfiguration);
         var supportedAudioStreamConfiguration = tlv.encode(1 /* AUDIO_CODEC_CONFIGURATION */, codecConfigurationTLV);
-        return supportedAudioStreamConfiguration.toString('base64');
+        return supportedAudioStreamConfiguration.toString("base64");
     };
     RemoteController.buildSelectedAudioConfigurationTLV = function (configuration) {
         var codecConfigurationTLV = RemoteController.buildCodecConfigurationTLV(configuration.audioCodecConfiguration);
         var supportedAudioStreamConfiguration = tlv.encode(1 /* SELECTED_AUDIO_INPUT_STREAM_CONFIGURATION */, codecConfigurationTLV);
-        return supportedAudioStreamConfiguration.toString('base64');
+        return supportedAudioStreamConfiguration.toString("base64");
     };
     RemoteController.buildCodecConfigurationTLV = function (codecConfiguration) {
         var parameters = codecConfiguration.parameters;
@@ -833,7 +840,7 @@ var RemoteController = /** @class */ (function (_super) {
         if (parameters.rtpTime) {
             parametersTLV = Buffer.concat([
                 parametersTLV,
-                tlv.encode(4 /* PACKET_TIME */, parameters.rtpTime)
+                tlv.encode(4 /* PACKET_TIME */, parameters.rtpTime),
             ]);
         }
         return tlv.encode(1 /* CODEC_TYPE */, codecConfiguration.codecType, 2 /* CODEC_PARAMETERS */, parametersTLV);
@@ -844,20 +851,20 @@ var RemoteController = /** @class */ (function (_super) {
      */
     RemoteController.prototype.constructServices = function () {
         var _a;
-        this.targetControlManagementService = new Service_1.Service.TargetControlManagement('', '');
+        this.targetControlManagementService = new Service_1.Service.TargetControlManagement("", "");
         this.targetControlManagementService.setCharacteristic(Characteristic_1.Characteristic.TargetControlSupportedConfiguration, this.supportedConfiguration);
         this.targetControlManagementService.setCharacteristic(Characteristic_1.Characteristic.TargetControlList, this.targetConfigurationsString);
         this.targetControlManagementService.setPrimaryService();
         // you can also expose multiple TargetControl services to control multiple apple tvs simultaneously.
         // should we extend this class to support multiple TargetControl services or should users just create a second accessory?
-        this.targetControlService = new Service_1.Service.TargetControl('', '');
+        this.targetControlService = new Service_1.Service.TargetControl("", "");
         this.targetControlService.setCharacteristic(Characteristic_1.Characteristic.ActiveIdentifier, 0);
         this.targetControlService.setCharacteristic(Characteristic_1.Characteristic.Active, false);
         this.targetControlService.setCharacteristic(Characteristic_1.Characteristic.ButtonEvent, this.lastButtonEvent);
         if (this.audioSupported) {
-            this.siriService = new Service_1.Service.Siri('', '');
+            this.siriService = new Service_1.Service.Siri("", "");
             this.siriService.setCharacteristic(Characteristic_1.Characteristic.SiriInputType, Characteristic_1.Characteristic.SiriInputType.PUSH_BUTTON_TRIGGERED_APPLE_TV);
-            this.audioStreamManagementService = new Service_1.Service.AudioStreamManagement('', '');
+            this.audioStreamManagementService = new Service_1.Service.AudioStreamManagement("", "");
             this.audioStreamManagementService.setCharacteristic(Characteristic_1.Characteristic.SupportedAudioStreamConfiguration, this.supportedAudioConfiguration);
             this.audioStreamManagementService.setCharacteristic(Characteristic_1.Characteristic.SelectedAudioStreamConfiguration, this.selectedAudioConfigurationString);
             this.dataStreamManagement = new datastream_1.DataStreamManagement();
@@ -869,7 +876,7 @@ var RemoteController = /** @class */ (function (_super) {
             targetControl: this.targetControlService,
             siri: this.siriService,
             audioStreamManagement: this.audioStreamManagementService,
-            dataStreamTransportManagement: (_a = this.dataStreamManagement) === null || _a === void 0 ? void 0 : _a.getService()
+            dataStreamTransportManagement: (_a = this.dataStreamManagement) === null || _a === void 0 ? void 0 : _a.getService(),
         };
     };
     /**
@@ -967,8 +974,8 @@ var RemoteController = /** @class */ (function (_super) {
         }
         return {
             activeIdentifier: this.activeIdentifier,
-            targetConfigurations: tslib_1.__spread(this.targetConfigurations).reduce(function (obj, _a) {
-                var _b = tslib_1.__read(_a, 2), key = _b[0], value = _b[1];
+            targetConfigurations: (0, tslib_1.__spreadArray)([], (0, tslib_1.__read)(this.targetConfigurations), false).reduce(function (obj, _a) {
+                var _b = (0, tslib_1.__read)(_a, 2), key = _b[0], value = _b[1];
                 obj[key] = value;
                 return obj;
             }, {}),
@@ -980,7 +987,7 @@ var RemoteController = /** @class */ (function (_super) {
     RemoteController.prototype.deserialize = function (serialized) {
         this.activeIdentifier = serialized.activeIdentifier;
         this.targetConfigurations = Object.entries(serialized.targetConfigurations).reduce(function (map, _a) {
-            var _b = tslib_1.__read(_a, 2), key = _b[0], value = _b[1];
+            var _b = (0, tslib_1.__read)(_a, 2), key = _b[0], value = _b[1];
             var identifier = parseInt(key, 10);
             map.set(identifier, value);
             return map;
@@ -1001,7 +1008,7 @@ exports.RemoteController = RemoteController;
  * @deprecated - only there for backwards compatibility, please use {@see RemoteController} directly
  */
 var HomeKitRemoteController = /** @class */ (function (_super) {
-    tslib_1.__extends(HomeKitRemoteController, _super);
+    (0, tslib_1.__extends)(HomeKitRemoteController, _super);
     function HomeKitRemoteController() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -1016,8 +1023,10 @@ var SiriAudioSessionEvents;
  * Represents an ongoing audio transmission
  */
 var SiriAudioSession = /** @class */ (function (_super) {
-    tslib_1.__extends(SiriAudioSession, _super);
-    function SiriAudioSession(connection, selectedAudioConfiguration, producerConstructor, producerOptions) {
+    (0, tslib_1.__extends)(SiriAudioSession, _super);
+    function SiriAudioSession(connection, selectedAudioConfiguration, producerConstructor, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-explicit-any
+    producerOptions) {
         var _this = _super.call(this) || this;
         _this.producerRunning = false; // indicates if the producer is running
         _this.state = 0 /* STARTING */;
@@ -1040,7 +1049,7 @@ var SiriAudioSession = /** @class */ (function (_super) {
         // opening dataSend
         this.connection.sendRequest("dataSend" /* DATA_SEND */, "open" /* OPEN */, {
             target: "controller",
-            type: "audio.siri"
+            type: "audio.siri",
         }, function (error, status, message) {
             if (_this.state === 3 /* CLOSED */) {
                 debug("Ignoring dataSend open response as the session is already closed");
@@ -1058,9 +1067,9 @@ var SiriAudioSession = /** @class */ (function (_super) {
                 _this.closed();
             }
             else {
-                _this.streamId = message["streamId"];
+                _this.streamId = message.streamId;
                 if (!_this.producerRunning) { // audio producer errored in the meantime
-                    _this.sendDataSendCloseEvent(datastream_1.DataSendCloseReason.CANCELLED);
+                    _this.sendDataSendCloseEvent(3 /* CANCELLED */);
                 }
                 else {
                     debug("Successfully setup siri audio stream with streamId %d", _this.streamId);
@@ -1079,7 +1088,7 @@ var SiriAudioSession = /** @class */ (function (_super) {
      * Called when siri button is released (or active identifier is changed to another device)
      */
     SiriAudioSession.prototype.stop = function () {
-        assert_1.default(this.state <= 1 /* SENDING */, "state was higher than SENDING");
+        (0, assert_1.default)(this.state <= 1 /* SENDING */, "state was higher than SENDING");
         debug("Stopping siri audio stream with streamId %d", this.streamId);
         this.endOfStream = true; // mark as endOfStream
         this.stopAudioProducer();
@@ -1098,7 +1107,7 @@ var SiriAudioSession = /** @class */ (function (_super) {
         this.producerTimer = setTimeout(function () {
             debug("Didn't receive any frames from audio producer for stream with streamId %s. Canceling the stream now.", _this.streamId);
             _this.producerTimer = undefined;
-            _this.handleProducerError(datastream_1.DataSendCloseReason.CANCELLED);
+            _this.handleProducerError(3 /* CANCELLED */);
         }, 3000);
         this.producerTimer.unref();
     };
@@ -1134,7 +1143,7 @@ var SiriAudioSession = /** @class */ (function (_super) {
                     metadata: {
                         rms: new datastream_1.Float32(frame.rms),
                         sequenceNumber: new datastream_1.Int64(_this.sequenceNumber++),
-                    }
+                    },
                 };
                 packets.push(packetData);
             });
@@ -1174,18 +1183,19 @@ var SiriAudioSession = /** @class */ (function (_super) {
     SiriAudioSession.prototype.handleDataSendAckEvent = function (endOfStream) {
         assert_1.default.strictEqual(endOfStream, true);
         debug("Received acknowledgment for siri audio stream with streamId %s, closing it now", this.streamId);
-        this.sendDataSendCloseEvent(datastream_1.DataSendCloseReason.NORMAL);
+        this.sendDataSendCloseEvent(0 /* NORMAL */);
     };
     SiriAudioSession.prototype.handleDataSendCloseEvent = function (reason) {
-        debug("Received close event from controller with reason %s for stream with streamId %s", datastream_1.DataSendCloseReason[reason], this.streamId);
+        // @ts-expect-error: forceConsistentCasingInFileNames compiler option
+        debug("Received close event from controller with reason %s for stream with streamId %s", datastream_1.HDSProtocolSpecificErrorReason[reason], this.streamId);
         if (this.state <= 1 /* SENDING */) {
             this.stopAudioProducer();
         }
         this.closed();
     };
     SiriAudioSession.prototype.sendDataSendCloseEvent = function (reason) {
-        assert_1.default(this.state >= 1 /* SENDING */, "state was less than SENDING");
-        assert_1.default(this.state <= 2 /* CLOSING */, "state was higher than CLOSING");
+        (0, assert_1.default)(this.state >= 1 /* SENDING */, "state was less than SENDING");
+        (0, assert_1.default)(this.state <= 2 /* CLOSING */, "state was higher than CLOSING");
         this.connection.sendEvent("dataSend" /* DATA_SEND */, "close" /* CLOSE */, {
             streamId: new datastream_1.Int64(this.streamId),
             reason: new datastream_1.Int64(reason),

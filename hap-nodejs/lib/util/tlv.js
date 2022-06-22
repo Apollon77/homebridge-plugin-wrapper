@@ -2,13 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.writeVariableUIntLE = exports.readVariableUIntLE = exports.readUInt16 = exports.writeUInt16 = exports.writeFloat32LE = exports.readUInt32 = exports.writeUInt32 = exports.readUInt64BE = exports.readUInt64 = exports.writeUInt64 = exports.decodeList = exports.decodeWithLists = exports.decode = exports.encode = void 0;
 var tslib_1 = require("tslib");
-var assert_1 = tslib_1.__importDefault(require("assert"));
-var hapCrypto = tslib_1.__importStar(require("../util/hapCrypto"));
+var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
+var hapCrypto = (0, tslib_1.__importStar)(require("../util/hapCrypto"));
 /**
  * Type Length Value encoding/decoding, used by HAP as a wire format.
  * https://en.wikipedia.org/wiki/Type-length-value
  */
 var EMPTY_TLV_TYPE = 0x00; // and empty tlv with id 0 is usually used as delimiter for tlv lists
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function encode(type, data) {
     var e_1, _a;
     var args = [];
@@ -17,16 +18,16 @@ function encode(type, data) {
     }
     var encodedTLVBuffers = [];
     // coerce data to Buffer if needed
-    if (typeof data === 'number') {
+    if (typeof data === "number") {
         data = Buffer.from([data]);
     }
-    else if (typeof data === 'string') {
+    else if (typeof data === "string") {
         data = Buffer.from(data);
     }
     if (Array.isArray(data)) {
         var first = true;
         try {
-            for (var data_1 = tslib_1.__values(data), data_1_1 = data_1.next(); !data_1_1.done; data_1_1 = data_1.next()) {
+            for (var data_1 = (0, tslib_1.__values)(data), data_1_1 = data_1.next(); !data_1_1.done; data_1_1 = data_1.next()) {
                 var entry = data_1_1.value;
                 if (!first) {
                     encodedTLVBuffers.push(Buffer.from([EMPTY_TLV_TYPE, 0])); // push delimiter
@@ -66,8 +67,8 @@ function encode(type, data) {
     // do we have more arguments to encode?
     if (args.length >= 2) {
         // chop off the first two arguments which we already processed, and process the rest recursively
-        var _b = tslib_1.__read(args), nextType = _b[0], nextData = _b[1], nextArgs = _b.slice(2);
-        var remainingTLVBuffer = encode.apply(void 0, tslib_1.__spread([nextType, nextData], nextArgs));
+        var _b = (0, tslib_1.__read)(args), nextType = _b[0], nextData = _b[1], nextArgs = _b.slice(2);
+        var remainingTLVBuffer = encode.apply(void 0, (0, tslib_1.__spreadArray)([nextType, nextData], (0, tslib_1.__read)(nextArgs), false));
         // append the remaining encoded arguments directly to the buffer
         encodedTLVBuffers.push(remainingTLVBuffer);
     }
@@ -142,7 +143,7 @@ function decodeWithLists(buffer) {
                 }
             }
             else {
-                throw new Error("Found duplicated tlv entry with type " + type + " and length " + length + " (lastItemWasDelimiter: " + lastItemWasDelimiter + ", lastType: " + lastType + ", lastLength: " + lastLength + ")");
+                throw new Error("Found duplicated tlv entry with type ".concat(type, " and length ").concat(length, "         (lastItemWasDelimiter: ").concat(lastItemWasDelimiter, ", lastType: ").concat(lastType, ", lastLength: ").concat(lastLength, ")"));
             }
         }
         else {
@@ -170,8 +171,9 @@ function decodeList(data, entryStartId) {
             }
             objects = {};
         }
-        if (objects === undefined)
+        if (objects === undefined) {
             throw new Error("Error parsing tlv list: Encountered uninitialized storage object");
+        }
         if (objects[type]) { // append to buffer if we have an already data for this type
             objects[type] = Buffer.concat([value, objects[type]]);
         }
@@ -181,8 +183,9 @@ function decodeList(data, entryStartId) {
         currentIndex += 2 + length;
         leftLength -= 2 + length;
     }
-    if (objects !== undefined)
-        objectsList.push(objects); // push last entry
+    if (objects !== undefined) {
+        objectsList.push(objects);
+    } // push last entry
     return objectsList;
 }
 exports.decodeList = decodeList;
@@ -257,7 +260,7 @@ function readVariableUIntLE(buffer, offset) {
 exports.readVariableUIntLE = readVariableUIntLE;
 function writeVariableUIntLE(number, offset) {
     if (offset === void 0) { offset = 0; }
-    assert_1.default(number >= 0, "Can't encode a negative integer as unsigned integer");
+    (0, assert_1.default)(number >= 0, "Can't encode a negative integer as unsigned integer");
     if (number <= 255) {
         var buffer = Buffer.alloc(1);
         buffer.writeUInt8(number, offset);

@@ -13,20 +13,20 @@ export declare class IdentifierCache {
     _usedCache: Record<string, number> | null;
     _savedCacheHash: string;
     constructor(username: MacAddress);
-    startTrackingUsage: () => void;
-    stopTrackingUsageAndExpireUnused: () => void;
-    getCache: (key: string) => number;
-    setCache: (key: string, value: number) => number;
-    getAID: (accessoryUUID: string) => number;
-    getIID: (accessoryUUID: string, serviceUUID: string, serviceSubtype?: string | undefined, characteristicUUID?: string | undefined) => number;
-    getNextAID: () => number;
-    getNextIID: (accessoryUUID: string) => number;
-    save: () => void;
+    startTrackingUsage(): void;
+    stopTrackingUsageAndExpireUnused(): void;
+    getCache(key: string): number;
+    setCache(key: string, value: number): number;
+    getAID(accessoryUUID: string): number;
+    getIID(accessoryUUID: string, serviceUUID: string, serviceSubtype?: string, characteristicUUID?: string): number;
+    getNextAID(): number;
+    getNextIID(accessoryUUID: string): number;
+    save(): void;
     /**
      * Persisting to File System
      */
-    static persistKey: (username: MacAddress) => string;
-    static load: (username: MacAddress) => IdentifierCache | null;
+    static persistKey(username: MacAddress): string;
+    static load(username: MacAddress): IdentifierCache | null;
     static remove(username: MacAddress): void;
 }
 //# sourceMappingURL=IdentifierCache.d.ts.map

@@ -10,7 +10,7 @@ export interface BridgeConfiguration {
     name: string;
     username: MacAddress;
     pin: string;
-    advertiser: MDNSAdvertiser;
+    advertiser?: MDNSAdvertiser;
     port?: number;
     bind?: (InterfaceName | IPAddress) | (InterfaceName | IPAddress)[];
     setupID?: string[4];
@@ -99,5 +99,6 @@ export declare class BridgeService {
     createHAPAccessory(plugin: Plugin, accessoryInstance: AccessoryPlugin, displayName: string, accessoryType: AccessoryName | AccessoryIdentifier, uuidBase?: string): Accessory | undefined;
     loadPlatformAccessories(plugin: Plugin, platformInstance: StaticPlatformPlugin, platformType: PlatformName | PlatformIdentifier, logger: Logging): Promise<void>;
     teardown(): void;
+    private static strippingPinCode;
 }
 //# sourceMappingURL=bridgeService.d.ts.map

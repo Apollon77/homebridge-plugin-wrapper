@@ -1,3 +1,4 @@
+import "./CharacteristicDefinitions";
 import { Access } from "../Characteristic";
 export interface GeneratedCharacteristic {
     id: string;

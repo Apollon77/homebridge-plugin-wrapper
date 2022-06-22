@@ -2,31 +2,31 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getOSLoopbackAddressIfAvailable = exports.getOSLoopbackAddress = exports.findLoopbackAddress = void 0;
 var tslib_1 = require("tslib");
-var os_1 = tslib_1.__importDefault(require("os"));
-var debug_1 = tslib_1.__importDefault(require("debug"));
-var debug = debug_1.default("HAP-NodeJS:net-utils");
+var os_1 = (0, tslib_1.__importDefault)(require("os"));
 function findLoopbackAddress() {
     var e_1, _a, e_2, _b;
     var ipv6 = undefined; // ::1/128
     var ipv6LinkLocal = undefined; // fe80::/10
     var ipv4 = undefined; // 127.0.0.1/8
     try {
-        for (var _c = tslib_1.__values(Object.entries(os_1.default.networkInterfaces())), _d = _c.next(); !_d.done; _d = _c.next()) {
-            var _e = tslib_1.__read(_d.value, 2), name = _e[0], infos = _e[1];
+        for (var _c = (0, tslib_1.__values)(Object.entries(os_1.default.networkInterfaces())), _d = _c.next(); !_d.done; _d = _c.next()) {
+            var _e = (0, tslib_1.__read)(_d.value, 2), name = _e[0], infos = _e[1];
             var internal = false;
             try {
-                for (var infos_1 = (e_2 = void 0, tslib_1.__values(infos)), infos_1_1 = infos_1.next(); !infos_1_1.done; infos_1_1 = infos_1.next()) {
+                for (var infos_1 = (e_2 = void 0, (0, tslib_1.__values)(infos)), infos_1_1 = infos_1.next(); !infos_1_1.done; infos_1_1 = infos_1.next()) {
                     var info = infos_1_1.value;
                     if (!info.internal) {
                         continue;
                     }
                     internal = true;
-                    if (info.family === "IPv4") {
+                    // @ts-expect-error Nodejs 18+ uses the number 4 the string "IPv4"
+                    if (info.family === "IPv4" || info.family === 4) {
                         if (!ipv4) {
                             ipv4 = info.address;
                         }
+                        // @ts-expect-error Nodejs 18+ uses the number 6 the string "IPv6"
                     }
-                    else if (info.family === "IPv6") {
+                    else if (info.family === "IPv6" || info.family === 6) {
                         if (info.scopeid) {
                             if (!ipv6LinkLocal) {
                                 ipv6LinkLocal = info.address + "%" + name; // ipv6 link local addresses are only valid with a scope

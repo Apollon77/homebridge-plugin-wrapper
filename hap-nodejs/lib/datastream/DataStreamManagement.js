@@ -2,12 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataStreamManagement = exports.DataStreamStatus = void 0;
 var tslib_1 = require("tslib");
-var debug_1 = tslib_1.__importDefault(require("debug"));
+var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
 var Characteristic_1 = require("../Characteristic");
 var Service_1 = require("../Service");
-var tlv = tslib_1.__importStar(require("../util/tlv"));
+var tlv = (0, tslib_1.__importStar)(require("../util/tlv"));
 var DataStreamServer_1 = require("./DataStreamServer");
-var debug = debug_1.default('HAP-NodeJS:DataStream:Management');
+var debug = (0, debug_1.default)("HAP-NodeJS:DataStream:Management");
 var TransferTransportConfigurationTypes;
 (function (TransferTransportConfigurationTypes) {
     TransferTransportConfigurationTypes[TransferTransportConfigurationTypes["TRANSFER_TRANSPORT_CONFIGURATION"] = 1] = "TRANSFER_TRANSPORT_CONFIGURATION";
@@ -124,13 +124,14 @@ var DataStreamManagement = /** @class */ (function () {
      * @param listener - the event handler
      */
     DataStreamManagement.prototype.onServerEvent = function (event, listener) {
-        // @ts-expect-error
+        // @ts-expect-error: event type
         this.dataStreamServer.on(event, listener);
         return this;
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     DataStreamManagement.prototype.handleSetupDataStreamTransportWrite = function (value, callback, connection) {
         var _this = this;
-        var data = Buffer.from(value, 'base64');
+        var data = Buffer.from(value, "base64");
         var objects = tlv.decode(data);
         var sessionCommandType = objects[1 /* SESSION_COMMAND_TYPE */][0];
         var transportType = objects[2 /* TRANSPORT_TYPE */][0];
@@ -149,14 +150,14 @@ var DataStreamManagement = /** @class */ (function () {
                 var listeningPort = tlv.encode(1 /* TCP_LISTENING_PORT */, tlv.writeUInt16(preparedSession.port));
                 var response = Buffer.concat([
                     tlv.encode(1 /* STATUS */, 0 /* SUCCESS */),
-                    tlv.encode(2 /* TRANSPORT_TYPE_SESSION_PARAMETERS */, listeningPort)
+                    tlv.encode(2 /* TRANSPORT_TYPE_SESSION_PARAMETERS */, listeningPort),
                 ]);
-                _this.lastSetupDataStreamTransportResponse = response.toString('base64'); // save last response without accessory key salt
+                _this.lastSetupDataStreamTransportResponse = response.toString("base64"); // save last response without accessory key salt
                 response = Buffer.concat([
                     response,
-                    tlv.encode(3 /* ACCESSORY_KEY_SALT */, preparedSession.accessoryKeySalt)
+                    tlv.encode(3 /* ACCESSORY_KEY_SALT */, preparedSession.accessoryKeySalt),
                 ]);
-                callback(null, response.toString('base64'));
+                callback(null, response.toString("base64"));
             });
         }
         else {
@@ -171,10 +172,10 @@ var DataStreamManagement = /** @class */ (function () {
             var transferTransportConfiguration = tlv.encode(1 /* TRANSFER_TRANSPORT_CONFIGURATION */, transportType);
             buffers.push(transferTransportConfiguration);
         });
-        return Buffer.concat(buffers).toString('base64');
+        return Buffer.concat(buffers).toString("base64");
     };
     DataStreamManagement.prototype.constructService = function () {
-        var dataStreamTransportManagement = new Service_1.Service.DataStreamTransportManagement('', '');
+        var dataStreamTransportManagement = new Service_1.Service.DataStreamTransportManagement("", "");
         dataStreamTransportManagement.setCharacteristic(Characteristic_1.Characteristic.SupportedDataStreamTransportConfiguration, this.supportedDataStreamTransportConfiguration);
         dataStreamTransportManagement.setCharacteristic(Characteristic_1.Characteristic.Version, DataStreamServer_1.DataStreamServer.version);
         return dataStreamTransportManagement;

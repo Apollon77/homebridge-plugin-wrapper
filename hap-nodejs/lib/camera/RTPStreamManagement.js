@@ -1,18 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StreamController = exports.RTPStreamManagement = exports.StreamRequestTypes = exports.AudioStreamingSamplerate = exports.AudioStreamingCodecType = exports.SRTPCryptoSuites = exports.H264Level = exports.H264Profile = void 0;
+exports.StreamController = exports.RTPStreamManagement = exports.StreamRequestTypes = exports.AudioStreamingSamplerate = exports.AudioStreamingCodecType = exports.SRTPCryptoSuites = exports.H264Level = exports.H264Profile = exports.VideoCodecType = void 0;
 var tslib_1 = require("tslib");
-var crypto_1 = tslib_1.__importDefault(require("crypto"));
-var debug_1 = tslib_1.__importDefault(require("debug"));
-var net_1 = tslib_1.__importDefault(require("net"));
+var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
+var crypto_1 = (0, tslib_1.__importDefault)(require("crypto"));
+var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
+var net_1 = (0, tslib_1.__importDefault)(require("net"));
 // noinspection JSDeprecatedSymbols
 var index_1 = require("../../index");
 var Characteristic_1 = require("../Characteristic");
 var controller_1 = require("../controller");
 var Service_1 = require("../Service");
-var tlv = tslib_1.__importStar(require("../util/tlv"));
-var RTPProxy_1 = tslib_1.__importDefault(require("./RTPProxy"));
-var debug = debug_1.default('HAP-NodeJS:Camera:RTPStreamManagement');
+var tlv = (0, tslib_1.__importStar)(require("../util/tlv"));
+var RTPProxy_1 = (0, tslib_1.__importDefault)(require("./RTPProxy"));
+var debug = (0, debug_1.default)("HAP-NodeJS:Camera:RTPStreamManagement");
 // ---------------------------------- TLV DEFINITIONS START ----------------------------------
 var StreamingStatusTypes;
 (function (StreamingStatusTypes) {
@@ -52,7 +53,9 @@ var VideoAttributesTypes;
 var VideoCodecType;
 (function (VideoCodecType) {
     VideoCodecType[VideoCodecType["H264"] = 0] = "H264";
-})(VideoCodecType || (VideoCodecType = {}));
+    // while the namespace is already reserved for H265 it isn't currently supported.
+    // H265 = 0x01,
+})(VideoCodecType = exports.VideoCodecType || (exports.VideoCodecType = {}));
 var H264Profile;
 (function (H264Profile) {
     H264Profile[H264Profile["BASELINE"] = 0] = "BASELINE";
@@ -71,8 +74,8 @@ var VideoCodecPacketizationMode;
 })(VideoCodecPacketizationMode || (VideoCodecPacketizationMode = {}));
 var VideoCodecCVO;
 (function (VideoCodecCVO) {
-    VideoCodecCVO[VideoCodecCVO["UNSUPPORTED"] = 1] = "UNSUPPORTED";
-    VideoCodecCVO[VideoCodecCVO["SUPPORTED"] = 2] = "SUPPORTED";
+    VideoCodecCVO[VideoCodecCVO["UNSUPPORTED"] = 0] = "UNSUPPORTED";
+    VideoCodecCVO[VideoCodecCVO["SUPPORTED"] = 1] = "SUPPORTED";
 })(VideoCodecCVO || (VideoCodecCVO = {}));
 // ----------
 var SupportedAudioStreamConfigurationTypes;
@@ -218,6 +221,7 @@ var AudioRTPParametersTypes;
     AudioRTPParametersTypes[AudioRTPParametersTypes["MIN_RTCP_INTERVAL"] = 4] = "MIN_RTCP_INTERVAL";
     AudioRTPParametersTypes[AudioRTPParametersTypes["COMFORT_NOISE_PAYLOAD_TYPE"] = 6] = "COMFORT_NOISE_PAYLOAD_TYPE";
 })(AudioRTPParametersTypes || (AudioRTPParametersTypes = {}));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isLegacySRTPOptions(options) {
     return "srtp" in options;
 }
@@ -244,12 +248,13 @@ var StreamRequestTypes;
     StreamRequestTypes["STOP"] = "stop";
 })(StreamRequestTypes = exports.StreamRequestTypes || (exports.StreamRequestTypes = {}));
 var RTPStreamManagement = /** @class */ (function () {
-    function RTPStreamManagement(id, options, delegate, service) {
+    function RTPStreamManagement(id, options, delegate, service, disabledThroughOperatingMode) {
         this.videoOnly = false;
         this.sessionIdentifier = undefined;
         this.streamStatus = 0 /* AVAILABLE */; // use _updateStreamStatus to update this property
         this.selectedConfiguration = ""; // base64 representation of the currently selected configuration
         this.setupEndpointsResponse = ""; // response of the SetupEndpoints Characteristic
+        this.id = id;
         this.delegate = delegate;
         this.requireProxy = options.proxy || false;
         this.disableAudioProxy = options.disable_audio_proxy || false;
@@ -263,7 +268,7 @@ var RTPStreamManagement = /** @class */ (function () {
             this.supportedCryptoSuites.push(2 /* NONE */);
         }
         if (!options.video) {
-            throw new Error('Video parameters cannot be undefined in options');
+            throw new Error("Video parameters cannot be undefined in options");
         }
         this.supportedRTPConfiguration = RTPStreamManagement._supportedRTPConfiguration(this.supportedCryptoSuites);
         this.supportedVideoStreamConfiguration = RTPStreamManagement._supportedVideoStreamConfiguration(options.video);
@@ -272,6 +277,7 @@ var RTPStreamManagement = /** @class */ (function () {
         this.setupServiceHandlers();
         this.resetSetupEndpointsResponse();
         this.resetSelectedStreamConfiguration();
+        this.disabledThroughOperatingMode = disabledThroughOperatingMode;
     }
     RTPStreamManagement.prototype.forceStop = function () {
         this.handleSessionClosed();
@@ -283,14 +289,16 @@ var RTPStreamManagement = /** @class */ (function () {
     /**
      * @deprecated
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     RTPStreamManagement.prototype.handleCloseConnection = function (connectionID) {
         // This method is only here for legacy compatibility. It used to be called by legacy style CameraSource
         // implementations to signal that the associated HAP connection was closed.
-        // This is now handled automatically. Thus we don't need to do anything anymore.
+        // This is now handled automatically. Thus, we don't need to do anything anymore.
     };
     RTPStreamManagement.prototype.handleFactoryReset = function () {
         this.resetSelectedStreamConfiguration();
         this.resetSetupEndpointsResponse();
+        this.service.updateCharacteristic(Characteristic_1.Characteristic.Active, true);
         // on a factory reset the assumption is that all connections were already terminated and thus "handleStopStream" was already called
     };
     RTPStreamManagement.prototype.destroy = function () {
@@ -299,24 +307,42 @@ var RTPStreamManagement = /** @class */ (function () {
         }
     };
     RTPStreamManagement.prototype.constructService = function (id) {
-        var managementService = new Service_1.Service.CameraRTPStreamManagement('', id.toString());
+        var managementService = new Service_1.Service.CameraRTPStreamManagement("", id.toString());
+        // this service is required only when recording is enabled. We don't really have access to this info here,
+        // so we just add the characteristic. Doesn't really hurt.
         managementService.setCharacteristic(Characteristic_1.Characteristic.Active, true);
-        managementService.setCharacteristic(Characteristic_1.Characteristic.SupportedRTPConfiguration, this.supportedRTPConfiguration);
-        managementService.setCharacteristic(Characteristic_1.Characteristic.SupportedVideoStreamConfiguration, this.supportedVideoStreamConfiguration);
-        managementService.setCharacteristic(Characteristic_1.Characteristic.SupportedAudioStreamConfiguration, this.supportedAudioStreamConfiguration);
         return managementService;
     };
     RTPStreamManagement.prototype.setupServiceHandlers = function () {
         var _this = this;
+        if (!this.service.testCharacteristic(Characteristic_1.Characteristic.Active)) {
+            // the active characteristic might not be present on some older configurations.
+            this.service.setCharacteristic(Characteristic_1.Characteristic.Active, true);
+        }
+        this.service.getCharacteristic(Characteristic_1.Characteristic.Active)
+            .on("change" /* CHANGE */, function () { var _a; return (_a = _this.stateChangeDelegate) === null || _a === void 0 ? void 0 : _a.call(_this); })
+            .setProps({ adminOnlyAccess: [1 /* WRITE */] });
+        // ensure that configurations are up-to-date and reflected in the characteristic values
+        this.service.setCharacteristic(Characteristic_1.Characteristic.SupportedRTPConfiguration, this.supportedRTPConfiguration);
+        this.service.setCharacteristic(Characteristic_1.Characteristic.SupportedVideoStreamConfiguration, this.supportedVideoStreamConfiguration);
+        this.service.setCharacteristic(Characteristic_1.Characteristic.SupportedAudioStreamConfiguration, this.supportedAudioStreamConfiguration);
         this._updateStreamStatus(0 /* AVAILABLE */); // reset streaming status to available
         this.service.setCharacteristic(Characteristic_1.Characteristic.SetupEndpoints, this.setupEndpointsResponse); // reset SetupEndpoints to default
         this.service.getCharacteristic(Characteristic_1.Characteristic.SelectedRTPStreamConfiguration)
             .on("get" /* GET */, function (callback) {
+            if (_this.streamingIsDisabled()) {
+                callback(null, tlv.encode(1 /* SESSION_CONTROL */, tlv.encode(2 /* COMMAND */, SessionControlCommand.SUSPEND_SESSION)).toString("base64"));
+                return;
+            }
             callback(null, _this.selectedConfiguration);
         })
             .on("set" /* SET */, this._handleSelectedStreamConfigurationWrite.bind(this));
         this.service.getCharacteristic(Characteristic_1.Characteristic.SetupEndpoints)
             .on("get" /* GET */, function (callback) {
+            if (_this.streamingIsDisabled()) {
+                callback(null, tlv.encode(2 /* STATUS */, 2 /* ERROR */).toString("base64"));
+                return;
+            }
             callback(null, _this.setupEndpointsResponse);
         })
             .on("set" /* SET */, function (value, callback, context, connection) {
@@ -350,15 +376,32 @@ var RTPStreamManagement = /** @class */ (function () {
             this.audioProxy = undefined;
         }
     };
+    RTPStreamManagement.prototype.streamingIsDisabled = function (callback) {
+        var _a;
+        if (!this.service.getCharacteristic(Characteristic_1.Characteristic.Active).value) {
+            console.log("STREAMING DISABLED ACTIVE");
+            callback && callback(new index_1.HapStatusError(-70412 /* NOT_ALLOWED_IN_CURRENT_STATE */));
+            return true;
+        }
+        if ((_a = this.disabledThroughOperatingMode) === null || _a === void 0 ? void 0 : _a.call(this)) {
+            console.log("STREAMING DISABLED OPERATION MODE!");
+            callback && callback(new index_1.HapStatusError(-70412 /* NOT_ALLOWED_IN_CURRENT_STATE */));
+            return true;
+        }
+        return false;
+    };
     RTPStreamManagement.prototype._handleSelectedStreamConfigurationWrite = function (value, callback) {
         var _this = this;
-        var data = Buffer.from(value, 'base64');
+        if (this.streamingIsDisabled(callback)) {
+            return;
+        }
+        var data = Buffer.from(value, "base64");
         var objects = tlv.decode(data);
         var sessionControl = tlv.decode(objects[1 /* SESSION_CONTROL */]);
         var sessionIdentifier = index_1.uuid.unparse(sessionControl[1 /* SESSION_IDENTIFIER */]);
         var requestType = sessionControl[2 /* COMMAND */][0];
         if (sessionIdentifier !== this.sessionIdentifier) {
-            debug("Received unknown session Identifier with request to " + SessionControlCommand[requestType]);
+            debug("Received unknown session Identifier with request to ".concat(SessionControlCommand[requestType]));
             callback(-70410 /* INVALID_VALUE_IN_REQUEST */);
             return;
         }
@@ -371,22 +414,24 @@ var RTPStreamManagement = /** @class */ (function () {
             }
         };
         switch (requestType) {
-            case SessionControlCommand.START_SESSION:
+            case SessionControlCommand.START_SESSION: {
                 var selectedVideoParameters = tlv.decode(objects[2 /* SELECTED_VIDEO_PARAMETERS */]);
                 var selectedAudioParameters = tlv.decode(objects[3 /* SELECTED_AUDIO_PARAMETERS */]);
                 this._handleStartStream(selectedVideoParameters, selectedAudioParameters, streamCallback);
                 break;
-            case SessionControlCommand.RECONFIGURE_SESSION:
+            }
+            case SessionControlCommand.RECONFIGURE_SESSION: {
                 var reconfiguredVideoParameters = tlv.decode(objects[2 /* SELECTED_VIDEO_PARAMETERS */]);
                 this.handleReconfigureStream(reconfiguredVideoParameters, streamCallback);
                 break;
+            }
             case SessionControlCommand.END_SESSION:
                 this._handleStopStream(streamCallback);
                 break;
             case SessionControlCommand.RESUME_SESSION:
             case SessionControlCommand.SUSPEND_SESSION:
             default:
-                debug("Unhandled request type " + SessionControlCommand[requestType]);
+                debug("Unhandled request type ".concat(SessionControlCommand[requestType]));
                 callback(-70410 /* INVALID_VALUE_IN_REQUEST */);
                 return;
         }
@@ -405,7 +450,7 @@ var RTPStreamManagement = /** @class */ (function () {
         var packetizationMode = videoParameters[3 /* PACKETIZATION_MODE */][0];
         var cvoEnabled = videoParameters[4 /* CVO_ENABLED */];
         var cvoId = undefined;
-        if (cvoEnabled && cvoEnabled[0] === 2 /* SUPPORTED */) {
+        if (cvoEnabled && cvoEnabled[0] === 1 /* SUPPORTED */) {
             cvoId = videoParameters[5 /* CVO_ID */].readUInt8(0);
         }
         // video attributes
@@ -448,6 +493,7 @@ var RTPStreamManagement = /** @class */ (function () {
             }
         }
         var videoInfo = {
+            codec: videoCodec.readUInt8(0),
             profile: h264Profile,
             level: h264Level,
             packetizationMode: packetizationMode,
@@ -486,7 +532,7 @@ var RTPStreamManagement = /** @class */ (function () {
                 audioCodecName = "AMR-WB" /* AMR_WB */;
                 break;
             default:
-                throw new Error("Encountered unknown selected audio codec " + audioCodec);
+                throw new Error("Encountered unknown selected audio codec ".concat(audioCodec));
         }
         switch (samplerate) {
             case 0 /* KHZ_8 */:
@@ -499,7 +545,7 @@ var RTPStreamManagement = /** @class */ (function () {
                 samplerateNum = 24;
                 break;
             default:
-                throw new Error("Encountered unknown selected audio samplerate " + samplerate);
+                throw new Error("Encountered unknown selected audio samplerate ".concat(samplerate));
         }
         var audioInfo = {
             codec: audioCodecName,
@@ -534,7 +580,8 @@ var RTPStreamManagement = /** @class */ (function () {
         // video rtp parameters
         var videoRTPParameters = tlv.decode(videoRTPParametersTLV);
         var videoMaximumBitrate = videoRTPParameters[3 /* MAX_BIT_RATE */].readUInt16LE(0);
-        var videoRTCPInterval = videoRTPParameters[4 /* MIN_RTCP_INTERVAL */].readFloatLE(0) || 0.5; // seems to be always zero, use default of 0.5
+        // seems to be always zero, use default of 0.5
+        var videoRTCPInterval = videoRTPParameters[4 /* MIN_RTCP_INTERVAL */].readFloatLE(0) || 0.5;
         var reconfiguredVideoInfo = {
             width: width,
             height: height,
@@ -559,7 +606,10 @@ var RTPStreamManagement = /** @class */ (function () {
     };
     RTPStreamManagement.prototype.handleSetupEndpoints = function (value, callback, connection) {
         var _this = this;
-        var data = Buffer.from(value, 'base64');
+        if (this.streamingIsDisabled(callback)) {
+            return;
+        }
+        var data = Buffer.from(value, "base64");
         var objects = tlv.decode(data);
         var sessionIdentifier = index_1.uuid.unparse(objects[1 /* SESSION_ID */]);
         if (this.streamStatus !== 0 /* AVAILABLE */) {
@@ -577,7 +627,7 @@ var RTPStreamManagement = /** @class */ (function () {
         var targetAddressPayload = objects[3 /* CONTROLLER_ADDRESS */];
         var processedAddressInfo = tlv.decode(targetAddressPayload);
         var addressVersion = processedAddressInfo[1 /* ADDRESS_VERSION */][0];
-        var controllerAddress = processedAddressInfo[2 /* ADDRESS */].toString('utf8');
+        var controllerAddress = processedAddressInfo[2 /* ADDRESS */].toString("utf8");
         var targetVideoPort = processedAddressInfo[3 /* VIDEO_RTP_PORT */].readUInt16LE(0);
         var targetAudioPort = processedAddressInfo[4 /* AUDIO_RTP_PORT */].readUInt16LE(0);
         // Video SRTP Params
@@ -592,7 +642,7 @@ var RTPStreamManagement = /** @class */ (function () {
         var audioCryptoSuite = processedAudioInfo[1 /* SRTP_CRYPTO_SUITE */][0];
         var audioMasterKey = processedAudioInfo[2 /* MASTER_KEY */];
         var audioMasterSalt = processedAudioInfo[3 /* MASTER_SALT */];
-        debug('Session: ', sessionIdentifier, '\nControllerAddress: ', controllerAddress, '\nVideoPort: ', targetVideoPort, '\nAudioPort: ', targetAudioPort, '\nVideo Crypto: ', videoCryptoSuite, '\nVideo Master Key: ', videoMasterKey, '\nVideo Master Salt: ', videoMasterSalt, '\nAudio Crypto: ', audioCryptoSuite, '\nAudio Master Key: ', audioMasterKey, '\nAudio Master Salt: ', audioMasterSalt);
+        debug("Session: ", sessionIdentifier, "\nControllerAddress: ", controllerAddress, "\nVideoPort: ", targetVideoPort, "\nAudioPort: ", targetAudioPort, "\nVideo Crypto: ", videoCryptoSuite, "\nVideo Master Key: ", videoMasterKey, "\nVideo Master Salt: ", videoMasterSalt, "\nAudio Crypto: ", audioCryptoSuite, "\nAudio Master Key: ", audioMasterKey, "\nAudio Master Salt: ", audioMasterSalt);
         var prepareRequest = {
             sessionID: sessionIdentifier,
             targetAddress: controllerAddress,
@@ -617,7 +667,7 @@ var RTPStreamManagement = /** @class */ (function () {
                 outgoingAddress: controllerAddress,
                 outgoingPort: targetVideoPort,
                 outgoingSSRC: crypto_1.default.randomBytes(4).readUInt32LE(0),
-                disabled: false
+                disabled: false,
             });
             promises.push(this.videoProxy.setup().then(function () {
                 prepareRequest.video.proxy_rtp = _this.videoProxy.incomingRTPPort();
@@ -628,7 +678,7 @@ var RTPStreamManagement = /** @class */ (function () {
                     outgoingAddress: controllerAddress,
                     outgoingPort: targetAudioPort,
                     outgoingSSRC: crypto_1.default.randomBytes(4).readUInt32LE(0),
-                    disabled: this.videoOnly
+                    disabled: this.videoOnly,
                 });
                 promises.push(this.audioProxy.setup().then(function () {
                     prepareRequest.audio.proxy_rtp = _this.audioProxy.incomingRTPPort();
@@ -637,9 +687,9 @@ var RTPStreamManagement = /** @class */ (function () {
             }
         }
         Promise.all(promises).then(function () {
-            _this.delegate.prepareStream(prepareRequest, index_1.once(function (error, response) {
+            _this.delegate.prepareStream(prepareRequest, (0, index_1.once)(function (error, response) {
                 if (error || !response) {
-                    debug("PrepareStream request encountered an error: " + (error ? error.message : undefined));
+                    debug("PrepareStream request encountered an error: ".concat(error ? error.message : undefined));
                     _this.setupEndpointsResponse = tlv.encode(1 /* SESSION_ID */, index_1.uuid.write(sessionIdentifier), 2 /* STATUS */, 2 /* ERROR */).toString("base64");
                     _this.handleSessionClosed();
                     callback(error);
@@ -684,7 +734,7 @@ var RTPStreamManagement = /** @class */ (function () {
                 address = connection.getLocalAddress(addressVersion);
             }
             if (request.addressVersion !== addressVersion) {
-                throw new Error("Incoming and outgoing ip address versions must match! Expected " + request.addressVersion + " but got " + addressVersion);
+                throw new Error("Incoming and outgoing ip address versions must match! Expected ".concat(request.addressVersion, " but got ").concat(addressVersion));
             }
             videoPort = videoInfo.port;
             audioPort = audioInfo.port;
@@ -744,7 +794,7 @@ var RTPStreamManagement = /** @class */ (function () {
     };
     RTPStreamManagement.prototype._updateStreamStatus = function (status) {
         this.streamStatus = status;
-        this.service.updateCharacteristic(Characteristic_1.Characteristic.StreamingStatus, tlv.encode(1 /* STATUS */, this.streamStatus).toString('base64'));
+        this.service.updateCharacteristic(Characteristic_1.Characteristic.StreamingStatus, tlv.encode(1 /* STATUS */, this.streamStatus).toString("base64"));
     };
     RTPStreamManagement._supportedRTPConfiguration = function (supportedCryptoSuites) {
         if (supportedCryptoSuites.length === 1 && supportedCryptoSuites[0] === 2 /* NONE */) {
@@ -754,21 +804,21 @@ var RTPStreamManagement = /** @class */ (function () {
     };
     RTPStreamManagement._supportedVideoStreamConfiguration = function (videoOptions) {
         if (!videoOptions.codec) {
-            throw new Error('Video codec cannot be undefined');
+            throw new Error("Video codec cannot be undefined");
         }
         if (!videoOptions.resolutions) {
-            throw new Error('Video resolutions cannot be undefined');
+            throw new Error("Video resolutions cannot be undefined");
         }
         var codecParameters = tlv.encode(1 /* PROFILE_ID */, videoOptions.codec.profiles, 2 /* LEVEL */, videoOptions.codec.levels, 3 /* PACKETIZATION_MODE */, 0 /* NON_INTERLEAVED */);
-        if (videoOptions.cvoId != undefined) {
+        if (videoOptions.cvoId != null) {
             codecParameters = Buffer.concat([
                 codecParameters,
-                tlv.encode(4 /* CVO_ENABLED */, 2 /* SUPPORTED */, 5 /* CVO_ID */, videoOptions.cvoId)
+                tlv.encode(4 /* CVO_ENABLED */, 1 /* SUPPORTED */, 5 /* CVO_ID */, videoOptions.cvoId),
             ]);
         }
         var videoStreamConfiguration = tlv.encode(1 /* CODEC_TYPE */, 0 /* H264 */, 2 /* CODEC_PARAMETERS */, codecParameters, 3 /* ATTRIBUTES */, videoOptions.resolutions.map(function (resolution) {
-            if (resolution.length != 3) {
-                throw new Error('Unexpected video resolution');
+            if (resolution.length !== 3) {
+                throw new Error("Unexpected video resolution");
             }
             var width = Buffer.alloc(2);
             var height = Buffer.alloc(2);
@@ -778,7 +828,7 @@ var RTPStreamManagement = /** @class */ (function () {
             frameRate.writeUInt8(resolution[2], 0);
             return tlv.encode(1 /* IMAGE_WIDTH */, width, 2 /* IMAGE_HEIGHT */, height, 3 /* FRAME_RATE */, frameRate);
         }));
-        return tlv.encode(1 /* VIDEO_CODEC_CONFIGURATION */, videoStreamConfiguration).toString('base64');
+        return tlv.encode(1 /* VIDEO_CODEC_CONFIGURATION */, videoStreamConfiguration).toString("base64");
     };
     RTPStreamManagement.prototype.checkForLegacyAudioCodecRepresentation = function (codecs) {
         var codecMap = {};
@@ -810,7 +860,7 @@ var RTPStreamManagement = /** @class */ (function () {
             this.videoOnly = true;
             supportedCodecs.push({
                 type: "OPUS" /* OPUS */,
-                samplerate: [16 /* KHZ_16 */, 24 /* KHZ_24 */],
+                samplerate: [16 /* KHZ_16 */, 24 /* KHZ_24 */], // 16 and 24 must be supported
             });
         }
         var codecConfigurations = supportedCodecs.map(function (codec) {
@@ -875,19 +925,44 @@ var RTPStreamManagement = /** @class */ (function () {
         this.service.updateCharacteristic(Characteristic_1.Characteristic.SelectedRTPStreamConfiguration, this.selectedConfiguration);
     };
     /**
-     * @deprecated Please use the SRTPCryptoSuites const enum above. Scheduled to be removed in 2021-06.
+     * @private
      */
-    // @ts-ignore
+    RTPStreamManagement.prototype.serialize = function () {
+        var characteristicValue = this.service.getCharacteristic(Characteristic_1.Characteristic.Active).value;
+        if (characteristicValue === true) {
+            return undefined;
+        }
+        return {
+            id: this.id,
+            active: !!characteristicValue,
+        };
+    };
+    /**
+     * @private
+     */
+    RTPStreamManagement.prototype.deserialize = function (serialized) {
+        (0, assert_1.default)(serialized.id === this.id, "Tried to initialize RTPStreamManagement ".concat(this.id, " with data from management with id ").concat(serialized.id, "!"));
+        this.service.updateCharacteristic(Characteristic_1.Characteristic.Active, serialized.active);
+    };
+    /**
+     * @private
+     */
+    RTPStreamManagement.prototype.setupStateChangeDelegate = function (delegate) {
+        this.stateChangeDelegate = delegate;
+    };
+    /**
+     * @deprecated Please use the SRTPCryptoSuites const enum above.
+     */
+    // @ts-expect-error: forceConsistentCasingInFileNames compiler option
     RTPStreamManagement.SRTPCryptoSuites = SRTPCryptoSuites;
     /**
-     * @deprecated Please use the H264Profile const enum above. Scheduled to be removed in 2021-06.
+     * @deprecated Please use the H264Profile const enum above.
      */
-    // @ts-ignore
+    // @ts-expect-error: forceConsistentCasingInFileNames compiler option
     RTPStreamManagement.VideoCodecParamProfileIDTypes = H264Profile;
     /**
-     * @deprecated won't be updated anymore. Please use the H264Level const enum above. Scheduled to be removed in 2021-06.
+     * @deprecated won't be updated anymore. Please use the H264Level const enum above.
      */
-    // @ts-ignore
     RTPStreamManagement.VideoCodecParamLevelTypes = Object.freeze({ TYPE3_1: 0, TYPE3_2: 1, TYPE4_0: 2 });
     return RTPStreamManagement;
 }());
@@ -896,7 +971,7 @@ exports.RTPStreamManagement = RTPStreamManagement;
  * @deprecated - only there for backwards compatibility, please use {@see RTPStreamManagement} directly
  */
 var StreamController = /** @class */ (function (_super) {
-    tslib_1.__extends(StreamController, _super);
+    (0, tslib_1.__extends)(StreamController, _super);
     // noinspection JSDeprecatedSymbols
     function StreamController(id, options, delegate, service) {
         var _this = _super.call(this, id, options, new index_1.LegacyCameraSourceAdapter(delegate), service) || this;

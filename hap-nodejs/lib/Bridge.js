@@ -9,7 +9,7 @@ var Accessory_1 = require("./Accessory");
  * will be hosted automatically, instead of needed to publish() every single Accessory as a separate server.
  */
 var Bridge = /** @class */ (function (_super) {
-    tslib_1.__extends(Bridge, _super);
+    (0, tslib_1.__extends)(Bridge, _super);
     function Bridge(displayName, UUID) {
         var _this = _super.call(this, displayName, UUID) || this;
         _this._isBridge = true;

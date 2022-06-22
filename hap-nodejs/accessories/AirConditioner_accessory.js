@@ -1,7 +1,8 @@
 "use strict";
-//In This example we create an air conditioner Accessory that Has a Thermostat linked to a Fan Service.
-//For example, I've also put a Light Service that should be hidden to represent a light in the closet that is part of the AC. It is to show how to hide services.
-//The linking and Hiding does NOT appear to be reflected in Home
+// In This example we create an air conditioner Accessory that Has a Thermostat linked to a Fan Service.
+// For example, I've also put a Light Service that should be hidden to represent a light in the closet that is part of the AC.
+// It is to show how to hide services.
+// The linking and Hiding does NOT appear to be reflected in Home
 Object.defineProperty(exports, "__esModule", { value: true });
 // here's a fake hardware device that we'll expose to HomeKit
 var __1 = require("..");
@@ -13,16 +14,15 @@ var ACTest_data = {
     CurrentTemperature: 33,
     TargetTemperature: 32,
     TemperatureDisplayUnits: 1,
-    LightOn: false
+    LightOn: false,
 };
 // This is the Accessory that we'll return to HAP-NodeJS that represents our fake fan.
-var ACTest = exports.accessory = new __1.Accessory('Air Conditioner', __1.uuid.generate('hap-nodejs:accessories:airconditioner'));
+var ACTest = exports.accessory = new __1.Accessory("Air Conditioner", __1.uuid.generate("hap-nodejs:accessories:airconditioner"));
 // Add properties for publishing (in case we're using Core.js and not BridgedCore.js)
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 ACTest.username = "1A:2B:3C:4D:5E:FF";
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 ACTest.pincode = "031-45-154";
-// @ts-ignore
 ACTest.category = 9 /* THERMOSTAT */;
 // set some basic properties (these values are arbitrary and setting them is optional)
 ACTest
@@ -114,7 +114,7 @@ ThermostatService.getCharacteristic(__1.Characteristic.TemperatureDisplayUnits)
     console.log("Characteristic TemperatureDisplayUnits changed to %s", value);
     callback();
 });
-var LightService = ACTest.addService(__1.Service.Lightbulb, 'AC Light');
+var LightService = ACTest.addService(__1.Service.Lightbulb, "AC Light");
 LightService.getCharacteristic(__1.Characteristic.On)
     .on("get" /* GET */, function (callback) {
     callback(null, ACTest_data.LightOn);

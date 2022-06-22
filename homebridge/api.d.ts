@@ -31,7 +31,7 @@ export interface PluginInitializer {
      *
      * @param {API} api
      */
-    (api: API): void;
+    (api: API): void | Promise<void>;
 }
 export interface AccessoryPluginConstructor {
     new (logger: Logging, config: AccessoryConfig, api: API): AccessoryPlugin;

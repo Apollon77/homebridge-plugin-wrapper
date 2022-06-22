@@ -20,7 +20,6 @@ export declare type InterfaceName = string;
 export declare type IPv4Address = string;
 export declare type IPv6Address = string;
 export declare type IPAddress = IPv4Address | IPv6Address;
-export declare type Callback = (...args: any[]) => void;
 export declare type NodeCallback<T> = (err: Nullable<Error> | undefined, data?: T) => void;
 export declare type VoidCallback = (err?: Nullable<Error>) => void;
 export declare type PrimitiveTypes = string | number | boolean;

@@ -2,10 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ControllerStorage = void 0;
 var tslib_1 = require("tslib");
-var util_1 = tslib_1.__importDefault(require("util"));
-var debug_1 = tslib_1.__importDefault(require("debug"));
+var util_1 = (0, tslib_1.__importDefault)(require("util"));
+var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
 var HAPStorage_1 = require("./HAPStorage");
-var debug = debug_1.default("HAP-NodeJS:ControllerStorage");
+var debug = (0, debug_1.default)("HAP-NodeJS:ControllerStorage");
 var ControllerStorage = /** @class */ (function () {
     function ControllerStorage(accessory) {
         this.initialized = false;
@@ -68,7 +68,7 @@ var ControllerStorage = /** @class */ (function () {
         if (index !== -1) { // remove from trackedControllers if storage wasn't initialized yet
             this.trackedControllers.splice(index, 1);
         }
-        controller.setupStateChangeDelegate(undefined); // remove associating with this storage object
+        controller.setupStateChangeDelegate(undefined); // remove association with this storage object
         this.purgeControllerData(controller);
     };
     ControllerStorage.prototype.purgeControllerData = function (controller) {
@@ -110,7 +110,7 @@ var ControllerStorage = /** @class */ (function () {
                 controller.deserialize(controllerData.data);
             }
             catch (error) {
-                console.warn("Could not initialize controller of type '" + controller.controllerId() + "' from data stored on disk. Resetting to default: " + error.stack);
+                console.warn("Could not initialize controller of type '".concat(controller.controllerId(), "' from data stored on disk. Resetting to default: ").concat(error.stack));
                 controller.handleFactoryReset();
             }
             controllerData.purgeOnNextLoad = undefined;
@@ -125,7 +125,7 @@ var ControllerStorage = /** @class */ (function () {
     ControllerStorage.prototype.init = function (data) {
         var _this = this;
         if (this.initialized) {
-            throw new Error("ControllerStorage for accessory " + this.accessoryUUID + " was already initialized!");
+            throw new Error("ControllerStorage for accessory ".concat(this.accessoryUUID, " was already initialized!"));
         }
         this.initialized = true;
         // storing data into our local controllerData Record
@@ -138,7 +138,7 @@ var ControllerStorage = /** @class */ (function () {
         this.trackedControllers.splice(0, this.trackedControllers.length); // clear tracking list
         var purgedData = false;
         Object.entries(this.controllerData).forEach(function (_a) {
-            var _b = tslib_1.__read(_a, 2), id = _b[0], data = _b[1];
+            var _b = (0, tslib_1.__read)(_a, 2), id = _b[0], data = _b[1];
             if (data.purgeOnNextLoad) {
                 delete _this.controllerData[id];
                 purgedData = true;
@@ -205,11 +205,11 @@ var ControllerStorage = /** @class */ (function () {
         // TODO removed accessories won't ever be deleted?
         var accessoryData = this.restoredAccessories || {};
         Object.entries(accessories).forEach(function (_a) {
-            var _b = tslib_1.__read(_a, 2), uuid = _b[0], controllerData = _b[1];
+            var _b = (0, tslib_1.__read)(_a, 2), uuid = _b[0], controllerData = _b[1];
             var entries = Object.entries(controllerData);
             if (entries.length > 0) {
                 accessoryData[uuid] = entries.map(function (_a) {
-                    var _b = tslib_1.__read(_a, 2), id = _b[0], data = _b[1];
+                    var _b = (0, tslib_1.__read)(_a, 2), id = _b[0], data = _b[1];
                     return ({
                         type: id,
                         controllerData: data,

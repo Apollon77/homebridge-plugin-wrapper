@@ -1,16 +1,16 @@
 /// <reference types="node" />
 import { MulticastOptions } from "bonjour-hap";
 import { EventEmitter } from "events";
-import { HAPPincode, InterfaceName, IPAddress, MacAddress, Nullable, VoidCallback, WithUUID } from '../types';
-import { Advertiser } from './Advertiser';
-import { LegacyCameraSource } from './camera';
-import { Characteristic } from './Characteristic';
+import { HAPPincode, InterfaceName, IPAddress, MacAddress, Nullable, VoidCallback, WithUUID } from "../types";
+import { Advertiser } from "./Advertiser";
+import { LegacyCameraSource } from "./camera";
+import { Characteristic } from "./Characteristic";
 import { CameraController, Controller, ControllerConstructor, ControllerIdentifier, ControllerServiceMap } from "./controller";
-import { HAPServer } from './HAPServer';
-import { AccessoryInfo } from './model/AccessoryInfo';
+import { HAPServer } from "./HAPServer";
+import { AccessoryInfo } from "./model/AccessoryInfo";
 import { ControllerStorage } from "./model/ControllerStorage";
-import { IdentifierCache } from './model/IdentifierCache';
-import { SerializedService, Service, ServiceCharacteristicChange, ServiceId } from './Service';
+import { IdentifierCache } from "./model/IdentifierCache";
+import { SerializedService, Service, ServiceCharacteristicChange, ServiceId } from "./Service";
 export declare const enum Categories {
     OTHER = 1,
     BRIDGE = 2,
@@ -194,7 +194,11 @@ export declare const enum MDNSAdvertiser {
     /**
      * Use the `bonjour-hap` module as advertiser.
      */
-    BONJOUR = "bonjour-hap"
+    BONJOUR = "bonjour-hap",
+    /**
+     * Use Avahi/D-Bus as advertiser.
+     */
+    AVAHI = "avahi"
 }
 export declare type AccessoryCharacteristicChange = ServiceCharacteristicChange & {
     service: Service;
@@ -216,7 +220,16 @@ export declare const enum AccessoryEventTypes {
      * You must call the callback for identification to be successful.
      */
     IDENTIFY = "identify",
+    /**
+     * This event is emitted once the HAP TCP socket is bound.
+     * At this point the mdns advertisement isn't yet available. Use the {@link ADVERTISED} if you require the accessory to be discoverable.
+     */
     LISTENING = "listening",
+    /**
+     * This event is emitted once the mDNS suite has fully advertised the presence of the accessory.
+     * This event is guaranteed to be called after {@link LISTENING}.
+     */
+    ADVERTISED = "advertised",
     SERVICE_CONFIGURATION_CHANGE = "service-configurationChange",
     /**
      * Emitted after a change in the value of one of the provided Service's Characteristics.
@@ -229,6 +242,7 @@ export declare const enum AccessoryEventTypes {
 export declare interface Accessory {
     on(event: "identify", listener: (paired: boolean, callback: VoidCallback) => void): this;
     on(event: "listening", listener: (port: number, address: string) => void): this;
+    on(event: "advertised", listener: () => void): this;
     on(event: "service-configurationChange", listener: (change: ServiceConfigurationChange) => void): this;
     on(event: "service-characteristic-change", listener: (change: AccessoryCharacteristicChange) => void): this;
     on(event: "paired", listener: () => void): this;
@@ -236,6 +250,7 @@ export declare interface Accessory {
     on(event: "characteristic-warning", listener: (warning: CharacteristicWarning) => void): this;
     emit(event: "identify", paired: boolean, callback: VoidCallback): boolean;
     emit(event: "listening", port: number, address: string): boolean;
+    emit(event: "advertised"): boolean;
     emit(event: "service-configurationChange", change: ServiceConfigurationChange): boolean;
     emit(event: "service-characteristic-change", change: AccessoryCharacteristicChange): boolean;
     emit(event: "paired"): boolean;
@@ -255,7 +270,7 @@ export declare class Accessory extends EventEmitter {
     displayName: string;
     UUID: string;
     /**
-     * @deprecated Please use the Categories const enum above. Scheduled to be removed in 2021-06.
+     * @deprecated Please use the Categories const enum above.
      */
     static Categories: typeof Categories;
     aid: Nullable<number>;
@@ -269,6 +284,12 @@ export declare class Accessory extends EventEmitter {
     services: Service[];
     private primaryService?;
     shouldPurgeUnusedIDs: boolean;
+    /**
+     * Captures if initialization steps inside {@link publish} have been called.
+     * This is important when calling {@link publish} multiple times (e.g. after calling {@link unpublish}).
+     * @private Private API
+     */
+    private initialized;
     private controllers;
     private serializedControllers?;
     private activeCameraController?;
@@ -281,7 +302,7 @@ export declare class Accessory extends EventEmitter {
     _setupURI?: string;
     private configurationChangeDebounceTimeout?;
     /**
-     * This property captures the time when we last server a /accessories request.
+     * This property captures the time when we last served a /accessories request.
      * For multiple bursts of /accessories request we don't want to always contact GET handlers
      */
     private lastAccessoriesRequest;
@@ -375,13 +396,13 @@ export declare class Accessory extends EventEmitter {
      * the provided identifierCache to keep IDs stable.
      */
     _assignIDs(identifierCache: IdentifierCache): void;
-    disableUnusedIDPurge: () => void;
-    enableUnusedIDPurge: () => void;
+    disableUnusedIDPurge(): void;
+    enableUnusedIDPurge(): void;
     /**
      * Manually purge the unused ids if you like, comes handy
      * when you have disabled auto purge so you can do it manually
      */
-    purgeUnusedIDs: () => void;
+    purgeUnusedIDs(): void;
     /**
      * Returns a JSON representation of this accessory suitable for delivering to HAP clients.
      */
@@ -404,14 +425,14 @@ export declare class Accessory extends EventEmitter {
      *                                that for instance an appropriate icon can be drawn for the user while adding a
      *                                new Accessory.
      */
-    publish(info: PublishInfo, allowInsecureRequest?: boolean): void;
+    publish(info: PublishInfo, allowInsecureRequest?: boolean): Promise<void>;
     /**
      * Removes this Accessory from the local network
      * Accessory object will no longer valid after invoking this method
      * Trying to invoke publish() on the object will result undefined behavior
      */
-    destroy(): void;
-    unpublish(): void;
+    destroy(): Promise<void>;
+    unpublish(): Promise<void>;
     private enqueueConfigurationUpdate;
     private onListening;
     private handleInitialPairSetupFinished;

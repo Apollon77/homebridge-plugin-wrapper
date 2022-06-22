@@ -1,19 +1,57 @@
 "use strict";
 // THIS FILE IS AUTO-GENERATED - DO NOT MODIFY
-// V=860
+// V=880
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CurrentTime = exports.CurrentTiltAngle = exports.CurrentTemperature = exports.CurrentSlatState = exports.CurrentRelativeHumidity = exports.CurrentPosition = exports.CurrentMediaState = exports.CurrentHumidifierDehumidifierState = exports.CurrentHorizontalTiltAngle = exports.CurrentHeatingCoolingState = exports.CurrentHeaterCoolerState = exports.CurrentFanState = exports.CurrentDoorState = exports.CurrentAmbientLightLevel = exports.CurrentAirPurifierState = exports.CoolingThresholdTemperature = exports.ContactSensorState = exports.ConfiguredName = exports.ConfigureBridgedAccessoryStatus = exports.ConfigureBridgedAccessory = exports.ColorTemperature = exports.ClosedCaptions = exports.ChargingState = exports.CharacteristicValueTransitionControl = exports.CharacteristicValueActiveTransitionCount = exports.CCASignalDetectThreshold = exports.CCAEnergyDetectThreshold = exports.Category = exports.CarbonMonoxidePeakLevel = exports.CarbonMonoxideLevel = exports.CarbonMonoxideDetected = exports.CarbonDioxidePeakLevel = exports.CarbonDioxideLevel = exports.CarbonDioxideDetected = exports.CameraOperatingModeIndicator = exports.ButtonEvent = exports.Brightness = exports.BatteryLevel = exports.AudioFeedback = exports.AppMatchingIdentifier = exports.AirQuality = exports.AirParticulateSize = exports.AirParticulateDensity = exports.AdministratorOnlyAccess = exports.ActivityInterval = exports.ActiveIdentifier = exports.Active = exports.AccessoryIdentifier = exports.AccessoryFlags = exports.AccessControlLevel = void 0;
-exports.Model = exports.MaximumTransmitPower = exports.Manufacturer = exports.ManuallyDisabled = exports.ManagedNetworkEnable = exports.MACTransmissionCounters = exports.MACRetransmissionMaximum = exports.Logs = exports.LockTargetState = exports.LockPhysicalControls = exports.LockManagementAutoSecurityTimeout = exports.LockLastKnownAction = exports.LockCurrentState = exports.LockControlPoint = exports.ListPairings = exports.LinkQuality = exports.LeakDetected = exports.IsConfigured = exports.InUse = exports.InputSourceType = exports.InputDeviceType = exports.ImageRotation = exports.ImageMirroring = exports.Identify = exports.Identifier = exports.Hue = exports.HomeKitCameraActive = exports.HoldPosition = exports.HeatingThresholdTemperature = exports.HeartBeat = exports.HardwareRevision = exports.FirmwareUpdateStatus = exports.FirmwareUpdateReadiness = exports.FirmwareRevision = exports.FilterLifeLevel = exports.FilterChangeIndication = exports.EventTransmissionCounters = exports.EventSnapshotsActive = exports.EventRetransmissionMaximum = exports.DisplayOrder = exports.DiscoveredBridgedAccessories = exports.DiscoverBridgedAccessories = exports.DigitalZoom = exports.DiagonalFieldOfView = exports.DayoftheWeek = exports.DataStreamHAPTransportInterrupt = exports.DataStreamHAPTransport = exports.CurrentVisibilityState = exports.CurrentVerticalTiltAngle = exports.CurrentTransport = void 0;
-exports.SelectedAudioStreamConfiguration = exports.SecuritySystemTargetState = exports.SecuritySystemCurrentState = exports.SecuritySystemAlarmType = exports.Saturation = exports.RouterStatus = exports.RotationSpeed = exports.RotationDirection = exports.ResetFilterIndication = exports.RemoteKey = exports.RemainingDuration = exports.RelayState = exports.RelayEnabled = exports.RelayControlPoint = exports.RelativeHumidityHumidifierThreshold = exports.RelativeHumidityDehumidifierThreshold = exports.RecordingAudioActive = exports.ReceiverSensitivity = exports.ReceivedSignalStrengthIndication = exports.Reachable = exports.ProgramMode = exports.ProgrammableSwitchOutputState = exports.ProgrammableSwitchEvent = exports.ProductData = exports.PowerModeSelection = exports.PositionState = exports.PM2_5Density = exports.PM10Density = exports.Ping = exports.PictureMode = exports.PeriodicSnapshotsActive = exports.PasswordSetting = exports.PairVerify = exports.PairSetup = exports.PairingFeatures = exports.OzoneDensity = exports.OutletInUse = exports.OpticalZoom = exports.OperatingStateResponse = exports.On = exports.OccupancyDetected = exports.ObstructionDetected = exports.NitrogenDioxideDensity = exports.NightVision = exports.NetworkClientStatusControl = exports.NetworkClientProfileControl = exports.NetworkAccessViolationControl = exports.Name = exports.Mute = exports.MotionDetected = void 0;
-exports.TargetRelativeHumidity = exports.TargetPosition = exports.TargetMediaState = exports.TargetHumidifierDehumidifierState = exports.TargetHorizontalTiltAngle = exports.TargetHeatingCoolingState = exports.TargetHeaterCoolerState = exports.TargetFanState = exports.TargetDoorState = exports.TargetControlSupportedConfiguration = exports.TargetControlList = exports.TargetAirQuality = exports.TargetAirPurifierState = exports.SwingMode = exports.SupportedVideoStreamConfiguration = exports.SupportedVideoRecordingConfiguration = exports.SupportedTransferTransportConfiguration = exports.SupportedRTPConfiguration = exports.SupportedRouterConfiguration = exports.SupportedFirmwareUpdateConfiguration = exports.SupportedDiagnosticsSnapshot = exports.SupportedDataStreamTransportConfiguration = exports.SupportedCharacteristicValueTransitionConfiguration = exports.SupportedCameraRecordingConfiguration = exports.SupportedAudioStreamConfiguration = exports.SupportedAudioRecordingConfiguration = exports.SulphurDioxideDensity = exports.StreamingStatus = exports.StatusTampered = exports.StatusLowBattery = exports.StatusJammed = exports.StatusFault = exports.StatusActive = exports.StagedFirmwareVersion = exports.SoftwareRevision = exports.SmokeDetected = exports.SleepInterval = exports.SleepDiscoveryMode = exports.SlatType = exports.SiriInputType = exports.SignalToNoiseRatio = exports.SetupTransferTransport = exports.SetupEndpoints = exports.SetupDataStreamTransport = exports.SetDuration = exports.ServiceLabelNamespace = exports.ServiceLabelIndex = exports.SerialNumber = exports.SelectedRTPStreamConfiguration = exports.SelectedCameraRecordingConfiguration = void 0;
-exports.WiFiSatelliteStatus = exports.WiFiConfigurationControl = exports.WiFiCapabilities = exports.WaterLevel = exports.WANStatusList = exports.WANConfigurationList = exports.WakeConfiguration = exports.VolumeSelector = exports.VolumeControlType = exports.Volume = exports.VOCDensity = exports.VideoAnalysisActive = exports.Version = exports.ValveType = exports.TunneledAccessoryStateNumber = exports.TunneledAccessoryConnected = exports.TunneledAccessoryAdvertising = exports.TunnelConnectionTimeout = exports.TransmitPower = exports.TimeUpdate = exports.ThreadStatus = exports.ThreadOpenThreadVersion = exports.ThreadNodeCapabilities = exports.ThreadControlPoint = exports.ThirdPartyCameraActive = exports.TemperatureDisplayUnits = exports.TargetVisibilityState = exports.TargetVerticalTiltAngle = exports.TargetTiltAngle = exports.TargetTemperature = exports.TargetSlatState = void 0;
+exports.CurrentPosition = exports.CurrentMediaState = exports.CurrentHumidifierDehumidifierState = exports.CurrentHorizontalTiltAngle = exports.CurrentHeatingCoolingState = exports.CurrentHeaterCoolerState = exports.CurrentFanState = exports.CurrentDoorState = exports.CurrentAmbientLightLevel = exports.CurrentAirPurifierState = exports.CoolingThresholdTemperature = exports.ContactSensorState = exports.ConfiguredName = exports.ConfigureBridgedAccessoryStatus = exports.ConfigureBridgedAccessory = exports.ConfigurationState = exports.ColorTemperature = exports.ClosedCaptions = exports.ChargingState = exports.CharacteristicValueTransitionControl = exports.CharacteristicValueActiveTransitionCount = exports.CCASignalDetectThreshold = exports.CCAEnergyDetectThreshold = exports.Category = exports.CarbonMonoxidePeakLevel = exports.CarbonMonoxideLevel = exports.CarbonMonoxideDetected = exports.CarbonDioxidePeakLevel = exports.CarbonDioxideLevel = exports.CarbonDioxideDetected = exports.CameraOperatingModeIndicator = exports.ButtonEvent = exports.Brightness = exports.BatteryLevel = exports.AudioFeedback = exports.AssetUpdateReadiness = exports.AppMatchingIdentifier = exports.AirQuality = exports.AirPlayEnable = exports.AirParticulateSize = exports.AirParticulateDensity = exports.AdministratorOnlyAccess = exports.ActivityInterval = exports.ActiveIdentifier = exports.Active = exports.AccessoryIdentifier = exports.AccessoryFlags = exports.AccessControlLevel = exports.AccessCodeSupportedConfiguration = exports.AccessCodeControlPoint = void 0;
+exports.MACRetransmissionMaximum = exports.Logs = exports.LockTargetState = exports.LockPhysicalControls = exports.LockManagementAutoSecurityTimeout = exports.LockLastKnownAction = exports.LockCurrentState = exports.LockControlPoint = exports.ListPairings = exports.LinkQuality = exports.LeakDetected = exports.IsConfigured = exports.InUse = exports.InputSourceType = exports.InputDeviceType = exports.ImageRotation = exports.ImageMirroring = exports.Identify = exports.Identifier = exports.Hue = exports.HomeKitCameraActive = exports.HoldPosition = exports.HeatingThresholdTemperature = exports.HeartBeat = exports.HardwareRevision = exports.HardwareFinish = exports.FirmwareUpdateStatus = exports.FirmwareUpdateReadiness = exports.FirmwareRevision = exports.FilterLifeLevel = exports.FilterChangeIndication = exports.EventTransmissionCounters = exports.EventSnapshotsActive = exports.EventRetransmissionMaximum = exports.DisplayOrder = exports.DiscoveredBridgedAccessories = exports.DiscoverBridgedAccessories = exports.DigitalZoom = exports.DiagonalFieldOfView = exports.DayoftheWeek = exports.DataStreamHAPTransportInterrupt = exports.DataStreamHAPTransport = exports.CurrentVisibilityState = exports.CurrentVerticalTiltAngle = exports.CurrentTransport = exports.CurrentTime = exports.CurrentTiltAngle = exports.CurrentTemperature = exports.CurrentSlatState = exports.CurrentRelativeHumidity = void 0;
+exports.RemoteKey = exports.RemainingDuration = exports.RelayState = exports.RelayEnabled = exports.RelayControlPoint = exports.RelativeHumidityHumidifierThreshold = exports.RelativeHumidityDehumidifierThreshold = exports.RecordingAudioActive = exports.ReceiverSensitivity = exports.ReceivedSignalStrengthIndication = exports.Reachable = exports.ProgramMode = exports.ProgrammableSwitchOutputState = exports.ProgrammableSwitchEvent = exports.ProductData = exports.PowerModeSelection = exports.PositionState = exports.PM2_5Density = exports.PM10Density = exports.Ping = exports.PictureMode = exports.PeriodicSnapshotsActive = exports.PasswordSetting = exports.PairVerify = exports.PairSetup = exports.PairingFeatures = exports.OzoneDensity = exports.OutletInUse = exports.OpticalZoom = exports.OperatingStateResponse = exports.On = exports.OccupancyDetected = exports.ObstructionDetected = exports.NitrogenDioxideDensity = exports.NightVision = exports.NFCAccessSupportedConfiguration = exports.NFCAccessControlPoint = exports.NetworkClientStatusControl = exports.NetworkClientProfileControl = exports.NetworkAccessViolationControl = exports.Name = exports.Mute = exports.MultifunctionButton = exports.MotionDetected = exports.Model = exports.MaximumTransmitPower = exports.Manufacturer = exports.ManuallyDisabled = exports.ManagedNetworkEnable = exports.MACTransmissionCounters = void 0;
+exports.SupportedRouterConfiguration = exports.SupportedFirmwareUpdateConfiguration = exports.SupportedDiagnosticsSnapshot = exports.SupportedDiagnosticsModes = exports.SupportedDataStreamTransportConfiguration = exports.SupportedCharacteristicValueTransitionConfiguration = exports.SupportedCameraRecordingConfiguration = exports.SupportedAudioStreamConfiguration = exports.SupportedAudioRecordingConfiguration = exports.SupportedAssetTypes = exports.SulphurDioxideDensity = exports.StreamingStatus = exports.StatusTampered = exports.StatusLowBattery = exports.StatusJammed = exports.StatusFault = exports.StatusActive = exports.StagedFirmwareVersion = exports.SoftwareRevision = exports.SmokeDetected = exports.SleepInterval = exports.SleepDiscoveryMode = exports.SlatType = exports.SiriTouchToUse = exports.SiriListening = exports.SiriLightOnUse = exports.SiriInputType = exports.SiriEngineVersion = exports.SiriEndpointSessionStatus = exports.SiriEnable = exports.SignalToNoiseRatio = exports.SetupTransferTransport = exports.SetupEndpoints = exports.SetupDataStreamTransport = exports.SetDuration = exports.ServiceLabelNamespace = exports.ServiceLabelIndex = exports.SerialNumber = exports.SelectedRTPStreamConfiguration = exports.SelectedDiagnosticsModes = exports.SelectedCameraRecordingConfiguration = exports.SelectedAudioStreamConfiguration = exports.SecuritySystemTargetState = exports.SecuritySystemCurrentState = exports.SecuritySystemAlarmType = exports.Saturation = exports.RouterStatus = exports.RotationSpeed = exports.RotationDirection = exports.ResetFilterIndication = void 0;
+exports.WiFiSatelliteStatus = exports.WiFiConfigurationControl = exports.WiFiCapabilities = exports.WaterLevel = exports.WANStatusList = exports.WANConfigurationList = exports.WakeConfiguration = exports.VolumeSelector = exports.VolumeControlType = exports.Volume = exports.VOCDensity = exports.VideoAnalysisActive = exports.Version = exports.ValveType = exports.TunneledAccessoryStateNumber = exports.TunneledAccessoryConnected = exports.TunneledAccessoryAdvertising = exports.TunnelConnectionTimeout = exports.TransmitPower = exports.TimeUpdate = exports.ThreadStatus = exports.ThreadOpenThreadVersion = exports.ThreadNodeCapabilities = exports.ThreadControlPoint = exports.ThirdPartyCameraActive = exports.TemperatureDisplayUnits = exports.TargetVisibilityState = exports.TargetVerticalTiltAngle = exports.TargetTiltAngle = exports.TargetTemperature = exports.TargetSlatState = exports.TargetRelativeHumidity = exports.TargetPosition = exports.TargetMediaState = exports.TargetHumidifierDehumidifierState = exports.TargetHorizontalTiltAngle = exports.TargetHeatingCoolingState = exports.TargetHeaterCoolerState = exports.TargetFanState = exports.TargetDoorState = exports.TargetControlSupportedConfiguration = exports.TargetControlList = exports.TargetAirQuality = exports.TargetAirPurifierState = exports.SwingMode = exports.SupportedVideoStreamConfiguration = exports.SupportedVideoRecordingConfiguration = exports.SupportedTransferTransportConfiguration = exports.SupportedRTPConfiguration = void 0;
 var tslib_1 = require("tslib");
 var Characteristic_1 = require("../Characteristic");
+/**
+ * Characteristic "Access Code Control Point"
+ * @since iOS 15
+ */
+var AccessCodeControlPoint = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(AccessCodeControlPoint, _super);
+    function AccessCodeControlPoint() {
+        var _this = _super.call(this, "Access Code Control Point", AccessCodeControlPoint.UUID, {
+            format: "tlv8" /* TLV8 */,
+            perms: ["pr" /* PAIRED_READ */, "pw" /* PAIRED_WRITE */, "wr" /* WRITE_RESPONSE */],
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    AccessCodeControlPoint.UUID = "00000262-0000-1000-8000-0026BB765291";
+    return AccessCodeControlPoint;
+}(Characteristic_1.Characteristic));
+exports.AccessCodeControlPoint = AccessCodeControlPoint;
+Characteristic_1.Characteristic.AccessCodeControlPoint = AccessCodeControlPoint;
+/**
+ * Characteristic "Access Code Supported Configuration"
+ * @since iOS 15
+ */
+var AccessCodeSupportedConfiguration = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(AccessCodeSupportedConfiguration, _super);
+    function AccessCodeSupportedConfiguration() {
+        var _this = _super.call(this, "Access Code Supported Configuration", AccessCodeSupportedConfiguration.UUID, {
+            format: "tlv8" /* TLV8 */,
+            perms: ["pr" /* PAIRED_READ */],
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    AccessCodeSupportedConfiguration.UUID = "00000261-0000-1000-8000-0026BB765291";
+    return AccessCodeSupportedConfiguration;
+}(Characteristic_1.Characteristic));
+exports.AccessCodeSupportedConfiguration = AccessCodeSupportedConfiguration;
+Characteristic_1.Characteristic.AccessCodeSupportedConfiguration = AccessCodeSupportedConfiguration;
 /**
  * Characteristic "Access Control Level"
  */
 var AccessControlLevel = /** @class */ (function (_super) {
-    tslib_1.__extends(AccessControlLevel, _super);
+    (0, tslib_1.__extends)(AccessControlLevel, _super);
     function AccessControlLevel() {
         var _this = _super.call(this, "Access Control Level", AccessControlLevel.UUID, {
             format: "uint16" /* UINT16 */,
@@ -34,7 +72,7 @@ Characteristic_1.Characteristic.AccessControlLevel = AccessControlLevel;
  * Characteristic "Accessory Flags"
  */
 var AccessoryFlags = /** @class */ (function (_super) {
-    tslib_1.__extends(AccessoryFlags, _super);
+    (0, tslib_1.__extends)(AccessoryFlags, _super);
     function AccessoryFlags() {
         var _this = _super.call(this, "Accessory Flags", AccessoryFlags.UUID, {
             format: "uint32" /* UINT32 */,
@@ -53,7 +91,7 @@ Characteristic_1.Characteristic.AccessoryFlags = AccessoryFlags;
  * Characteristic "Accessory Identifier"
  */
 var AccessoryIdentifier = /** @class */ (function (_super) {
-    tslib_1.__extends(AccessoryIdentifier, _super);
+    (0, tslib_1.__extends)(AccessoryIdentifier, _super);
     function AccessoryIdentifier() {
         var _this = _super.call(this, "Accessory Identifier", AccessoryIdentifier.UUID, {
             format: "string" /* STRING */,
@@ -71,7 +109,7 @@ Characteristic_1.Characteristic.AccessoryIdentifier = AccessoryIdentifier;
  * Characteristic "Active"
  */
 var Active = /** @class */ (function (_super) {
-    tslib_1.__extends(Active, _super);
+    (0, tslib_1.__extends)(Active, _super);
     function Active() {
         var _this = _super.call(this, "Active", Active.UUID, {
             format: "uint8" /* UINT8 */,
@@ -95,7 +133,7 @@ Characteristic_1.Characteristic.Active = Active;
  * Characteristic "Active Identifier"
  */
 var ActiveIdentifier = /** @class */ (function (_super) {
-    tslib_1.__extends(ActiveIdentifier, _super);
+    (0, tslib_1.__extends)(ActiveIdentifier, _super);
     function ActiveIdentifier() {
         var _this = _super.call(this, "Active Identifier", ActiveIdentifier.UUID, {
             format: "uint32" /* UINT32 */,
@@ -114,7 +152,7 @@ Characteristic_1.Characteristic.ActiveIdentifier = ActiveIdentifier;
  * @since iOS 14
  */
 var ActivityInterval = /** @class */ (function (_super) {
-    tslib_1.__extends(ActivityInterval, _super);
+    (0, tslib_1.__extends)(ActivityInterval, _super);
     function ActivityInterval() {
         var _this = _super.call(this, "Activity Interval", ActivityInterval.UUID, {
             format: "uint32" /* UINT32 */,
@@ -134,7 +172,7 @@ Characteristic_1.Characteristic.ActivityInterval = ActivityInterval;
  * Characteristic "Administrator Only Access"
  */
 var AdministratorOnlyAccess = /** @class */ (function (_super) {
-    tslib_1.__extends(AdministratorOnlyAccess, _super);
+    (0, tslib_1.__extends)(AdministratorOnlyAccess, _super);
     function AdministratorOnlyAccess() {
         var _this = _super.call(this, "Administrator Only Access", AdministratorOnlyAccess.UUID, {
             format: "bool" /* BOOL */,
@@ -152,7 +190,7 @@ Characteristic_1.Characteristic.AdministratorOnlyAccess = AdministratorOnlyAcces
  * Characteristic "Air Particulate Density"
  */
 var AirParticulateDensity = /** @class */ (function (_super) {
-    tslib_1.__extends(AirParticulateDensity, _super);
+    (0, tslib_1.__extends)(AirParticulateDensity, _super);
     function AirParticulateDensity() {
         var _this = _super.call(this, "Air Particulate Density", AirParticulateDensity.UUID, {
             format: "float" /* FLOAT */,
@@ -172,7 +210,7 @@ Characteristic_1.Characteristic.AirParticulateDensity = AirParticulateDensity;
  * Characteristic "Air Particulate Size"
  */
 var AirParticulateSize = /** @class */ (function (_super) {
-    tslib_1.__extends(AirParticulateSize, _super);
+    (0, tslib_1.__extends)(AirParticulateSize, _super);
     function AirParticulateSize() {
         var _this = _super.call(this, "Air Particulate Size", AirParticulateSize.UUID, {
             format: "uint8" /* UINT8 */,
@@ -193,10 +231,30 @@ var AirParticulateSize = /** @class */ (function (_super) {
 exports.AirParticulateSize = AirParticulateSize;
 Characteristic_1.Characteristic.AirParticulateSize = AirParticulateSize;
 /**
+ * Characteristic "AirPlay Enable"
+ */
+var AirPlayEnable = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(AirPlayEnable, _super);
+    function AirPlayEnable() {
+        var _this = _super.call(this, "AirPlay Enable", AirPlayEnable.UUID, {
+            format: "uint8" /* UINT8 */,
+            perms: ["ev" /* NOTIFY */, "pr" /* PAIRED_READ */, "pw" /* PAIRED_WRITE */],
+            minValue: 0,
+            maxValue: 1,
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    AirPlayEnable.UUID = "0000025B-0000-1000-8000-0026BB765291";
+    return AirPlayEnable;
+}(Characteristic_1.Characteristic));
+exports.AirPlayEnable = AirPlayEnable;
+Characteristic_1.Characteristic.AirPlayEnable = AirPlayEnable;
+/**
  * Characteristic "Air Quality"
  */
 var AirQuality = /** @class */ (function (_super) {
-    tslib_1.__extends(AirQuality, _super);
+    (0, tslib_1.__extends)(AirQuality, _super);
     function AirQuality() {
         var _this = _super.call(this, "Air Quality", AirQuality.UUID, {
             format: "uint8" /* UINT8 */,
@@ -224,7 +282,7 @@ Characteristic_1.Characteristic.AirQuality = AirQuality;
  * Characteristic "App Matching Identifier"
  */
 var AppMatchingIdentifier = /** @class */ (function (_super) {
-    tslib_1.__extends(AppMatchingIdentifier, _super);
+    (0, tslib_1.__extends)(AppMatchingIdentifier, _super);
     function AppMatchingIdentifier() {
         var _this = _super.call(this, "App Matching Identifier", AppMatchingIdentifier.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -239,10 +297,28 @@ var AppMatchingIdentifier = /** @class */ (function (_super) {
 exports.AppMatchingIdentifier = AppMatchingIdentifier;
 Characteristic_1.Characteristic.AppMatchingIdentifier = AppMatchingIdentifier;
 /**
+ * Characteristic "Asset Update Readiness"
+ */
+var AssetUpdateReadiness = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(AssetUpdateReadiness, _super);
+    function AssetUpdateReadiness() {
+        var _this = _super.call(this, "Asset Update Readiness", AssetUpdateReadiness.UUID, {
+            format: "uint32" /* UINT32 */,
+            perms: ["ev" /* NOTIFY */, "pr" /* PAIRED_READ */],
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    AssetUpdateReadiness.UUID = "00000269-0000-1000-8000-0026BB765291";
+    return AssetUpdateReadiness;
+}(Characteristic_1.Characteristic));
+exports.AssetUpdateReadiness = AssetUpdateReadiness;
+Characteristic_1.Characteristic.AssetUpdateReadiness = AssetUpdateReadiness;
+/**
  * Characteristic "Audio Feedback"
  */
 var AudioFeedback = /** @class */ (function (_super) {
-    tslib_1.__extends(AudioFeedback, _super);
+    (0, tslib_1.__extends)(AudioFeedback, _super);
     function AudioFeedback() {
         var _this = _super.call(this, "Audio Feedback", AudioFeedback.UUID, {
             format: "bool" /* BOOL */,
@@ -260,7 +336,7 @@ Characteristic_1.Characteristic.AudioFeedback = AudioFeedback;
  * Characteristic "Battery Level"
  */
 var BatteryLevel = /** @class */ (function (_super) {
-    tslib_1.__extends(BatteryLevel, _super);
+    (0, tslib_1.__extends)(BatteryLevel, _super);
     function BatteryLevel() {
         var _this = _super.call(this, "Battery Level", BatteryLevel.UUID, {
             format: "uint8" /* UINT8 */,
@@ -282,7 +358,7 @@ Characteristic_1.Characteristic.BatteryLevel = BatteryLevel;
  * Characteristic "Brightness"
  */
 var Brightness = /** @class */ (function (_super) {
-    tslib_1.__extends(Brightness, _super);
+    (0, tslib_1.__extends)(Brightness, _super);
     function Brightness() {
         var _this = _super.call(this, "Brightness", Brightness.UUID, {
             format: "int" /* INT */,
@@ -304,7 +380,7 @@ Characteristic_1.Characteristic.Brightness = Brightness;
  * Characteristic "Button Event"
  */
 var ButtonEvent = /** @class */ (function (_super) {
-    tslib_1.__extends(ButtonEvent, _super);
+    (0, tslib_1.__extends)(ButtonEvent, _super);
     function ButtonEvent() {
         var _this = _super.call(this, "Button Event", ButtonEvent.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -323,7 +399,7 @@ Characteristic_1.Characteristic.ButtonEvent = ButtonEvent;
  * Characteristic "Camera Operating Mode Indicator"
  */
 var CameraOperatingModeIndicator = /** @class */ (function (_super) {
-    tslib_1.__extends(CameraOperatingModeIndicator, _super);
+    (0, tslib_1.__extends)(CameraOperatingModeIndicator, _super);
     function CameraOperatingModeIndicator() {
         var _this = _super.call(this, "Camera Operating Mode Indicator", CameraOperatingModeIndicator.UUID, {
             format: "bool" /* BOOL */,
@@ -344,7 +420,7 @@ Characteristic_1.Characteristic.CameraOperatingModeIndicator = CameraOperatingMo
  * Characteristic "Carbon Dioxide Detected"
  */
 var CarbonDioxideDetected = /** @class */ (function (_super) {
-    tslib_1.__extends(CarbonDioxideDetected, _super);
+    (0, tslib_1.__extends)(CarbonDioxideDetected, _super);
     function CarbonDioxideDetected() {
         var _this = _super.call(this, "Carbon Dioxide Detected", CarbonDioxideDetected.UUID, {
             format: "uint8" /* UINT8 */,
@@ -368,7 +444,7 @@ Characteristic_1.Characteristic.CarbonDioxideDetected = CarbonDioxideDetected;
  * Characteristic "Carbon Dioxide Level"
  */
 var CarbonDioxideLevel = /** @class */ (function (_super) {
-    tslib_1.__extends(CarbonDioxideLevel, _super);
+    (0, tslib_1.__extends)(CarbonDioxideLevel, _super);
     function CarbonDioxideLevel() {
         var _this = _super.call(this, "Carbon Dioxide Level", CarbonDioxideLevel.UUID, {
             format: "float" /* FLOAT */,
@@ -389,7 +465,7 @@ Characteristic_1.Characteristic.CarbonDioxideLevel = CarbonDioxideLevel;
  * Characteristic "Carbon Dioxide Peak Level"
  */
 var CarbonDioxidePeakLevel = /** @class */ (function (_super) {
-    tslib_1.__extends(CarbonDioxidePeakLevel, _super);
+    (0, tslib_1.__extends)(CarbonDioxidePeakLevel, _super);
     function CarbonDioxidePeakLevel() {
         var _this = _super.call(this, "Carbon Dioxide Peak Level", CarbonDioxidePeakLevel.UUID, {
             format: "float" /* FLOAT */,
@@ -410,7 +486,7 @@ Characteristic_1.Characteristic.CarbonDioxidePeakLevel = CarbonDioxidePeakLevel;
  * Characteristic "Carbon Monoxide Detected"
  */
 var CarbonMonoxideDetected = /** @class */ (function (_super) {
-    tslib_1.__extends(CarbonMonoxideDetected, _super);
+    (0, tslib_1.__extends)(CarbonMonoxideDetected, _super);
     function CarbonMonoxideDetected() {
         var _this = _super.call(this, "Carbon Monoxide Detected", CarbonMonoxideDetected.UUID, {
             format: "uint8" /* UINT8 */,
@@ -434,7 +510,7 @@ Characteristic_1.Characteristic.CarbonMonoxideDetected = CarbonMonoxideDetected;
  * Characteristic "Carbon Monoxide Level"
  */
 var CarbonMonoxideLevel = /** @class */ (function (_super) {
-    tslib_1.__extends(CarbonMonoxideLevel, _super);
+    (0, tslib_1.__extends)(CarbonMonoxideLevel, _super);
     function CarbonMonoxideLevel() {
         var _this = _super.call(this, "Carbon Monoxide Level", CarbonMonoxideLevel.UUID, {
             format: "float" /* FLOAT */,
@@ -455,7 +531,7 @@ Characteristic_1.Characteristic.CarbonMonoxideLevel = CarbonMonoxideLevel;
  * Characteristic "Carbon Monoxide Peak Level"
  */
 var CarbonMonoxidePeakLevel = /** @class */ (function (_super) {
-    tslib_1.__extends(CarbonMonoxidePeakLevel, _super);
+    (0, tslib_1.__extends)(CarbonMonoxidePeakLevel, _super);
     function CarbonMonoxidePeakLevel() {
         var _this = _super.call(this, "Carbon Monoxide Peak Level", CarbonMonoxidePeakLevel.UUID, {
             format: "float" /* FLOAT */,
@@ -477,7 +553,7 @@ Characteristic_1.Characteristic.CarbonMonoxidePeakLevel = CarbonMonoxidePeakLeve
  * @deprecated Removed and not used anymore
  */
 var Category = /** @class */ (function (_super) {
-    tslib_1.__extends(Category, _super);
+    (0, tslib_1.__extends)(Category, _super);
     function Category() {
         var _this = _super.call(this, "Category", Category.UUID, {
             format: "uint16" /* UINT16 */,
@@ -499,7 +575,7 @@ Characteristic_1.Characteristic.Category = Category;
  * @since iOS 14
  */
 var CCAEnergyDetectThreshold = /** @class */ (function (_super) {
-    tslib_1.__extends(CCAEnergyDetectThreshold, _super);
+    (0, tslib_1.__extends)(CCAEnergyDetectThreshold, _super);
     function CCAEnergyDetectThreshold() {
         var _this = _super.call(this, "CCA Energy Detect Threshold", CCAEnergyDetectThreshold.UUID, {
             format: "int" /* INT */,
@@ -518,7 +594,7 @@ Characteristic_1.Characteristic.CCAEnergyDetectThreshold = CCAEnergyDetectThresh
  * @since iOS 14
  */
 var CCASignalDetectThreshold = /** @class */ (function (_super) {
-    tslib_1.__extends(CCASignalDetectThreshold, _super);
+    (0, tslib_1.__extends)(CCASignalDetectThreshold, _super);
     function CCASignalDetectThreshold() {
         var _this = _super.call(this, "CCA Signal Detect Threshold", CCASignalDetectThreshold.UUID, {
             format: "int" /* INT */,
@@ -537,7 +613,7 @@ Characteristic_1.Characteristic.CCASignalDetectThreshold = CCASignalDetectThresh
  * @since iOS 14
  */
 var CharacteristicValueActiveTransitionCount = /** @class */ (function (_super) {
-    tslib_1.__extends(CharacteristicValueActiveTransitionCount, _super);
+    (0, tslib_1.__extends)(CharacteristicValueActiveTransitionCount, _super);
     function CharacteristicValueActiveTransitionCount() {
         var _this = _super.call(this, "Characteristic Value Active Transition Count", CharacteristicValueActiveTransitionCount.UUID, {
             format: "uint8" /* UINT8 */,
@@ -556,7 +632,7 @@ Characteristic_1.Characteristic.CharacteristicValueActiveTransitionCount = Chara
  * @since iOS 14
  */
 var CharacteristicValueTransitionControl = /** @class */ (function (_super) {
-    tslib_1.__extends(CharacteristicValueTransitionControl, _super);
+    (0, tslib_1.__extends)(CharacteristicValueTransitionControl, _super);
     function CharacteristicValueTransitionControl() {
         var _this = _super.call(this, "Characteristic Value Transition Control", CharacteristicValueTransitionControl.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -574,7 +650,7 @@ Characteristic_1.Characteristic.CharacteristicValueTransitionControl = Character
  * Characteristic "Charging State"
  */
 var ChargingState = /** @class */ (function (_super) {
-    tslib_1.__extends(ChargingState, _super);
+    (0, tslib_1.__extends)(ChargingState, _super);
     function ChargingState() {
         var _this = _super.call(this, "Charging State", ChargingState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -599,7 +675,7 @@ Characteristic_1.Characteristic.ChargingState = ChargingState;
  * Characteristic "Closed Captions"
  */
 var ClosedCaptions = /** @class */ (function (_super) {
-    tslib_1.__extends(ClosedCaptions, _super);
+    (0, tslib_1.__extends)(ClosedCaptions, _super);
     function ClosedCaptions() {
         var _this = _super.call(this, "Closed Captions", ClosedCaptions.UUID, {
             format: "uint8" /* UINT8 */,
@@ -623,7 +699,7 @@ Characteristic_1.Characteristic.ClosedCaptions = ClosedCaptions;
  * Characteristic "Color Temperature"
  */
 var ColorTemperature = /** @class */ (function (_super) {
-    tslib_1.__extends(ColorTemperature, _super);
+    (0, tslib_1.__extends)(ColorTemperature, _super);
     function ColorTemperature() {
         var _this = _super.call(this, "Color Temperature", ColorTemperature.UUID, {
             format: "int" /* INT */,
@@ -641,11 +717,30 @@ var ColorTemperature = /** @class */ (function (_super) {
 exports.ColorTemperature = ColorTemperature;
 Characteristic_1.Characteristic.ColorTemperature = ColorTemperature;
 /**
+ * Characteristic "Configuration State"
+ * @since iOS 15
+ */
+var ConfigurationState = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(ConfigurationState, _super);
+    function ConfigurationState() {
+        var _this = _super.call(this, "Configuration State", ConfigurationState.UUID, {
+            format: "uint16" /* UINT16 */,
+            perms: ["ev" /* NOTIFY */, "pr" /* PAIRED_READ */],
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    ConfigurationState.UUID = "00000263-0000-1000-8000-0026BB765291";
+    return ConfigurationState;
+}(Characteristic_1.Characteristic));
+exports.ConfigurationState = ConfigurationState;
+Characteristic_1.Characteristic.ConfigurationState = ConfigurationState;
+/**
  * Characteristic "Configure Bridged Accessory"
  * @deprecated Removed and not used anymore
  */
 var ConfigureBridgedAccessory = /** @class */ (function (_super) {
-    tslib_1.__extends(ConfigureBridgedAccessory, _super);
+    (0, tslib_1.__extends)(ConfigureBridgedAccessory, _super);
     function ConfigureBridgedAccessory() {
         var _this = _super.call(this, "Configure Bridged Accessory", ConfigureBridgedAccessory.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -665,7 +760,7 @@ Characteristic_1.Characteristic.ConfigureBridgedAccessory = ConfigureBridgedAcce
  * @deprecated Removed and not used anymore
  */
 var ConfigureBridgedAccessoryStatus = /** @class */ (function (_super) {
-    tslib_1.__extends(ConfigureBridgedAccessoryStatus, _super);
+    (0, tslib_1.__extends)(ConfigureBridgedAccessoryStatus, _super);
     function ConfigureBridgedAccessoryStatus() {
         var _this = _super.call(this, "Configure Bridged Accessory Status", ConfigureBridgedAccessoryStatus.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -684,7 +779,7 @@ Characteristic_1.Characteristic.ConfigureBridgedAccessoryStatus = ConfigureBridg
  * Characteristic "Configured Name"
  */
 var ConfiguredName = /** @class */ (function (_super) {
-    tslib_1.__extends(ConfiguredName, _super);
+    (0, tslib_1.__extends)(ConfiguredName, _super);
     function ConfiguredName() {
         var _this = _super.call(this, "Configured Name", ConfiguredName.UUID, {
             format: "string" /* STRING */,
@@ -702,7 +797,7 @@ Characteristic_1.Characteristic.ConfiguredName = ConfiguredName;
  * Characteristic "Contact Sensor State"
  */
 var ContactSensorState = /** @class */ (function (_super) {
-    tslib_1.__extends(ContactSensorState, _super);
+    (0, tslib_1.__extends)(ContactSensorState, _super);
     function ContactSensorState() {
         var _this = _super.call(this, "Contact Sensor State", ContactSensorState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -726,7 +821,7 @@ Characteristic_1.Characteristic.ContactSensorState = ContactSensorState;
  * Characteristic "Cooling Threshold Temperature"
  */
 var CoolingThresholdTemperature = /** @class */ (function (_super) {
-    tslib_1.__extends(CoolingThresholdTemperature, _super);
+    (0, tslib_1.__extends)(CoolingThresholdTemperature, _super);
     function CoolingThresholdTemperature() {
         var _this = _super.call(this, "Cooling Threshold Temperature", CoolingThresholdTemperature.UUID, {
             format: "float" /* FLOAT */,
@@ -748,7 +843,7 @@ Characteristic_1.Characteristic.CoolingThresholdTemperature = CoolingThresholdTe
  * Characteristic "Current Air Purifier State"
  */
 var CurrentAirPurifierState = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentAirPurifierState, _super);
+    (0, tslib_1.__extends)(CurrentAirPurifierState, _super);
     function CurrentAirPurifierState() {
         var _this = _super.call(this, "Current Air Purifier State", CurrentAirPurifierState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -773,7 +868,7 @@ Characteristic_1.Characteristic.CurrentAirPurifierState = CurrentAirPurifierStat
  * Characteristic "Current Ambient Light Level"
  */
 var CurrentAmbientLightLevel = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentAmbientLightLevel, _super);
+    (0, tslib_1.__extends)(CurrentAmbientLightLevel, _super);
     function CurrentAmbientLightLevel() {
         var _this = _super.call(this, "Current Ambient Light Level", CurrentAmbientLightLevel.UUID, {
             format: "float" /* FLOAT */,
@@ -794,7 +889,7 @@ Characteristic_1.Characteristic.CurrentAmbientLightLevel = CurrentAmbientLightLe
  * Characteristic "Current Door State"
  */
 var CurrentDoorState = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentDoorState, _super);
+    (0, tslib_1.__extends)(CurrentDoorState, _super);
     function CurrentDoorState() {
         var _this = _super.call(this, "Current Door State", CurrentDoorState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -821,7 +916,7 @@ Characteristic_1.Characteristic.CurrentDoorState = CurrentDoorState;
  * Characteristic "Current Fan State"
  */
 var CurrentFanState = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentFanState, _super);
+    (0, tslib_1.__extends)(CurrentFanState, _super);
     function CurrentFanState() {
         var _this = _super.call(this, "Current Fan State", CurrentFanState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -846,7 +941,7 @@ Characteristic_1.Characteristic.CurrentFanState = CurrentFanState;
  * Characteristic "Current Heater-Cooler State"
  */
 var CurrentHeaterCoolerState = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentHeaterCoolerState, _super);
+    (0, tslib_1.__extends)(CurrentHeaterCoolerState, _super);
     function CurrentHeaterCoolerState() {
         var _this = _super.call(this, "Current Heater-Cooler State", CurrentHeaterCoolerState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -872,7 +967,7 @@ Characteristic_1.Characteristic.CurrentHeaterCoolerState = CurrentHeaterCoolerSt
  * Characteristic "Current Heating Cooling State"
  */
 var CurrentHeatingCoolingState = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentHeatingCoolingState, _super);
+    (0, tslib_1.__extends)(CurrentHeatingCoolingState, _super);
     function CurrentHeatingCoolingState() {
         var _this = _super.call(this, "Current Heating Cooling State", CurrentHeatingCoolingState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -897,7 +992,7 @@ Characteristic_1.Characteristic.CurrentHeatingCoolingState = CurrentHeatingCooli
  * Characteristic "Current Horizontal Tilt Angle"
  */
 var CurrentHorizontalTiltAngle = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentHorizontalTiltAngle, _super);
+    (0, tslib_1.__extends)(CurrentHorizontalTiltAngle, _super);
     function CurrentHorizontalTiltAngle() {
         var _this = _super.call(this, "Current Horizontal Tilt Angle", CurrentHorizontalTiltAngle.UUID, {
             format: "int" /* INT */,
@@ -919,7 +1014,7 @@ Characteristic_1.Characteristic.CurrentHorizontalTiltAngle = CurrentHorizontalTi
  * Characteristic "Current Humidifier-Dehumidifier State"
  */
 var CurrentHumidifierDehumidifierState = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentHumidifierDehumidifierState, _super);
+    (0, tslib_1.__extends)(CurrentHumidifierDehumidifierState, _super);
     function CurrentHumidifierDehumidifierState() {
         var _this = _super.call(this, "Current Humidifier-Dehumidifier State", CurrentHumidifierDehumidifierState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -945,7 +1040,7 @@ Characteristic_1.Characteristic.CurrentHumidifierDehumidifierState = CurrentHumi
  * Characteristic "Current Media State"
  */
 var CurrentMediaState = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentMediaState, _super);
+    (0, tslib_1.__extends)(CurrentMediaState, _super);
     function CurrentMediaState() {
         var _this = _super.call(this, "Current Media State", CurrentMediaState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -972,7 +1067,7 @@ Characteristic_1.Characteristic.CurrentMediaState = CurrentMediaState;
  * Characteristic "Current Position"
  */
 var CurrentPosition = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentPosition, _super);
+    (0, tslib_1.__extends)(CurrentPosition, _super);
     function CurrentPosition() {
         var _this = _super.call(this, "Current Position", CurrentPosition.UUID, {
             format: "uint8" /* UINT8 */,
@@ -994,7 +1089,7 @@ Characteristic_1.Characteristic.CurrentPosition = CurrentPosition;
  * Characteristic "Current Relative Humidity"
  */
 var CurrentRelativeHumidity = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentRelativeHumidity, _super);
+    (0, tslib_1.__extends)(CurrentRelativeHumidity, _super);
     function CurrentRelativeHumidity() {
         var _this = _super.call(this, "Current Relative Humidity", CurrentRelativeHumidity.UUID, {
             format: "float" /* FLOAT */,
@@ -1016,7 +1111,7 @@ Characteristic_1.Characteristic.CurrentRelativeHumidity = CurrentRelativeHumidit
  * Characteristic "Current Slat State"
  */
 var CurrentSlatState = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentSlatState, _super);
+    (0, tslib_1.__extends)(CurrentSlatState, _super);
     function CurrentSlatState() {
         var _this = _super.call(this, "Current Slat State", CurrentSlatState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1041,7 +1136,7 @@ Characteristic_1.Characteristic.CurrentSlatState = CurrentSlatState;
  * Characteristic "Current Temperature"
  */
 var CurrentTemperature = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentTemperature, _super);
+    (0, tslib_1.__extends)(CurrentTemperature, _super);
     function CurrentTemperature() {
         var _this = _super.call(this, "Current Temperature", CurrentTemperature.UUID, {
             format: "float" /* FLOAT */,
@@ -1063,7 +1158,7 @@ Characteristic_1.Characteristic.CurrentTemperature = CurrentTemperature;
  * Characteristic "Current Tilt Angle"
  */
 var CurrentTiltAngle = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentTiltAngle, _super);
+    (0, tslib_1.__extends)(CurrentTiltAngle, _super);
     function CurrentTiltAngle() {
         var _this = _super.call(this, "Current Tilt Angle", CurrentTiltAngle.UUID, {
             format: "int" /* INT */,
@@ -1086,7 +1181,7 @@ Characteristic_1.Characteristic.CurrentTiltAngle = CurrentTiltAngle;
  * @deprecated Removed and not used anymore
  */
 var CurrentTime = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentTime, _super);
+    (0, tslib_1.__extends)(CurrentTime, _super);
     function CurrentTime() {
         var _this = _super.call(this, "Current Time", CurrentTime.UUID, {
             format: "string" /* STRING */,
@@ -1106,7 +1201,7 @@ Characteristic_1.Characteristic.CurrentTime = CurrentTime;
  * @since iOS 14
  */
 var CurrentTransport = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentTransport, _super);
+    (0, tslib_1.__extends)(CurrentTransport, _super);
     function CurrentTransport() {
         var _this = _super.call(this, "Current Transport", CurrentTransport.UUID, {
             format: "bool" /* BOOL */,
@@ -1124,7 +1219,7 @@ Characteristic_1.Characteristic.CurrentTransport = CurrentTransport;
  * Characteristic "Current Vertical Tilt Angle"
  */
 var CurrentVerticalTiltAngle = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentVerticalTiltAngle, _super);
+    (0, tslib_1.__extends)(CurrentVerticalTiltAngle, _super);
     function CurrentVerticalTiltAngle() {
         var _this = _super.call(this, "Current Vertical Tilt Angle", CurrentVerticalTiltAngle.UUID, {
             format: "int" /* INT */,
@@ -1146,7 +1241,7 @@ Characteristic_1.Characteristic.CurrentVerticalTiltAngle = CurrentVerticalTiltAn
  * Characteristic "Current Visibility State"
  */
 var CurrentVisibilityState = /** @class */ (function (_super) {
-    tslib_1.__extends(CurrentVisibilityState, _super);
+    (0, tslib_1.__extends)(CurrentVisibilityState, _super);
     function CurrentVisibilityState() {
         var _this = _super.call(this, "Current Visibility State", CurrentVisibilityState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1171,7 +1266,7 @@ Characteristic_1.Characteristic.CurrentVisibilityState = CurrentVisibilityState;
  * @since iOS 14
  */
 var DataStreamHAPTransport = /** @class */ (function (_super) {
-    tslib_1.__extends(DataStreamHAPTransport, _super);
+    (0, tslib_1.__extends)(DataStreamHAPTransport, _super);
     function DataStreamHAPTransport() {
         var _this = _super.call(this, "Data Stream HAP Transport", DataStreamHAPTransport.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -1190,7 +1285,7 @@ Characteristic_1.Characteristic.DataStreamHAPTransport = DataStreamHAPTransport;
  * @since iOS 14
  */
 var DataStreamHAPTransportInterrupt = /** @class */ (function (_super) {
-    tslib_1.__extends(DataStreamHAPTransportInterrupt, _super);
+    (0, tslib_1.__extends)(DataStreamHAPTransportInterrupt, _super);
     function DataStreamHAPTransportInterrupt() {
         var _this = _super.call(this, "Data Stream HAP Transport Interrupt", DataStreamHAPTransportInterrupt.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -1209,7 +1304,7 @@ Characteristic_1.Characteristic.DataStreamHAPTransportInterrupt = DataStreamHAPT
  * @deprecated Removed and not used anymore
  */
 var DayoftheWeek = /** @class */ (function (_super) {
-    tslib_1.__extends(DayoftheWeek, _super);
+    (0, tslib_1.__extends)(DayoftheWeek, _super);
     function DayoftheWeek() {
         var _this = _super.call(this, "Day of the Week", DayoftheWeek.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1231,7 +1326,7 @@ Characteristic_1.Characteristic.DayoftheWeek = DayoftheWeek;
  * @since iOS 13.2
  */
 var DiagonalFieldOfView = /** @class */ (function (_super) {
-    tslib_1.__extends(DiagonalFieldOfView, _super);
+    (0, tslib_1.__extends)(DiagonalFieldOfView, _super);
     function DiagonalFieldOfView() {
         var _this = _super.call(this, "Diagonal Field Of View", DiagonalFieldOfView.UUID, {
             format: "float" /* FLOAT */,
@@ -1252,7 +1347,7 @@ Characteristic_1.Characteristic.DiagonalFieldOfView = DiagonalFieldOfView;
  * Characteristic "Digital Zoom"
  */
 var DigitalZoom = /** @class */ (function (_super) {
-    tslib_1.__extends(DigitalZoom, _super);
+    (0, tslib_1.__extends)(DigitalZoom, _super);
     function DigitalZoom() {
         var _this = _super.call(this, "Digital Zoom", DigitalZoom.UUID, {
             format: "float" /* FLOAT */,
@@ -1272,7 +1367,7 @@ Characteristic_1.Characteristic.DigitalZoom = DigitalZoom;
  * @deprecated Removed and not used anymore
  */
 var DiscoverBridgedAccessories = /** @class */ (function (_super) {
-    tslib_1.__extends(DiscoverBridgedAccessories, _super);
+    (0, tslib_1.__extends)(DiscoverBridgedAccessories, _super);
     function DiscoverBridgedAccessories() {
         var _this = _super.call(this, "Discover Bridged Accessories", DiscoverBridgedAccessories.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1292,7 +1387,7 @@ Characteristic_1.Characteristic.DiscoverBridgedAccessories = DiscoverBridgedAcce
  * @deprecated Removed and not used anymore
  */
 var DiscoveredBridgedAccessories = /** @class */ (function (_super) {
-    tslib_1.__extends(DiscoveredBridgedAccessories, _super);
+    (0, tslib_1.__extends)(DiscoveredBridgedAccessories, _super);
     function DiscoveredBridgedAccessories() {
         var _this = _super.call(this, "Discovered Bridged Accessories", DiscoveredBridgedAccessories.UUID, {
             format: "uint16" /* UINT16 */,
@@ -1311,7 +1406,7 @@ Characteristic_1.Characteristic.DiscoveredBridgedAccessories = DiscoveredBridged
  * Characteristic "Display Order"
  */
 var DisplayOrder = /** @class */ (function (_super) {
-    tslib_1.__extends(DisplayOrder, _super);
+    (0, tslib_1.__extends)(DisplayOrder, _super);
     function DisplayOrder() {
         var _this = _super.call(this, "Display Order", DisplayOrder.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -1330,7 +1425,7 @@ Characteristic_1.Characteristic.DisplayOrder = DisplayOrder;
  * @since iOS 14
  */
 var EventRetransmissionMaximum = /** @class */ (function (_super) {
-    tslib_1.__extends(EventRetransmissionMaximum, _super);
+    (0, tslib_1.__extends)(EventRetransmissionMaximum, _super);
     function EventRetransmissionMaximum() {
         var _this = _super.call(this, "Event Retransmission Maximum", EventRetransmissionMaximum.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1348,7 +1443,7 @@ Characteristic_1.Characteristic.EventRetransmissionMaximum = EventRetransmission
  * Characteristic "Event Snapshots Active"
  */
 var EventSnapshotsActive = /** @class */ (function (_super) {
-    tslib_1.__extends(EventSnapshotsActive, _super);
+    (0, tslib_1.__extends)(EventSnapshotsActive, _super);
     function EventSnapshotsActive() {
         var _this = _super.call(this, "Event Snapshots Active", EventSnapshotsActive.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1372,7 +1467,7 @@ Characteristic_1.Characteristic.EventSnapshotsActive = EventSnapshotsActive;
  * @since iOS 14
  */
 var EventTransmissionCounters = /** @class */ (function (_super) {
-    tslib_1.__extends(EventTransmissionCounters, _super);
+    (0, tslib_1.__extends)(EventTransmissionCounters, _super);
     function EventTransmissionCounters() {
         var _this = _super.call(this, "Event Transmission Counters", EventTransmissionCounters.UUID, {
             format: "uint32" /* UINT32 */,
@@ -1390,7 +1485,7 @@ Characteristic_1.Characteristic.EventTransmissionCounters = EventTransmissionCou
  * Characteristic "Filter Change Indication"
  */
 var FilterChangeIndication = /** @class */ (function (_super) {
-    tslib_1.__extends(FilterChangeIndication, _super);
+    (0, tslib_1.__extends)(FilterChangeIndication, _super);
     function FilterChangeIndication() {
         var _this = _super.call(this, "Filter Change Indication", FilterChangeIndication.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1414,7 +1509,7 @@ Characteristic_1.Characteristic.FilterChangeIndication = FilterChangeIndication;
  * Characteristic "Filter Life Level"
  */
 var FilterLifeLevel = /** @class */ (function (_super) {
-    tslib_1.__extends(FilterLifeLevel, _super);
+    (0, tslib_1.__extends)(FilterLifeLevel, _super);
     function FilterLifeLevel() {
         var _this = _super.call(this, "Filter Life Level", FilterLifeLevel.UUID, {
             format: "float" /* FLOAT */,
@@ -1435,7 +1530,7 @@ Characteristic_1.Characteristic.FilterLifeLevel = FilterLifeLevel;
  * Characteristic "Firmware Revision"
  */
 var FirmwareRevision = /** @class */ (function (_super) {
-    tslib_1.__extends(FirmwareRevision, _super);
+    (0, tslib_1.__extends)(FirmwareRevision, _super);
     function FirmwareRevision() {
         var _this = _super.call(this, "Firmware Revision", FirmwareRevision.UUID, {
             format: "string" /* STRING */,
@@ -1453,7 +1548,7 @@ Characteristic_1.Characteristic.FirmwareRevision = FirmwareRevision;
  * Characteristic "Firmware Update Readiness"
  */
 var FirmwareUpdateReadiness = /** @class */ (function (_super) {
-    tslib_1.__extends(FirmwareUpdateReadiness, _super);
+    (0, tslib_1.__extends)(FirmwareUpdateReadiness, _super);
     function FirmwareUpdateReadiness() {
         var _this = _super.call(this, "Firmware Update Readiness", FirmwareUpdateReadiness.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -1471,7 +1566,7 @@ Characteristic_1.Characteristic.FirmwareUpdateReadiness = FirmwareUpdateReadines
  * Characteristic "Firmware Update Status"
  */
 var FirmwareUpdateStatus = /** @class */ (function (_super) {
-    tslib_1.__extends(FirmwareUpdateStatus, _super);
+    (0, tslib_1.__extends)(FirmwareUpdateStatus, _super);
     function FirmwareUpdateStatus() {
         var _this = _super.call(this, "Firmware Update Status", FirmwareUpdateStatus.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -1486,10 +1581,29 @@ var FirmwareUpdateStatus = /** @class */ (function (_super) {
 exports.FirmwareUpdateStatus = FirmwareUpdateStatus;
 Characteristic_1.Characteristic.FirmwareUpdateStatus = FirmwareUpdateStatus;
 /**
+ * Characteristic "Hardware Finish"
+ * @since iOS 15
+ */
+var HardwareFinish = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(HardwareFinish, _super);
+    function HardwareFinish() {
+        var _this = _super.call(this, "Hardware Finish", HardwareFinish.UUID, {
+            format: "tlv8" /* TLV8 */,
+            perms: ["pr" /* PAIRED_READ */],
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    HardwareFinish.UUID = "0000026C-0000-1000-8000-0026BB765291";
+    return HardwareFinish;
+}(Characteristic_1.Characteristic));
+exports.HardwareFinish = HardwareFinish;
+Characteristic_1.Characteristic.HardwareFinish = HardwareFinish;
+/**
  * Characteristic "Hardware Revision"
  */
 var HardwareRevision = /** @class */ (function (_super) {
-    tslib_1.__extends(HardwareRevision, _super);
+    (0, tslib_1.__extends)(HardwareRevision, _super);
     function HardwareRevision() {
         var _this = _super.call(this, "Hardware Revision", HardwareRevision.UUID, {
             format: "string" /* STRING */,
@@ -1508,7 +1622,7 @@ Characteristic_1.Characteristic.HardwareRevision = HardwareRevision;
  * @since iOS 14
  */
 var HeartBeat = /** @class */ (function (_super) {
-    tslib_1.__extends(HeartBeat, _super);
+    (0, tslib_1.__extends)(HeartBeat, _super);
     function HeartBeat() {
         var _this = _super.call(this, "Heart Beat", HeartBeat.UUID, {
             format: "uint32" /* UINT32 */,
@@ -1526,7 +1640,7 @@ Characteristic_1.Characteristic.HeartBeat = HeartBeat;
  * Characteristic "Heating Threshold Temperature"
  */
 var HeatingThresholdTemperature = /** @class */ (function (_super) {
-    tslib_1.__extends(HeatingThresholdTemperature, _super);
+    (0, tslib_1.__extends)(HeatingThresholdTemperature, _super);
     function HeatingThresholdTemperature() {
         var _this = _super.call(this, "Heating Threshold Temperature", HeatingThresholdTemperature.UUID, {
             format: "float" /* FLOAT */,
@@ -1548,7 +1662,7 @@ Characteristic_1.Characteristic.HeatingThresholdTemperature = HeatingThresholdTe
  * Characteristic "Hold Position"
  */
 var HoldPosition = /** @class */ (function (_super) {
-    tslib_1.__extends(HoldPosition, _super);
+    (0, tslib_1.__extends)(HoldPosition, _super);
     function HoldPosition() {
         var _this = _super.call(this, "Hold Position", HoldPosition.UUID, {
             format: "bool" /* BOOL */,
@@ -1566,7 +1680,7 @@ Characteristic_1.Characteristic.HoldPosition = HoldPosition;
  * Characteristic "HomeKit Camera Active"
  */
 var HomeKitCameraActive = /** @class */ (function (_super) {
-    tslib_1.__extends(HomeKitCameraActive, _super);
+    (0, tslib_1.__extends)(HomeKitCameraActive, _super);
     function HomeKitCameraActive() {
         var _this = _super.call(this, "HomeKit Camera Active", HomeKitCameraActive.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1589,7 +1703,7 @@ Characteristic_1.Characteristic.HomeKitCameraActive = HomeKitCameraActive;
  * Characteristic "Hue"
  */
 var Hue = /** @class */ (function (_super) {
-    tslib_1.__extends(Hue, _super);
+    (0, tslib_1.__extends)(Hue, _super);
     function Hue() {
         var _this = _super.call(this, "Hue", Hue.UUID, {
             format: "float" /* FLOAT */,
@@ -1611,7 +1725,7 @@ Characteristic_1.Characteristic.Hue = Hue;
  * Characteristic "Identifier"
  */
 var Identifier = /** @class */ (function (_super) {
-    tslib_1.__extends(Identifier, _super);
+    (0, tslib_1.__extends)(Identifier, _super);
     function Identifier() {
         var _this = _super.call(this, "Identifier", Identifier.UUID, {
             format: "uint32" /* UINT32 */,
@@ -1629,7 +1743,7 @@ Characteristic_1.Characteristic.Identifier = Identifier;
  * Characteristic "Identify"
  */
 var Identify = /** @class */ (function (_super) {
-    tslib_1.__extends(Identify, _super);
+    (0, tslib_1.__extends)(Identify, _super);
     function Identify() {
         var _this = _super.call(this, "Identify", Identify.UUID, {
             format: "bool" /* BOOL */,
@@ -1647,7 +1761,7 @@ Characteristic_1.Characteristic.Identify = Identify;
  * Characteristic "Image Mirroring"
  */
 var ImageMirroring = /** @class */ (function (_super) {
-    tslib_1.__extends(ImageMirroring, _super);
+    (0, tslib_1.__extends)(ImageMirroring, _super);
     function ImageMirroring() {
         var _this = _super.call(this, "Image Mirroring", ImageMirroring.UUID, {
             format: "bool" /* BOOL */,
@@ -1665,7 +1779,7 @@ Characteristic_1.Characteristic.ImageMirroring = ImageMirroring;
  * Characteristic "Image Rotation"
  */
 var ImageRotation = /** @class */ (function (_super) {
-    tslib_1.__extends(ImageRotation, _super);
+    (0, tslib_1.__extends)(ImageRotation, _super);
     function ImageRotation() {
         var _this = _super.call(this, "Image Rotation", ImageRotation.UUID, {
             format: "int" /* INT */,
@@ -1687,7 +1801,7 @@ Characteristic_1.Characteristic.ImageRotation = ImageRotation;
  * Characteristic "Input Device Type"
  */
 var InputDeviceType = /** @class */ (function (_super) {
-    tslib_1.__extends(InputDeviceType, _super);
+    (0, tslib_1.__extends)(InputDeviceType, _super);
     function InputDeviceType() {
         var _this = _super.call(this, "Input Device Type", InputDeviceType.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1715,7 +1829,7 @@ Characteristic_1.Characteristic.InputDeviceType = InputDeviceType;
  * Characteristic "Input Source Type"
  */
 var InputSourceType = /** @class */ (function (_super) {
-    tslib_1.__extends(InputSourceType, _super);
+    (0, tslib_1.__extends)(InputSourceType, _super);
     function InputSourceType() {
         var _this = _super.call(this, "Input Source Type", InputSourceType.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1748,7 +1862,7 @@ Characteristic_1.Characteristic.InputSourceType = InputSourceType;
  * Characteristic "In Use"
  */
 var InUse = /** @class */ (function (_super) {
-    tslib_1.__extends(InUse, _super);
+    (0, tslib_1.__extends)(InUse, _super);
     function InUse() {
         var _this = _super.call(this, "In Use", InUse.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1772,7 +1886,7 @@ Characteristic_1.Characteristic.InUse = InUse;
  * Characteristic "Is Configured"
  */
 var IsConfigured = /** @class */ (function (_super) {
-    tslib_1.__extends(IsConfigured, _super);
+    (0, tslib_1.__extends)(IsConfigured, _super);
     function IsConfigured() {
         var _this = _super.call(this, "Is Configured", IsConfigured.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1796,7 +1910,7 @@ Characteristic_1.Characteristic.IsConfigured = IsConfigured;
  * Characteristic "Leak Detected"
  */
 var LeakDetected = /** @class */ (function (_super) {
-    tslib_1.__extends(LeakDetected, _super);
+    (0, tslib_1.__extends)(LeakDetected, _super);
     function LeakDetected() {
         var _this = _super.call(this, "Leak Detected", LeakDetected.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1821,7 +1935,7 @@ Characteristic_1.Characteristic.LeakDetected = LeakDetected;
  * @deprecated Removed and not used anymore
  */
 var LinkQuality = /** @class */ (function (_super) {
-    tslib_1.__extends(LinkQuality, _super);
+    (0, tslib_1.__extends)(LinkQuality, _super);
     function LinkQuality() {
         var _this = _super.call(this, "Link Quality", LinkQuality.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1842,7 +1956,7 @@ Characteristic_1.Characteristic.LinkQuality = LinkQuality;
  * Characteristic "List Pairings"
  */
 var ListPairings = /** @class */ (function (_super) {
-    tslib_1.__extends(ListPairings, _super);
+    (0, tslib_1.__extends)(ListPairings, _super);
     function ListPairings() {
         var _this = _super.call(this, "List Pairings", ListPairings.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -1860,7 +1974,7 @@ Characteristic_1.Characteristic.ListPairings = ListPairings;
  * Characteristic "Lock Control Point"
  */
 var LockControlPoint = /** @class */ (function (_super) {
-    tslib_1.__extends(LockControlPoint, _super);
+    (0, tslib_1.__extends)(LockControlPoint, _super);
     function LockControlPoint() {
         var _this = _super.call(this, "Lock Control Point", LockControlPoint.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -1878,7 +1992,7 @@ Characteristic_1.Characteristic.LockControlPoint = LockControlPoint;
  * Characteristic "Lock Current State"
  */
 var LockCurrentState = /** @class */ (function (_super) {
-    tslib_1.__extends(LockCurrentState, _super);
+    (0, tslib_1.__extends)(LockCurrentState, _super);
     function LockCurrentState() {
         var _this = _super.call(this, "Lock Current State", LockCurrentState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1904,7 +2018,7 @@ Characteristic_1.Characteristic.LockCurrentState = LockCurrentState;
  * Characteristic "Lock Last Known Action"
  */
 var LockLastKnownAction = /** @class */ (function (_super) {
-    tslib_1.__extends(LockLastKnownAction, _super);
+    (0, tslib_1.__extends)(LockLastKnownAction, _super);
     function LockLastKnownAction() {
         var _this = _super.call(this, "Lock Last Known Action", LockLastKnownAction.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1937,7 +2051,7 @@ Characteristic_1.Characteristic.LockLastKnownAction = LockLastKnownAction;
  * Characteristic "Lock Management Auto Security Timeout"
  */
 var LockManagementAutoSecurityTimeout = /** @class */ (function (_super) {
-    tslib_1.__extends(LockManagementAutoSecurityTimeout, _super);
+    (0, tslib_1.__extends)(LockManagementAutoSecurityTimeout, _super);
     function LockManagementAutoSecurityTimeout() {
         var _this = _super.call(this, "Lock Management Auto Security Timeout", LockManagementAutoSecurityTimeout.UUID, {
             format: "uint32" /* UINT32 */,
@@ -1956,7 +2070,7 @@ Characteristic_1.Characteristic.LockManagementAutoSecurityTimeout = LockManageme
  * Characteristic "Lock Physical Controls"
  */
 var LockPhysicalControls = /** @class */ (function (_super) {
-    tslib_1.__extends(LockPhysicalControls, _super);
+    (0, tslib_1.__extends)(LockPhysicalControls, _super);
     function LockPhysicalControls() {
         var _this = _super.call(this, "Lock Physical Controls", LockPhysicalControls.UUID, {
             format: "uint8" /* UINT8 */,
@@ -1980,7 +2094,7 @@ Characteristic_1.Characteristic.LockPhysicalControls = LockPhysicalControls;
  * Characteristic "Lock Target State"
  */
 var LockTargetState = /** @class */ (function (_super) {
-    tslib_1.__extends(LockTargetState, _super);
+    (0, tslib_1.__extends)(LockTargetState, _super);
     function LockTargetState() {
         var _this = _super.call(this, "Lock Target State", LockTargetState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2004,7 +2118,7 @@ Characteristic_1.Characteristic.LockTargetState = LockTargetState;
  * Characteristic "Logs"
  */
 var Logs = /** @class */ (function (_super) {
-    tslib_1.__extends(Logs, _super);
+    (0, tslib_1.__extends)(Logs, _super);
     function Logs() {
         var _this = _super.call(this, "Logs", Logs.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -2023,7 +2137,7 @@ Characteristic_1.Characteristic.Logs = Logs;
  * @since iOS 14
  */
 var MACRetransmissionMaximum = /** @class */ (function (_super) {
-    tslib_1.__extends(MACRetransmissionMaximum, _super);
+    (0, tslib_1.__extends)(MACRetransmissionMaximum, _super);
     function MACRetransmissionMaximum() {
         var _this = _super.call(this, "MAC Retransmission Maximum", MACRetransmissionMaximum.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2041,7 +2155,7 @@ Characteristic_1.Characteristic.MACRetransmissionMaximum = MACRetransmissionMaxi
  * Characteristic "MAC Transmission Counters"
  */
 var MACTransmissionCounters = /** @class */ (function (_super) {
-    tslib_1.__extends(MACTransmissionCounters, _super);
+    (0, tslib_1.__extends)(MACTransmissionCounters, _super);
     function MACTransmissionCounters() {
         var _this = _super.call(this, "MAC Transmission Counters", MACTransmissionCounters.UUID, {
             format: "data" /* DATA */,
@@ -2059,7 +2173,7 @@ Characteristic_1.Characteristic.MACTransmissionCounters = MACTransmissionCounter
  * Characteristic "Managed Network Enable"
  */
 var ManagedNetworkEnable = /** @class */ (function (_super) {
-    tslib_1.__extends(ManagedNetworkEnable, _super);
+    (0, tslib_1.__extends)(ManagedNetworkEnable, _super);
     function ManagedNetworkEnable() {
         var _this = _super.call(this, "Managed Network Enable", ManagedNetworkEnable.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2082,7 +2196,7 @@ Characteristic_1.Characteristic.ManagedNetworkEnable = ManagedNetworkEnable;
  * Characteristic "Manually Disabled"
  */
 var ManuallyDisabled = /** @class */ (function (_super) {
-    tslib_1.__extends(ManuallyDisabled, _super);
+    (0, tslib_1.__extends)(ManuallyDisabled, _super);
     function ManuallyDisabled() {
         var _this = _super.call(this, "Manually Disabled", ManuallyDisabled.UUID, {
             format: "bool" /* BOOL */,
@@ -2103,7 +2217,7 @@ Characteristic_1.Characteristic.ManuallyDisabled = ManuallyDisabled;
  * Characteristic "Manufacturer"
  */
 var Manufacturer = /** @class */ (function (_super) {
-    tslib_1.__extends(Manufacturer, _super);
+    (0, tslib_1.__extends)(Manufacturer, _super);
     function Manufacturer() {
         var _this = _super.call(this, "Manufacturer", Manufacturer.UUID, {
             format: "string" /* STRING */,
@@ -2123,7 +2237,7 @@ Characteristic_1.Characteristic.Manufacturer = Manufacturer;
  * @since iOS 14
  */
 var MaximumTransmitPower = /** @class */ (function (_super) {
-    tslib_1.__extends(MaximumTransmitPower, _super);
+    (0, tslib_1.__extends)(MaximumTransmitPower, _super);
     function MaximumTransmitPower() {
         var _this = _super.call(this, "Maximum Transmit Power", MaximumTransmitPower.UUID, {
             format: "int" /* INT */,
@@ -2141,7 +2255,7 @@ Characteristic_1.Characteristic.MaximumTransmitPower = MaximumTransmitPower;
  * Characteristic "Model"
  */
 var Model = /** @class */ (function (_super) {
-    tslib_1.__extends(Model, _super);
+    (0, tslib_1.__extends)(Model, _super);
     function Model() {
         var _this = _super.call(this, "Model", Model.UUID, {
             format: "string" /* STRING */,
@@ -2160,7 +2274,7 @@ Characteristic_1.Characteristic.Model = Model;
  * Characteristic "Motion Detected"
  */
 var MotionDetected = /** @class */ (function (_super) {
-    tslib_1.__extends(MotionDetected, _super);
+    (0, tslib_1.__extends)(MotionDetected, _super);
     function MotionDetected() {
         var _this = _super.call(this, "Motion Detected", MotionDetected.UUID, {
             format: "bool" /* BOOL */,
@@ -2175,10 +2289,30 @@ var MotionDetected = /** @class */ (function (_super) {
 exports.MotionDetected = MotionDetected;
 Characteristic_1.Characteristic.MotionDetected = MotionDetected;
 /**
+ * Characteristic "Multifunction Button"
+ */
+var MultifunctionButton = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(MultifunctionButton, _super);
+    function MultifunctionButton() {
+        var _this = _super.call(this, "Multifunction Button", MultifunctionButton.UUID, {
+            format: "uint8" /* UINT8 */,
+            perms: ["ev" /* NOTIFY */, "pr" /* PAIRED_READ */],
+            minValue: 0,
+            maxValue: 1,
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    MultifunctionButton.UUID = "0000026B-0000-1000-8000-0026BB765291";
+    return MultifunctionButton;
+}(Characteristic_1.Characteristic));
+exports.MultifunctionButton = MultifunctionButton;
+Characteristic_1.Characteristic.MultifunctionButton = MultifunctionButton;
+/**
  * Characteristic "Mute"
  */
 var Mute = /** @class */ (function (_super) {
-    tslib_1.__extends(Mute, _super);
+    (0, tslib_1.__extends)(Mute, _super);
     function Mute() {
         var _this = _super.call(this, "Mute", Mute.UUID, {
             format: "bool" /* BOOL */,
@@ -2196,7 +2330,7 @@ Characteristic_1.Characteristic.Mute = Mute;
  * Characteristic "Name"
  */
 var Name = /** @class */ (function (_super) {
-    tslib_1.__extends(Name, _super);
+    (0, tslib_1.__extends)(Name, _super);
     function Name() {
         var _this = _super.call(this, "Name", Name.UUID, {
             format: "string" /* STRING */,
@@ -2215,7 +2349,7 @@ Characteristic_1.Characteristic.Name = Name;
  * Characteristic "Network Access Violation Control"
  */
 var NetworkAccessViolationControl = /** @class */ (function (_super) {
-    tslib_1.__extends(NetworkAccessViolationControl, _super);
+    (0, tslib_1.__extends)(NetworkAccessViolationControl, _super);
     function NetworkAccessViolationControl() {
         var _this = _super.call(this, "Network Access Violation Control", NetworkAccessViolationControl.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -2233,7 +2367,7 @@ Characteristic_1.Characteristic.NetworkAccessViolationControl = NetworkAccessVio
  * Characteristic "Network Client Profile Control"
  */
 var NetworkClientProfileControl = /** @class */ (function (_super) {
-    tslib_1.__extends(NetworkClientProfileControl, _super);
+    (0, tslib_1.__extends)(NetworkClientProfileControl, _super);
     function NetworkClientProfileControl() {
         var _this = _super.call(this, "Network Client Profile Control", NetworkClientProfileControl.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -2251,7 +2385,7 @@ Characteristic_1.Characteristic.NetworkClientProfileControl = NetworkClientProfi
  * Characteristic "Network Client Status Control"
  */
 var NetworkClientStatusControl = /** @class */ (function (_super) {
-    tslib_1.__extends(NetworkClientStatusControl, _super);
+    (0, tslib_1.__extends)(NetworkClientStatusControl, _super);
     function NetworkClientStatusControl() {
         var _this = _super.call(this, "Network Client Status Control", NetworkClientStatusControl.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -2266,10 +2400,48 @@ var NetworkClientStatusControl = /** @class */ (function (_super) {
 exports.NetworkClientStatusControl = NetworkClientStatusControl;
 Characteristic_1.Characteristic.NetworkClientStatusControl = NetworkClientStatusControl;
 /**
+ * Characteristic "NFC Access Control Point"
+ * @since iOS 15
+ */
+var NFCAccessControlPoint = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(NFCAccessControlPoint, _super);
+    function NFCAccessControlPoint() {
+        var _this = _super.call(this, "NFC Access Control Point", NFCAccessControlPoint.UUID, {
+            format: "tlv8" /* TLV8 */,
+            perms: ["pr" /* PAIRED_READ */, "pw" /* PAIRED_WRITE */, "wr" /* WRITE_RESPONSE */],
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    NFCAccessControlPoint.UUID = "00000264-0000-1000-8000-0026BB765291";
+    return NFCAccessControlPoint;
+}(Characteristic_1.Characteristic));
+exports.NFCAccessControlPoint = NFCAccessControlPoint;
+Characteristic_1.Characteristic.NFCAccessControlPoint = NFCAccessControlPoint;
+/**
+ * Characteristic "NFC Access Supported Configuration"
+ * @since iOS 15
+ */
+var NFCAccessSupportedConfiguration = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(NFCAccessSupportedConfiguration, _super);
+    function NFCAccessSupportedConfiguration() {
+        var _this = _super.call(this, "NFC Access Supported Configuration", NFCAccessSupportedConfiguration.UUID, {
+            format: "tlv8" /* TLV8 */,
+            perms: ["pr" /* PAIRED_READ */],
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    NFCAccessSupportedConfiguration.UUID = "00000265-0000-1000-8000-0026BB765291";
+    return NFCAccessSupportedConfiguration;
+}(Characteristic_1.Characteristic));
+exports.NFCAccessSupportedConfiguration = NFCAccessSupportedConfiguration;
+Characteristic_1.Characteristic.NFCAccessSupportedConfiguration = NFCAccessSupportedConfiguration;
+/**
  * Characteristic "Night Vision"
  */
 var NightVision = /** @class */ (function (_super) {
-    tslib_1.__extends(NightVision, _super);
+    (0, tslib_1.__extends)(NightVision, _super);
     function NightVision() {
         var _this = _super.call(this, "Night Vision", NightVision.UUID, {
             format: "bool" /* BOOL */,
@@ -2287,7 +2459,7 @@ Characteristic_1.Characteristic.NightVision = NightVision;
  * Characteristic "Nitrogen Dioxide Density"
  */
 var NitrogenDioxideDensity = /** @class */ (function (_super) {
-    tslib_1.__extends(NitrogenDioxideDensity, _super);
+    (0, tslib_1.__extends)(NitrogenDioxideDensity, _super);
     function NitrogenDioxideDensity() {
         var _this = _super.call(this, "Nitrogen Dioxide Density", NitrogenDioxideDensity.UUID, {
             format: "float" /* FLOAT */,
@@ -2308,7 +2480,7 @@ Characteristic_1.Characteristic.NitrogenDioxideDensity = NitrogenDioxideDensity;
  * Characteristic "Obstruction Detected"
  */
 var ObstructionDetected = /** @class */ (function (_super) {
-    tslib_1.__extends(ObstructionDetected, _super);
+    (0, tslib_1.__extends)(ObstructionDetected, _super);
     function ObstructionDetected() {
         var _this = _super.call(this, "Obstruction Detected", ObstructionDetected.UUID, {
             format: "bool" /* BOOL */,
@@ -2326,7 +2498,7 @@ Characteristic_1.Characteristic.ObstructionDetected = ObstructionDetected;
  * Characteristic "Occupancy Detected"
  */
 var OccupancyDetected = /** @class */ (function (_super) {
-    tslib_1.__extends(OccupancyDetected, _super);
+    (0, tslib_1.__extends)(OccupancyDetected, _super);
     function OccupancyDetected() {
         var _this = _super.call(this, "Occupancy Detected", OccupancyDetected.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2350,7 +2522,7 @@ Characteristic_1.Characteristic.OccupancyDetected = OccupancyDetected;
  * Characteristic "On"
  */
 var On = /** @class */ (function (_super) {
-    tslib_1.__extends(On, _super);
+    (0, tslib_1.__extends)(On, _super);
     function On() {
         var _this = _super.call(this, "On", On.UUID, {
             format: "bool" /* BOOL */,
@@ -2369,7 +2541,7 @@ Characteristic_1.Characteristic.On = On;
  * @since iOS 14
  */
 var OperatingStateResponse = /** @class */ (function (_super) {
-    tslib_1.__extends(OperatingStateResponse, _super);
+    (0, tslib_1.__extends)(OperatingStateResponse, _super);
     function OperatingStateResponse() {
         var _this = _super.call(this, "Operating State Response", OperatingStateResponse.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -2387,7 +2559,7 @@ Characteristic_1.Characteristic.OperatingStateResponse = OperatingStateResponse;
  * Characteristic "Optical Zoom"
  */
 var OpticalZoom = /** @class */ (function (_super) {
-    tslib_1.__extends(OpticalZoom, _super);
+    (0, tslib_1.__extends)(OpticalZoom, _super);
     function OpticalZoom() {
         var _this = _super.call(this, "Optical Zoom", OpticalZoom.UUID, {
             format: "float" /* FLOAT */,
@@ -2406,7 +2578,7 @@ Characteristic_1.Characteristic.OpticalZoom = OpticalZoom;
  * Characteristic "Outlet In Use"
  */
 var OutletInUse = /** @class */ (function (_super) {
-    tslib_1.__extends(OutletInUse, _super);
+    (0, tslib_1.__extends)(OutletInUse, _super);
     function OutletInUse() {
         var _this = _super.call(this, "Outlet In Use", OutletInUse.UUID, {
             format: "bool" /* BOOL */,
@@ -2424,7 +2596,7 @@ Characteristic_1.Characteristic.OutletInUse = OutletInUse;
  * Characteristic "Ozone Density"
  */
 var OzoneDensity = /** @class */ (function (_super) {
-    tslib_1.__extends(OzoneDensity, _super);
+    (0, tslib_1.__extends)(OzoneDensity, _super);
     function OzoneDensity() {
         var _this = _super.call(this, "Ozone Density", OzoneDensity.UUID, {
             format: "float" /* FLOAT */,
@@ -2445,7 +2617,7 @@ Characteristic_1.Characteristic.OzoneDensity = OzoneDensity;
  * Characteristic "Pairing Features"
  */
 var PairingFeatures = /** @class */ (function (_super) {
-    tslib_1.__extends(PairingFeatures, _super);
+    (0, tslib_1.__extends)(PairingFeatures, _super);
     function PairingFeatures() {
         var _this = _super.call(this, "Pairing Features", PairingFeatures.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2463,7 +2635,7 @@ Characteristic_1.Characteristic.PairingFeatures = PairingFeatures;
  * Characteristic "Pair Setup"
  */
 var PairSetup = /** @class */ (function (_super) {
-    tslib_1.__extends(PairSetup, _super);
+    (0, tslib_1.__extends)(PairSetup, _super);
     function PairSetup() {
         var _this = _super.call(this, "Pair Setup", PairSetup.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -2481,7 +2653,7 @@ Characteristic_1.Characteristic.PairSetup = PairSetup;
  * Characteristic "Pair Verify"
  */
 var PairVerify = /** @class */ (function (_super) {
-    tslib_1.__extends(PairVerify, _super);
+    (0, tslib_1.__extends)(PairVerify, _super);
     function PairVerify() {
         var _this = _super.call(this, "Pair Verify", PairVerify.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -2499,7 +2671,7 @@ Characteristic_1.Characteristic.PairVerify = PairVerify;
  * Characteristic "Password Setting"
  */
 var PasswordSetting = /** @class */ (function (_super) {
-    tslib_1.__extends(PasswordSetting, _super);
+    (0, tslib_1.__extends)(PasswordSetting, _super);
     function PasswordSetting() {
         var _this = _super.call(this, "Password Setting", PasswordSetting.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -2517,7 +2689,7 @@ Characteristic_1.Characteristic.PasswordSetting = PasswordSetting;
  * Characteristic "Periodic Snapshots Active"
  */
 var PeriodicSnapshotsActive = /** @class */ (function (_super) {
-    tslib_1.__extends(PeriodicSnapshotsActive, _super);
+    (0, tslib_1.__extends)(PeriodicSnapshotsActive, _super);
     function PeriodicSnapshotsActive() {
         var _this = _super.call(this, "Periodic Snapshots Active", PeriodicSnapshotsActive.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2538,7 +2710,7 @@ Characteristic_1.Characteristic.PeriodicSnapshotsActive = PeriodicSnapshotsActiv
  * Characteristic "Picture Mode"
  */
 var PictureMode = /** @class */ (function (_super) {
-    tslib_1.__extends(PictureMode, _super);
+    (0, tslib_1.__extends)(PictureMode, _super);
     function PictureMode() {
         var _this = _super.call(this, "Picture Mode", PictureMode.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2569,7 +2741,7 @@ Characteristic_1.Characteristic.PictureMode = PictureMode;
  * @since iOS 14
  */
 var Ping = /** @class */ (function (_super) {
-    tslib_1.__extends(Ping, _super);
+    (0, tslib_1.__extends)(Ping, _super);
     function Ping() {
         var _this = _super.call(this, "Ping", Ping.UUID, {
             format: "data" /* DATA */,
@@ -2587,7 +2759,7 @@ Characteristic_1.Characteristic.Ping = Ping;
  * Characteristic "PM10 Density"
  */
 var PM10Density = /** @class */ (function (_super) {
-    tslib_1.__extends(PM10Density, _super);
+    (0, tslib_1.__extends)(PM10Density, _super);
     function PM10Density() {
         var _this = _super.call(this, "PM10 Density", PM10Density.UUID, {
             format: "float" /* FLOAT */,
@@ -2608,7 +2780,7 @@ Characteristic_1.Characteristic.PM10Density = PM10Density;
  * Characteristic "PM2.5 Density"
  */
 var PM2_5Density = /** @class */ (function (_super) {
-    tslib_1.__extends(PM2_5Density, _super);
+    (0, tslib_1.__extends)(PM2_5Density, _super);
     function PM2_5Density() {
         var _this = _super.call(this, "PM2.5 Density", PM2_5Density.UUID, {
             format: "float" /* FLOAT */,
@@ -2629,7 +2801,7 @@ Characteristic_1.Characteristic.PM2_5Density = PM2_5Density;
  * Characteristic "Position State"
  */
 var PositionState = /** @class */ (function (_super) {
-    tslib_1.__extends(PositionState, _super);
+    (0, tslib_1.__extends)(PositionState, _super);
     function PositionState() {
         var _this = _super.call(this, "Position State", PositionState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2654,7 +2826,7 @@ Characteristic_1.Characteristic.PositionState = PositionState;
  * Characteristic "Power Mode Selection"
  */
 var PowerModeSelection = /** @class */ (function (_super) {
-    tslib_1.__extends(PowerModeSelection, _super);
+    (0, tslib_1.__extends)(PowerModeSelection, _super);
     function PowerModeSelection() {
         var _this = _super.call(this, "Power Mode Selection", PowerModeSelection.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2678,7 +2850,7 @@ Characteristic_1.Characteristic.PowerModeSelection = PowerModeSelection;
  * Characteristic "Product Data"
  */
 var ProductData = /** @class */ (function (_super) {
-    tslib_1.__extends(ProductData, _super);
+    (0, tslib_1.__extends)(ProductData, _super);
     function ProductData() {
         var _this = _super.call(this, "Product Data", ProductData.UUID, {
             format: "data" /* DATA */,
@@ -2696,7 +2868,7 @@ Characteristic_1.Characteristic.ProductData = ProductData;
  * Characteristic "Programmable Switch Event"
  */
 var ProgrammableSwitchEvent = /** @class */ (function (_super) {
-    tslib_1.__extends(ProgrammableSwitchEvent, _super);
+    (0, tslib_1.__extends)(ProgrammableSwitchEvent, _super);
     function ProgrammableSwitchEvent() {
         var _this = _super.call(this, "Programmable Switch Event", ProgrammableSwitchEvent.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2721,7 +2893,7 @@ Characteristic_1.Characteristic.ProgrammableSwitchEvent = ProgrammableSwitchEven
  * Characteristic "Programmable Switch Output State"
  */
 var ProgrammableSwitchOutputState = /** @class */ (function (_super) {
-    tslib_1.__extends(ProgrammableSwitchOutputState, _super);
+    (0, tslib_1.__extends)(ProgrammableSwitchOutputState, _super);
     function ProgrammableSwitchOutputState() {
         var _this = _super.call(this, "Programmable Switch Output State", ProgrammableSwitchOutputState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2742,7 +2914,7 @@ Characteristic_1.Characteristic.ProgrammableSwitchOutputState = ProgrammableSwit
  * Characteristic "Program Mode"
  */
 var ProgramMode = /** @class */ (function (_super) {
-    tslib_1.__extends(ProgramMode, _super);
+    (0, tslib_1.__extends)(ProgramMode, _super);
     function ProgramMode() {
         var _this = _super.call(this, "Program Mode", ProgramMode.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2768,7 +2940,7 @@ Characteristic_1.Characteristic.ProgramMode = ProgramMode;
  * @deprecated Removed and not used anymore
  */
 var Reachable = /** @class */ (function (_super) {
-    tslib_1.__extends(Reachable, _super);
+    (0, tslib_1.__extends)(Reachable, _super);
     function Reachable() {
         var _this = _super.call(this, "Reachable", Reachable.UUID, {
             format: "bool" /* BOOL */,
@@ -2788,7 +2960,7 @@ Characteristic_1.Characteristic.Reachable = Reachable;
  * @since iOS 14
  */
 var ReceivedSignalStrengthIndication = /** @class */ (function (_super) {
-    tslib_1.__extends(ReceivedSignalStrengthIndication, _super);
+    (0, tslib_1.__extends)(ReceivedSignalStrengthIndication, _super);
     function ReceivedSignalStrengthIndication() {
         var _this = _super.call(this, "Received Signal Strength Indication", ReceivedSignalStrengthIndication.UUID, {
             format: "int" /* INT */,
@@ -2807,7 +2979,7 @@ Characteristic_1.Characteristic.ReceivedSignalStrengthIndication = ReceivedSigna
  * @since iOS 14
  */
 var ReceiverSensitivity = /** @class */ (function (_super) {
-    tslib_1.__extends(ReceiverSensitivity, _super);
+    (0, tslib_1.__extends)(ReceiverSensitivity, _super);
     function ReceiverSensitivity() {
         var _this = _super.call(this, "Receiver Sensitivity", ReceiverSensitivity.UUID, {
             format: "int" /* INT */,
@@ -2825,7 +2997,7 @@ Characteristic_1.Characteristic.ReceiverSensitivity = ReceiverSensitivity;
  * Characteristic "Recording Audio Active"
  */
 var RecordingAudioActive = /** @class */ (function (_super) {
-    tslib_1.__extends(RecordingAudioActive, _super);
+    (0, tslib_1.__extends)(RecordingAudioActive, _super);
     function RecordingAudioActive() {
         var _this = _super.call(this, "Recording Audio Active", RecordingAudioActive.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2846,7 +3018,7 @@ Characteristic_1.Characteristic.RecordingAudioActive = RecordingAudioActive;
  * Characteristic "Relative Humidity Dehumidifier Threshold"
  */
 var RelativeHumidityDehumidifierThreshold = /** @class */ (function (_super) {
-    tslib_1.__extends(RelativeHumidityDehumidifierThreshold, _super);
+    (0, tslib_1.__extends)(RelativeHumidityDehumidifierThreshold, _super);
     function RelativeHumidityDehumidifierThreshold() {
         var _this = _super.call(this, "Relative Humidity Dehumidifier Threshold", RelativeHumidityDehumidifierThreshold.UUID, {
             format: "float" /* FLOAT */,
@@ -2868,7 +3040,7 @@ Characteristic_1.Characteristic.RelativeHumidityDehumidifierThreshold = Relative
  * Characteristic "Relative Humidity Humidifier Threshold"
  */
 var RelativeHumidityHumidifierThreshold = /** @class */ (function (_super) {
-    tslib_1.__extends(RelativeHumidityHumidifierThreshold, _super);
+    (0, tslib_1.__extends)(RelativeHumidityHumidifierThreshold, _super);
     function RelativeHumidityHumidifierThreshold() {
         var _this = _super.call(this, "Relative Humidity Humidifier Threshold", RelativeHumidityHumidifierThreshold.UUID, {
             format: "float" /* FLOAT */,
@@ -2890,7 +3062,7 @@ Characteristic_1.Characteristic.RelativeHumidityHumidifierThreshold = RelativeHu
  * Characteristic "Relay Control Point"
  */
 var RelayControlPoint = /** @class */ (function (_super) {
-    tslib_1.__extends(RelayControlPoint, _super);
+    (0, tslib_1.__extends)(RelayControlPoint, _super);
     function RelayControlPoint() {
         var _this = _super.call(this, "Relay Control Point", RelayControlPoint.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -2908,7 +3080,7 @@ Characteristic_1.Characteristic.RelayControlPoint = RelayControlPoint;
  * Characteristic "Relay Enabled"
  */
 var RelayEnabled = /** @class */ (function (_super) {
-    tslib_1.__extends(RelayEnabled, _super);
+    (0, tslib_1.__extends)(RelayEnabled, _super);
     function RelayEnabled() {
         var _this = _super.call(this, "Relay Enabled", RelayEnabled.UUID, {
             format: "bool" /* BOOL */,
@@ -2926,7 +3098,7 @@ Characteristic_1.Characteristic.RelayEnabled = RelayEnabled;
  * Characteristic "Relay State"
  */
 var RelayState = /** @class */ (function (_super) {
-    tslib_1.__extends(RelayState, _super);
+    (0, tslib_1.__extends)(RelayState, _super);
     function RelayState() {
         var _this = _super.call(this, "Relay State", RelayState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -2947,7 +3119,7 @@ Characteristic_1.Characteristic.RelayState = RelayState;
  * Characteristic "Remaining Duration"
  */
 var RemainingDuration = /** @class */ (function (_super) {
-    tslib_1.__extends(RemainingDuration, _super);
+    (0, tslib_1.__extends)(RemainingDuration, _super);
     function RemainingDuration() {
         var _this = _super.call(this, "Remaining Duration", RemainingDuration.UUID, {
             format: "uint32" /* UINT32 */,
@@ -2969,7 +3141,7 @@ Characteristic_1.Characteristic.RemainingDuration = RemainingDuration;
  * Characteristic "Remote Key"
  */
 var RemoteKey = /** @class */ (function (_super) {
-    tslib_1.__extends(RemoteKey, _super);
+    (0, tslib_1.__extends)(RemoteKey, _super);
     function RemoteKey() {
         var _this = _super.call(this, "Remote Key", RemoteKey.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3004,7 +3176,7 @@ Characteristic_1.Characteristic.RemoteKey = RemoteKey;
  * Characteristic "Reset Filter Indication"
  */
 var ResetFilterIndication = /** @class */ (function (_super) {
-    tslib_1.__extends(ResetFilterIndication, _super);
+    (0, tslib_1.__extends)(ResetFilterIndication, _super);
     function ResetFilterIndication() {
         var _this = _super.call(this, "Reset Filter Indication", ResetFilterIndication.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3025,7 +3197,7 @@ Characteristic_1.Characteristic.ResetFilterIndication = ResetFilterIndication;
  * Characteristic "Rotation Direction"
  */
 var RotationDirection = /** @class */ (function (_super) {
-    tslib_1.__extends(RotationDirection, _super);
+    (0, tslib_1.__extends)(RotationDirection, _super);
     function RotationDirection() {
         var _this = _super.call(this, "Rotation Direction", RotationDirection.UUID, {
             format: "int" /* INT */,
@@ -3049,7 +3221,7 @@ Characteristic_1.Characteristic.RotationDirection = RotationDirection;
  * Characteristic "Rotation Speed"
  */
 var RotationSpeed = /** @class */ (function (_super) {
-    tslib_1.__extends(RotationSpeed, _super);
+    (0, tslib_1.__extends)(RotationSpeed, _super);
     function RotationSpeed() {
         var _this = _super.call(this, "Rotation Speed", RotationSpeed.UUID, {
             format: "float" /* FLOAT */,
@@ -3071,7 +3243,7 @@ Characteristic_1.Characteristic.RotationSpeed = RotationSpeed;
  * Characteristic "Router Status"
  */
 var RouterStatus = /** @class */ (function (_super) {
-    tslib_1.__extends(RouterStatus, _super);
+    (0, tslib_1.__extends)(RouterStatus, _super);
     function RouterStatus() {
         var _this = _super.call(this, "Router Status", RouterStatus.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3094,7 +3266,7 @@ Characteristic_1.Characteristic.RouterStatus = RouterStatus;
  * Characteristic "Saturation"
  */
 var Saturation = /** @class */ (function (_super) {
-    tslib_1.__extends(Saturation, _super);
+    (0, tslib_1.__extends)(Saturation, _super);
     function Saturation() {
         var _this = _super.call(this, "Saturation", Saturation.UUID, {
             format: "float" /* FLOAT */,
@@ -3116,7 +3288,7 @@ Characteristic_1.Characteristic.Saturation = Saturation;
  * Characteristic "Security System Alarm Type"
  */
 var SecuritySystemAlarmType = /** @class */ (function (_super) {
-    tslib_1.__extends(SecuritySystemAlarmType, _super);
+    (0, tslib_1.__extends)(SecuritySystemAlarmType, _super);
     function SecuritySystemAlarmType() {
         var _this = _super.call(this, "Security System Alarm Type", SecuritySystemAlarmType.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3137,7 +3309,7 @@ Characteristic_1.Characteristic.SecuritySystemAlarmType = SecuritySystemAlarmTyp
  * Characteristic "Security System Current State"
  */
 var SecuritySystemCurrentState = /** @class */ (function (_super) {
-    tslib_1.__extends(SecuritySystemCurrentState, _super);
+    (0, tslib_1.__extends)(SecuritySystemCurrentState, _super);
     function SecuritySystemCurrentState() {
         var _this = _super.call(this, "Security System Current State", SecuritySystemCurrentState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3164,7 +3336,7 @@ Characteristic_1.Characteristic.SecuritySystemCurrentState = SecuritySystemCurre
  * Characteristic "Security System Target State"
  */
 var SecuritySystemTargetState = /** @class */ (function (_super) {
-    tslib_1.__extends(SecuritySystemTargetState, _super);
+    (0, tslib_1.__extends)(SecuritySystemTargetState, _super);
     function SecuritySystemTargetState() {
         var _this = _super.call(this, "Security System Target State", SecuritySystemTargetState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3190,7 +3362,7 @@ Characteristic_1.Characteristic.SecuritySystemTargetState = SecuritySystemTarget
  * Characteristic "Selected Audio Stream Configuration"
  */
 var SelectedAudioStreamConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SelectedAudioStreamConfiguration, _super);
+    (0, tslib_1.__extends)(SelectedAudioStreamConfiguration, _super);
     function SelectedAudioStreamConfiguration() {
         var _this = _super.call(this, "Selected Audio Stream Configuration", SelectedAudioStreamConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3208,7 +3380,7 @@ Characteristic_1.Characteristic.SelectedAudioStreamConfiguration = SelectedAudio
  * Characteristic "Selected Camera Recording Configuration"
  */
 var SelectedCameraRecordingConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SelectedCameraRecordingConfiguration, _super);
+    (0, tslib_1.__extends)(SelectedCameraRecordingConfiguration, _super);
     function SelectedCameraRecordingConfiguration() {
         var _this = _super.call(this, "Selected Camera Recording Configuration", SelectedCameraRecordingConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3223,10 +3395,28 @@ var SelectedCameraRecordingConfiguration = /** @class */ (function (_super) {
 exports.SelectedCameraRecordingConfiguration = SelectedCameraRecordingConfiguration;
 Characteristic_1.Characteristic.SelectedCameraRecordingConfiguration = SelectedCameraRecordingConfiguration;
 /**
+ * Characteristic "Selected Diagnostics Modes"
+ */
+var SelectedDiagnosticsModes = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(SelectedDiagnosticsModes, _super);
+    function SelectedDiagnosticsModes() {
+        var _this = _super.call(this, "Selected Diagnostics Modes", SelectedDiagnosticsModes.UUID, {
+            format: "uint32" /* UINT32 */,
+            perms: ["pr" /* PAIRED_READ */, "pw" /* PAIRED_WRITE */],
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    SelectedDiagnosticsModes.UUID = "0000024D-0000-1000-8000-0026BB765291";
+    return SelectedDiagnosticsModes;
+}(Characteristic_1.Characteristic));
+exports.SelectedDiagnosticsModes = SelectedDiagnosticsModes;
+Characteristic_1.Characteristic.SelectedDiagnosticsModes = SelectedDiagnosticsModes;
+/**
  * Characteristic "Selected RTP Stream Configuration"
  */
 var SelectedRTPStreamConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SelectedRTPStreamConfiguration, _super);
+    (0, tslib_1.__extends)(SelectedRTPStreamConfiguration, _super);
     function SelectedRTPStreamConfiguration() {
         var _this = _super.call(this, "Selected RTP Stream Configuration", SelectedRTPStreamConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3244,7 +3434,7 @@ Characteristic_1.Characteristic.SelectedRTPStreamConfiguration = SelectedRTPStre
  * Characteristic "Serial Number"
  */
 var SerialNumber = /** @class */ (function (_super) {
-    tslib_1.__extends(SerialNumber, _super);
+    (0, tslib_1.__extends)(SerialNumber, _super);
     function SerialNumber() {
         var _this = _super.call(this, "Serial Number", SerialNumber.UUID, {
             format: "string" /* STRING */,
@@ -3263,7 +3453,7 @@ Characteristic_1.Characteristic.SerialNumber = SerialNumber;
  * Characteristic "Service Label Index"
  */
 var ServiceLabelIndex = /** @class */ (function (_super) {
-    tslib_1.__extends(ServiceLabelIndex, _super);
+    (0, tslib_1.__extends)(ServiceLabelIndex, _super);
     function ServiceLabelIndex() {
         var _this = _super.call(this, "Service Label Index", ServiceLabelIndex.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3284,7 +3474,7 @@ Characteristic_1.Characteristic.ServiceLabelIndex = ServiceLabelIndex;
  * Characteristic "Service Label Namespace"
  */
 var ServiceLabelNamespace = /** @class */ (function (_super) {
-    tslib_1.__extends(ServiceLabelNamespace, _super);
+    (0, tslib_1.__extends)(ServiceLabelNamespace, _super);
     function ServiceLabelNamespace() {
         var _this = _super.call(this, "Service Label Namespace", ServiceLabelNamespace.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3308,7 +3498,7 @@ Characteristic_1.Characteristic.ServiceLabelNamespace = ServiceLabelNamespace;
  * Characteristic "Set Duration"
  */
 var SetDuration = /** @class */ (function (_super) {
-    tslib_1.__extends(SetDuration, _super);
+    (0, tslib_1.__extends)(SetDuration, _super);
     function SetDuration() {
         var _this = _super.call(this, "Set Duration", SetDuration.UUID, {
             format: "uint32" /* UINT32 */,
@@ -3330,7 +3520,7 @@ Characteristic_1.Characteristic.SetDuration = SetDuration;
  * Characteristic "Setup Data Stream Transport"
  */
 var SetupDataStreamTransport = /** @class */ (function (_super) {
-    tslib_1.__extends(SetupDataStreamTransport, _super);
+    (0, tslib_1.__extends)(SetupDataStreamTransport, _super);
     function SetupDataStreamTransport() {
         var _this = _super.call(this, "Setup Data Stream Transport", SetupDataStreamTransport.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3348,7 +3538,7 @@ Characteristic_1.Characteristic.SetupDataStreamTransport = SetupDataStreamTransp
  * Characteristic "Setup Endpoints"
  */
 var SetupEndpoints = /** @class */ (function (_super) {
-    tslib_1.__extends(SetupEndpoints, _super);
+    (0, tslib_1.__extends)(SetupEndpoints, _super);
     function SetupEndpoints() {
         var _this = _super.call(this, "Setup Endpoints", SetupEndpoints.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3367,7 +3557,7 @@ Characteristic_1.Characteristic.SetupEndpoints = SetupEndpoints;
  * @since iOS 13.4
  */
 var SetupTransferTransport = /** @class */ (function (_super) {
-    tslib_1.__extends(SetupTransferTransport, _super);
+    (0, tslib_1.__extends)(SetupTransferTransport, _super);
     function SetupTransferTransport() {
         var _this = _super.call(this, "Setup Transfer Transport", SetupTransferTransport.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3386,7 +3576,7 @@ Characteristic_1.Characteristic.SetupTransferTransport = SetupTransferTransport;
  * @since iOS 14
  */
 var SignalToNoiseRatio = /** @class */ (function (_super) {
-    tslib_1.__extends(SignalToNoiseRatio, _super);
+    (0, tslib_1.__extends)(SignalToNoiseRatio, _super);
     function SignalToNoiseRatio() {
         var _this = _super.call(this, "Signal To Noise Ratio", SignalToNoiseRatio.UUID, {
             format: "int" /* INT */,
@@ -3401,10 +3591,66 @@ var SignalToNoiseRatio = /** @class */ (function (_super) {
 exports.SignalToNoiseRatio = SignalToNoiseRatio;
 Characteristic_1.Characteristic.SignalToNoiseRatio = SignalToNoiseRatio;
 /**
+ * Characteristic "Siri Enable"
+ */
+var SiriEnable = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(SiriEnable, _super);
+    function SiriEnable() {
+        var _this = _super.call(this, "Siri Enable", SiriEnable.UUID, {
+            format: "uint8" /* UINT8 */,
+            perms: ["ev" /* NOTIFY */, "pr" /* PAIRED_READ */, "pw" /* PAIRED_WRITE */],
+            minValue: 0,
+            maxValue: 1,
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    SiriEnable.UUID = "00000255-0000-1000-8000-0026BB765291";
+    return SiriEnable;
+}(Characteristic_1.Characteristic));
+exports.SiriEnable = SiriEnable;
+Characteristic_1.Characteristic.SiriEnable = SiriEnable;
+/**
+ * Characteristic "Siri Endpoint Session Status"
+ */
+var SiriEndpointSessionStatus = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(SiriEndpointSessionStatus, _super);
+    function SiriEndpointSessionStatus() {
+        var _this = _super.call(this, "Siri Endpoint Session Status", SiriEndpointSessionStatus.UUID, {
+            format: "tlv8" /* TLV8 */,
+            perms: ["ev" /* NOTIFY */, "pr" /* PAIRED_READ */],
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    SiriEndpointSessionStatus.UUID = "00000254-0000-1000-8000-0026BB765291";
+    return SiriEndpointSessionStatus;
+}(Characteristic_1.Characteristic));
+exports.SiriEndpointSessionStatus = SiriEndpointSessionStatus;
+Characteristic_1.Characteristic.SiriEndpointSessionStatus = SiriEndpointSessionStatus;
+/**
+ * Characteristic "Siri Engine Version"
+ */
+var SiriEngineVersion = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(SiriEngineVersion, _super);
+    function SiriEngineVersion() {
+        var _this = _super.call(this, "Siri Engine Version", SiriEngineVersion.UUID, {
+            format: "string" /* STRING */,
+            perms: ["pr" /* PAIRED_READ */],
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    SiriEngineVersion.UUID = "0000025A-0000-1000-8000-0026BB765291";
+    return SiriEngineVersion;
+}(Characteristic_1.Characteristic));
+exports.SiriEngineVersion = SiriEngineVersion;
+Characteristic_1.Characteristic.SiriEngineVersion = SiriEngineVersion;
+/**
  * Characteristic "Siri Input Type"
  */
 var SiriInputType = /** @class */ (function (_super) {
-    tslib_1.__extends(SiriInputType, _super);
+    (0, tslib_1.__extends)(SiriInputType, _super);
     function SiriInputType() {
         var _this = _super.call(this, "Siri Input Type", SiriInputType.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3423,10 +3669,70 @@ var SiriInputType = /** @class */ (function (_super) {
 exports.SiriInputType = SiriInputType;
 Characteristic_1.Characteristic.SiriInputType = SiriInputType;
 /**
+ * Characteristic "Siri Light On Use"
+ */
+var SiriLightOnUse = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(SiriLightOnUse, _super);
+    function SiriLightOnUse() {
+        var _this = _super.call(this, "Siri Light On Use", SiriLightOnUse.UUID, {
+            format: "uint8" /* UINT8 */,
+            perms: ["ev" /* NOTIFY */, "pr" /* PAIRED_READ */, "pw" /* PAIRED_WRITE */],
+            minValue: 0,
+            maxValue: 1,
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    SiriLightOnUse.UUID = "00000258-0000-1000-8000-0026BB765291";
+    return SiriLightOnUse;
+}(Characteristic_1.Characteristic));
+exports.SiriLightOnUse = SiriLightOnUse;
+Characteristic_1.Characteristic.SiriLightOnUse = SiriLightOnUse;
+/**
+ * Characteristic "Siri Listening"
+ */
+var SiriListening = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(SiriListening, _super);
+    function SiriListening() {
+        var _this = _super.call(this, "Siri Listening", SiriListening.UUID, {
+            format: "uint8" /* UINT8 */,
+            perms: ["ev" /* NOTIFY */, "pr" /* PAIRED_READ */, "pw" /* PAIRED_WRITE */],
+            minValue: 0,
+            maxValue: 1,
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    SiriListening.UUID = "00000256-0000-1000-8000-0026BB765291";
+    return SiriListening;
+}(Characteristic_1.Characteristic));
+exports.SiriListening = SiriListening;
+Characteristic_1.Characteristic.SiriListening = SiriListening;
+/**
+ * Characteristic "Siri Touch To Use"
+ */
+var SiriTouchToUse = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(SiriTouchToUse, _super);
+    function SiriTouchToUse() {
+        var _this = _super.call(this, "Siri Touch To Use", SiriTouchToUse.UUID, {
+            format: "uint8" /* UINT8 */,
+            perms: ["ev" /* NOTIFY */, "pr" /* PAIRED_READ */, "pw" /* PAIRED_WRITE */],
+            minValue: 0,
+            maxValue: 1,
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    SiriTouchToUse.UUID = "00000257-0000-1000-8000-0026BB765291";
+    return SiriTouchToUse;
+}(Characteristic_1.Characteristic));
+exports.SiriTouchToUse = SiriTouchToUse;
+Characteristic_1.Characteristic.SiriTouchToUse = SiriTouchToUse;
+/**
  * Characteristic "Slat Type"
  */
 var SlatType = /** @class */ (function (_super) {
-    tslib_1.__extends(SlatType, _super);
+    (0, tslib_1.__extends)(SlatType, _super);
     function SlatType() {
         var _this = _super.call(this, "Slat Type", SlatType.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3450,7 +3756,7 @@ Characteristic_1.Characteristic.SlatType = SlatType;
  * Characteristic "Sleep Discovery Mode"
  */
 var SleepDiscoveryMode = /** @class */ (function (_super) {
-    tslib_1.__extends(SleepDiscoveryMode, _super);
+    (0, tslib_1.__extends)(SleepDiscoveryMode, _super);
     function SleepDiscoveryMode() {
         var _this = _super.call(this, "Sleep Discovery Mode", SleepDiscoveryMode.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3475,7 +3781,7 @@ Characteristic_1.Characteristic.SleepDiscoveryMode = SleepDiscoveryMode;
  * @since iOS 14
  */
 var SleepInterval = /** @class */ (function (_super) {
-    tslib_1.__extends(SleepInterval, _super);
+    (0, tslib_1.__extends)(SleepInterval, _super);
     function SleepInterval() {
         var _this = _super.call(this, "Sleep Interval", SleepInterval.UUID, {
             format: "uint32" /* UINT32 */,
@@ -3495,7 +3801,7 @@ Characteristic_1.Characteristic.SleepInterval = SleepInterval;
  * Characteristic "Smoke Detected"
  */
 var SmokeDetected = /** @class */ (function (_super) {
-    tslib_1.__extends(SmokeDetected, _super);
+    (0, tslib_1.__extends)(SmokeDetected, _super);
     function SmokeDetected() {
         var _this = _super.call(this, "Smoke Detected", SmokeDetected.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3519,7 +3825,7 @@ Characteristic_1.Characteristic.SmokeDetected = SmokeDetected;
  * Characteristic "Software Revision"
  */
 var SoftwareRevision = /** @class */ (function (_super) {
-    tslib_1.__extends(SoftwareRevision, _super);
+    (0, tslib_1.__extends)(SoftwareRevision, _super);
     function SoftwareRevision() {
         var _this = _super.call(this, "Software Revision", SoftwareRevision.UUID, {
             format: "string" /* STRING */,
@@ -3537,7 +3843,7 @@ Characteristic_1.Characteristic.SoftwareRevision = SoftwareRevision;
  * Characteristic "Staged Firmware Version"
  */
 var StagedFirmwareVersion = /** @class */ (function (_super) {
-    tslib_1.__extends(StagedFirmwareVersion, _super);
+    (0, tslib_1.__extends)(StagedFirmwareVersion, _super);
     function StagedFirmwareVersion() {
         var _this = _super.call(this, "Staged Firmware Version", StagedFirmwareVersion.UUID, {
             format: "string" /* STRING */,
@@ -3555,7 +3861,7 @@ Characteristic_1.Characteristic.StagedFirmwareVersion = StagedFirmwareVersion;
  * Characteristic "Status Active"
  */
 var StatusActive = /** @class */ (function (_super) {
-    tslib_1.__extends(StatusActive, _super);
+    (0, tslib_1.__extends)(StatusActive, _super);
     function StatusActive() {
         var _this = _super.call(this, "Status Active", StatusActive.UUID, {
             format: "bool" /* BOOL */,
@@ -3573,7 +3879,7 @@ Characteristic_1.Characteristic.StatusActive = StatusActive;
  * Characteristic "Status Fault"
  */
 var StatusFault = /** @class */ (function (_super) {
-    tslib_1.__extends(StatusFault, _super);
+    (0, tslib_1.__extends)(StatusFault, _super);
     function StatusFault() {
         var _this = _super.call(this, "Status Fault", StatusFault.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3597,7 +3903,7 @@ Characteristic_1.Characteristic.StatusFault = StatusFault;
  * Characteristic "Status Jammed"
  */
 var StatusJammed = /** @class */ (function (_super) {
-    tslib_1.__extends(StatusJammed, _super);
+    (0, tslib_1.__extends)(StatusJammed, _super);
     function StatusJammed() {
         var _this = _super.call(this, "Status Jammed", StatusJammed.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3621,7 +3927,7 @@ Characteristic_1.Characteristic.StatusJammed = StatusJammed;
  * Characteristic "Status Low Battery"
  */
 var StatusLowBattery = /** @class */ (function (_super) {
-    tslib_1.__extends(StatusLowBattery, _super);
+    (0, tslib_1.__extends)(StatusLowBattery, _super);
     function StatusLowBattery() {
         var _this = _super.call(this, "Status Low Battery", StatusLowBattery.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3645,7 +3951,7 @@ Characteristic_1.Characteristic.StatusLowBattery = StatusLowBattery;
  * Characteristic "Status Tampered"
  */
 var StatusTampered = /** @class */ (function (_super) {
-    tslib_1.__extends(StatusTampered, _super);
+    (0, tslib_1.__extends)(StatusTampered, _super);
     function StatusTampered() {
         var _this = _super.call(this, "Status Tampered", StatusTampered.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3669,7 +3975,7 @@ Characteristic_1.Characteristic.StatusTampered = StatusTampered;
  * Characteristic "Streaming Status"
  */
 var StreamingStatus = /** @class */ (function (_super) {
-    tslib_1.__extends(StreamingStatus, _super);
+    (0, tslib_1.__extends)(StreamingStatus, _super);
     function StreamingStatus() {
         var _this = _super.call(this, "Streaming Status", StreamingStatus.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3687,7 +3993,7 @@ Characteristic_1.Characteristic.StreamingStatus = StreamingStatus;
  * Characteristic "Sulphur Dioxide Density"
  */
 var SulphurDioxideDensity = /** @class */ (function (_super) {
-    tslib_1.__extends(SulphurDioxideDensity, _super);
+    (0, tslib_1.__extends)(SulphurDioxideDensity, _super);
     function SulphurDioxideDensity() {
         var _this = _super.call(this, "Sulphur Dioxide Density", SulphurDioxideDensity.UUID, {
             format: "float" /* FLOAT */,
@@ -3705,10 +4011,28 @@ var SulphurDioxideDensity = /** @class */ (function (_super) {
 exports.SulphurDioxideDensity = SulphurDioxideDensity;
 Characteristic_1.Characteristic.SulphurDioxideDensity = SulphurDioxideDensity;
 /**
+ * Characteristic "Supported Asset Types"
+ */
+var SupportedAssetTypes = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(SupportedAssetTypes, _super);
+    function SupportedAssetTypes() {
+        var _this = _super.call(this, "Supported Asset Types", SupportedAssetTypes.UUID, {
+            format: "uint32" /* UINT32 */,
+            perms: ["pr" /* PAIRED_READ */],
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    SupportedAssetTypes.UUID = "00000268-0000-1000-8000-0026BB765291";
+    return SupportedAssetTypes;
+}(Characteristic_1.Characteristic));
+exports.SupportedAssetTypes = SupportedAssetTypes;
+Characteristic_1.Characteristic.SupportedAssetTypes = SupportedAssetTypes;
+/**
  * Characteristic "Supported Audio Recording Configuration"
  */
 var SupportedAudioRecordingConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SupportedAudioRecordingConfiguration, _super);
+    (0, tslib_1.__extends)(SupportedAudioRecordingConfiguration, _super);
     function SupportedAudioRecordingConfiguration() {
         var _this = _super.call(this, "Supported Audio Recording Configuration", SupportedAudioRecordingConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3726,7 +4050,7 @@ Characteristic_1.Characteristic.SupportedAudioRecordingConfiguration = Supported
  * Characteristic "Supported Audio Stream Configuration"
  */
 var SupportedAudioStreamConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SupportedAudioStreamConfiguration, _super);
+    (0, tslib_1.__extends)(SupportedAudioStreamConfiguration, _super);
     function SupportedAudioStreamConfiguration() {
         var _this = _super.call(this, "Supported Audio Stream Configuration", SupportedAudioStreamConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3744,7 +4068,7 @@ Characteristic_1.Characteristic.SupportedAudioStreamConfiguration = SupportedAud
  * Characteristic "Supported Camera Recording Configuration"
  */
 var SupportedCameraRecordingConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SupportedCameraRecordingConfiguration, _super);
+    (0, tslib_1.__extends)(SupportedCameraRecordingConfiguration, _super);
     function SupportedCameraRecordingConfiguration() {
         var _this = _super.call(this, "Supported Camera Recording Configuration", SupportedCameraRecordingConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3763,7 +4087,7 @@ Characteristic_1.Characteristic.SupportedCameraRecordingConfiguration = Supporte
  * @since iOS 14
  */
 var SupportedCharacteristicValueTransitionConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SupportedCharacteristicValueTransitionConfiguration, _super);
+    (0, tslib_1.__extends)(SupportedCharacteristicValueTransitionConfiguration, _super);
     function SupportedCharacteristicValueTransitionConfiguration() {
         var _this = _super.call(this, "Supported Characteristic Value Transition Configuration", SupportedCharacteristicValueTransitionConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3781,7 +4105,7 @@ Characteristic_1.Characteristic.SupportedCharacteristicValueTransitionConfigurat
  * Characteristic "Supported Data Stream Transport Configuration"
  */
 var SupportedDataStreamTransportConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SupportedDataStreamTransportConfiguration, _super);
+    (0, tslib_1.__extends)(SupportedDataStreamTransportConfiguration, _super);
     function SupportedDataStreamTransportConfiguration() {
         var _this = _super.call(this, "Supported Data Stream Transport Configuration", SupportedDataStreamTransportConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3796,11 +4120,29 @@ var SupportedDataStreamTransportConfiguration = /** @class */ (function (_super)
 exports.SupportedDataStreamTransportConfiguration = SupportedDataStreamTransportConfiguration;
 Characteristic_1.Characteristic.SupportedDataStreamTransportConfiguration = SupportedDataStreamTransportConfiguration;
 /**
+ * Characteristic "Supported Diagnostics Modes"
+ */
+var SupportedDiagnosticsModes = /** @class */ (function (_super) {
+    (0, tslib_1.__extends)(SupportedDiagnosticsModes, _super);
+    function SupportedDiagnosticsModes() {
+        var _this = _super.call(this, "Supported Diagnostics Modes", SupportedDiagnosticsModes.UUID, {
+            format: "uint32" /* UINT32 */,
+            perms: ["pr" /* PAIRED_READ */],
+        }) || this;
+        _this.value = _this.getDefaultValue();
+        return _this;
+    }
+    SupportedDiagnosticsModes.UUID = "0000024C-0000-1000-8000-0026BB765291";
+    return SupportedDiagnosticsModes;
+}(Characteristic_1.Characteristic));
+exports.SupportedDiagnosticsModes = SupportedDiagnosticsModes;
+Characteristic_1.Characteristic.SupportedDiagnosticsModes = SupportedDiagnosticsModes;
+/**
  * Characteristic "Supported Diagnostics Snapshot"
  * @since iOS 14
  */
 var SupportedDiagnosticsSnapshot = /** @class */ (function (_super) {
-    tslib_1.__extends(SupportedDiagnosticsSnapshot, _super);
+    (0, tslib_1.__extends)(SupportedDiagnosticsSnapshot, _super);
     function SupportedDiagnosticsSnapshot() {
         var _this = _super.call(this, "Supported Diagnostics Snapshot", SupportedDiagnosticsSnapshot.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3818,7 +4160,7 @@ Characteristic_1.Characteristic.SupportedDiagnosticsSnapshot = SupportedDiagnost
  * Characteristic "Supported Firmware Update Configuration"
  */
 var SupportedFirmwareUpdateConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SupportedFirmwareUpdateConfiguration, _super);
+    (0, tslib_1.__extends)(SupportedFirmwareUpdateConfiguration, _super);
     function SupportedFirmwareUpdateConfiguration() {
         var _this = _super.call(this, "Supported Firmware Update Configuration", SupportedFirmwareUpdateConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3836,7 +4178,7 @@ Characteristic_1.Characteristic.SupportedFirmwareUpdateConfiguration = Supported
  * Characteristic "Supported Router Configuration"
  */
 var SupportedRouterConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SupportedRouterConfiguration, _super);
+    (0, tslib_1.__extends)(SupportedRouterConfiguration, _super);
     function SupportedRouterConfiguration() {
         var _this = _super.call(this, "Supported Router Configuration", SupportedRouterConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3854,7 +4196,7 @@ Characteristic_1.Characteristic.SupportedRouterConfiguration = SupportedRouterCo
  * Characteristic "Supported RTP Configuration"
  */
 var SupportedRTPConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SupportedRTPConfiguration, _super);
+    (0, tslib_1.__extends)(SupportedRTPConfiguration, _super);
     function SupportedRTPConfiguration() {
         var _this = _super.call(this, "Supported RTP Configuration", SupportedRTPConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3873,7 +4215,7 @@ Characteristic_1.Characteristic.SupportedRTPConfiguration = SupportedRTPConfigur
  * @since iOS 13.4
  */
 var SupportedTransferTransportConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SupportedTransferTransportConfiguration, _super);
+    (0, tslib_1.__extends)(SupportedTransferTransportConfiguration, _super);
     function SupportedTransferTransportConfiguration() {
         var _this = _super.call(this, "Supported Transfer Transport Configuration", SupportedTransferTransportConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3891,7 +4233,7 @@ Characteristic_1.Characteristic.SupportedTransferTransportConfiguration = Suppor
  * Characteristic "Supported Video Recording Configuration"
  */
 var SupportedVideoRecordingConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SupportedVideoRecordingConfiguration, _super);
+    (0, tslib_1.__extends)(SupportedVideoRecordingConfiguration, _super);
     function SupportedVideoRecordingConfiguration() {
         var _this = _super.call(this, "Supported Video Recording Configuration", SupportedVideoRecordingConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3909,7 +4251,7 @@ Characteristic_1.Characteristic.SupportedVideoRecordingConfiguration = Supported
  * Characteristic "Supported Video Stream Configuration"
  */
 var SupportedVideoStreamConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(SupportedVideoStreamConfiguration, _super);
+    (0, tslib_1.__extends)(SupportedVideoStreamConfiguration, _super);
     function SupportedVideoStreamConfiguration() {
         var _this = _super.call(this, "Supported Video Stream Configuration", SupportedVideoStreamConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -3927,7 +4269,7 @@ Characteristic_1.Characteristic.SupportedVideoStreamConfiguration = SupportedVid
  * Characteristic "Swing Mode"
  */
 var SwingMode = /** @class */ (function (_super) {
-    tslib_1.__extends(SwingMode, _super);
+    (0, tslib_1.__extends)(SwingMode, _super);
     function SwingMode() {
         var _this = _super.call(this, "Swing Mode", SwingMode.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3951,7 +4293,7 @@ Characteristic_1.Characteristic.SwingMode = SwingMode;
  * Characteristic "Target Air Purifier State"
  */
 var TargetAirPurifierState = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetAirPurifierState, _super);
+    (0, tslib_1.__extends)(TargetAirPurifierState, _super);
     function TargetAirPurifierState() {
         var _this = _super.call(this, "Target Air Purifier State", TargetAirPurifierState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -3976,7 +4318,7 @@ Characteristic_1.Characteristic.TargetAirPurifierState = TargetAirPurifierState;
  * @deprecated Removed and not used anymore
  */
 var TargetAirQuality = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetAirQuality, _super);
+    (0, tslib_1.__extends)(TargetAirQuality, _super);
     function TargetAirQuality() {
         var _this = _super.call(this, "Target Air Quality", TargetAirQuality.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4001,7 +4343,7 @@ Characteristic_1.Characteristic.TargetAirQuality = TargetAirQuality;
  * Characteristic "Target Control List"
  */
 var TargetControlList = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetControlList, _super);
+    (0, tslib_1.__extends)(TargetControlList, _super);
     function TargetControlList() {
         var _this = _super.call(this, "Target Control List", TargetControlList.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -4020,7 +4362,7 @@ Characteristic_1.Characteristic.TargetControlList = TargetControlList;
  * Characteristic "Target Control Supported Configuration"
  */
 var TargetControlSupportedConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetControlSupportedConfiguration, _super);
+    (0, tslib_1.__extends)(TargetControlSupportedConfiguration, _super);
     function TargetControlSupportedConfiguration() {
         var _this = _super.call(this, "Target Control Supported Configuration", TargetControlSupportedConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -4038,7 +4380,7 @@ Characteristic_1.Characteristic.TargetControlSupportedConfiguration = TargetCont
  * Characteristic "Target Door State"
  */
 var TargetDoorState = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetDoorState, _super);
+    (0, tslib_1.__extends)(TargetDoorState, _super);
     function TargetDoorState() {
         var _this = _super.call(this, "Target Door State", TargetDoorState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4062,7 +4404,7 @@ Characteristic_1.Characteristic.TargetDoorState = TargetDoorState;
  * Characteristic "Target Fan State"
  */
 var TargetFanState = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetFanState, _super);
+    (0, tslib_1.__extends)(TargetFanState, _super);
     function TargetFanState() {
         var _this = _super.call(this, "Target Fan State", TargetFanState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4086,7 +4428,7 @@ Characteristic_1.Characteristic.TargetFanState = TargetFanState;
  * Characteristic "Target Heater-Cooler State"
  */
 var TargetHeaterCoolerState = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetHeaterCoolerState, _super);
+    (0, tslib_1.__extends)(TargetHeaterCoolerState, _super);
     function TargetHeaterCoolerState() {
         var _this = _super.call(this, "Target Heater-Cooler State", TargetHeaterCoolerState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4111,7 +4453,7 @@ Characteristic_1.Characteristic.TargetHeaterCoolerState = TargetHeaterCoolerStat
  * Characteristic "Target Heating Cooling State"
  */
 var TargetHeatingCoolingState = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetHeatingCoolingState, _super);
+    (0, tslib_1.__extends)(TargetHeatingCoolingState, _super);
     function TargetHeatingCoolingState() {
         var _this = _super.call(this, "Target Heating Cooling State", TargetHeatingCoolingState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4137,7 +4479,7 @@ Characteristic_1.Characteristic.TargetHeatingCoolingState = TargetHeatingCooling
  * Characteristic "Target Horizontal Tilt Angle"
  */
 var TargetHorizontalTiltAngle = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetHorizontalTiltAngle, _super);
+    (0, tslib_1.__extends)(TargetHorizontalTiltAngle, _super);
     function TargetHorizontalTiltAngle() {
         var _this = _super.call(this, "Target Horizontal Tilt Angle", TargetHorizontalTiltAngle.UUID, {
             format: "int" /* INT */,
@@ -4159,7 +4501,7 @@ Characteristic_1.Characteristic.TargetHorizontalTiltAngle = TargetHorizontalTilt
  * Characteristic "Target Humidifier-Dehumidifier State"
  */
 var TargetHumidifierDehumidifierState = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetHumidifierDehumidifierState, _super);
+    (0, tslib_1.__extends)(TargetHumidifierDehumidifierState, _super);
     function TargetHumidifierDehumidifierState() {
         var _this = _super.call(this, "Target Humidifier-Dehumidifier State", TargetHumidifierDehumidifierState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4188,7 +4530,7 @@ Characteristic_1.Characteristic.TargetHumidifierDehumidifierState = TargetHumidi
  * Characteristic "Target Media State"
  */
 var TargetMediaState = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetMediaState, _super);
+    (0, tslib_1.__extends)(TargetMediaState, _super);
     function TargetMediaState() {
         var _this = _super.call(this, "Target Media State", TargetMediaState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4213,7 +4555,7 @@ Characteristic_1.Characteristic.TargetMediaState = TargetMediaState;
  * Characteristic "Target Position"
  */
 var TargetPosition = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetPosition, _super);
+    (0, tslib_1.__extends)(TargetPosition, _super);
     function TargetPosition() {
         var _this = _super.call(this, "Target Position", TargetPosition.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4235,7 +4577,7 @@ Characteristic_1.Characteristic.TargetPosition = TargetPosition;
  * Characteristic "Target Relative Humidity"
  */
 var TargetRelativeHumidity = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetRelativeHumidity, _super);
+    (0, tslib_1.__extends)(TargetRelativeHumidity, _super);
     function TargetRelativeHumidity() {
         var _this = _super.call(this, "Target Relative Humidity", TargetRelativeHumidity.UUID, {
             format: "float" /* FLOAT */,
@@ -4258,7 +4600,7 @@ Characteristic_1.Characteristic.TargetRelativeHumidity = TargetRelativeHumidity;
  * @deprecated Removed and not used anymore
  */
 var TargetSlatState = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetSlatState, _super);
+    (0, tslib_1.__extends)(TargetSlatState, _super);
     function TargetSlatState() {
         var _this = _super.call(this, "Target Slat State", TargetSlatState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4282,7 +4624,7 @@ Characteristic_1.Characteristic.TargetSlatState = TargetSlatState;
  * Characteristic "Target Temperature"
  */
 var TargetTemperature = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetTemperature, _super);
+    (0, tslib_1.__extends)(TargetTemperature, _super);
     function TargetTemperature() {
         var _this = _super.call(this, "Target Temperature", TargetTemperature.UUID, {
             format: "float" /* FLOAT */,
@@ -4304,7 +4646,7 @@ Characteristic_1.Characteristic.TargetTemperature = TargetTemperature;
  * Characteristic "Target Tilt Angle"
  */
 var TargetTiltAngle = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetTiltAngle, _super);
+    (0, tslib_1.__extends)(TargetTiltAngle, _super);
     function TargetTiltAngle() {
         var _this = _super.call(this, "Target Tilt Angle", TargetTiltAngle.UUID, {
             format: "int" /* INT */,
@@ -4326,7 +4668,7 @@ Characteristic_1.Characteristic.TargetTiltAngle = TargetTiltAngle;
  * Characteristic "Target Vertical Tilt Angle"
  */
 var TargetVerticalTiltAngle = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetVerticalTiltAngle, _super);
+    (0, tslib_1.__extends)(TargetVerticalTiltAngle, _super);
     function TargetVerticalTiltAngle() {
         var _this = _super.call(this, "Target Vertical Tilt Angle", TargetVerticalTiltAngle.UUID, {
             format: "int" /* INT */,
@@ -4348,7 +4690,7 @@ Characteristic_1.Characteristic.TargetVerticalTiltAngle = TargetVerticalTiltAngl
  * Characteristic "Target Visibility State"
  */
 var TargetVisibilityState = /** @class */ (function (_super) {
-    tslib_1.__extends(TargetVisibilityState, _super);
+    (0, tslib_1.__extends)(TargetVisibilityState, _super);
     function TargetVisibilityState() {
         var _this = _super.call(this, "Target Visibility State", TargetVisibilityState.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4372,7 +4714,7 @@ Characteristic_1.Characteristic.TargetVisibilityState = TargetVisibilityState;
  * Characteristic "Temperature Display Units"
  */
 var TemperatureDisplayUnits = /** @class */ (function (_super) {
-    tslib_1.__extends(TemperatureDisplayUnits, _super);
+    (0, tslib_1.__extends)(TemperatureDisplayUnits, _super);
     function TemperatureDisplayUnits() {
         var _this = _super.call(this, "Temperature Display Units", TemperatureDisplayUnits.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4396,7 +4738,7 @@ Characteristic_1.Characteristic.TemperatureDisplayUnits = TemperatureDisplayUnit
  * Characteristic "Third Party Camera Active"
  */
 var ThirdPartyCameraActive = /** @class */ (function (_super) {
-    tslib_1.__extends(ThirdPartyCameraActive, _super);
+    (0, tslib_1.__extends)(ThirdPartyCameraActive, _super);
     function ThirdPartyCameraActive() {
         var _this = _super.call(this, "Third Party Camera Active", ThirdPartyCameraActive.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4417,7 +4759,7 @@ Characteristic_1.Characteristic.ThirdPartyCameraActive = ThirdPartyCameraActive;
  * Characteristic "Thread Control Point"
  */
 var ThreadControlPoint = /** @class */ (function (_super) {
-    tslib_1.__extends(ThreadControlPoint, _super);
+    (0, tslib_1.__extends)(ThreadControlPoint, _super);
     function ThreadControlPoint() {
         var _this = _super.call(this, "Thread Control Point", ThreadControlPoint.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -4435,7 +4777,7 @@ Characteristic_1.Characteristic.ThreadControlPoint = ThreadControlPoint;
  * Characteristic "Thread Node Capabilities"
  */
 var ThreadNodeCapabilities = /** @class */ (function (_super) {
-    tslib_1.__extends(ThreadNodeCapabilities, _super);
+    (0, tslib_1.__extends)(ThreadNodeCapabilities, _super);
     function ThreadNodeCapabilities() {
         var _this = _super.call(this, "Thread Node Capabilities", ThreadNodeCapabilities.UUID, {
             format: "uint16" /* UINT16 */,
@@ -4456,7 +4798,7 @@ Characteristic_1.Characteristic.ThreadNodeCapabilities = ThreadNodeCapabilities;
  * Characteristic "Thread OpenThread Version"
  */
 var ThreadOpenThreadVersion = /** @class */ (function (_super) {
-    tslib_1.__extends(ThreadOpenThreadVersion, _super);
+    (0, tslib_1.__extends)(ThreadOpenThreadVersion, _super);
     function ThreadOpenThreadVersion() {
         var _this = _super.call(this, "Thread OpenThread Version", ThreadOpenThreadVersion.UUID, {
             format: "string" /* STRING */,
@@ -4474,7 +4816,7 @@ Characteristic_1.Characteristic.ThreadOpenThreadVersion = ThreadOpenThreadVersio
  * Characteristic "Thread Status"
  */
 var ThreadStatus = /** @class */ (function (_super) {
-    tslib_1.__extends(ThreadStatus, _super);
+    (0, tslib_1.__extends)(ThreadStatus, _super);
     function ThreadStatus() {
         var _this = _super.call(this, "Thread Status", ThreadStatus.UUID, {
             format: "uint16" /* UINT16 */,
@@ -4496,7 +4838,7 @@ Characteristic_1.Characteristic.ThreadStatus = ThreadStatus;
  * @deprecated Removed and not used anymore
  */
 var TimeUpdate = /** @class */ (function (_super) {
-    tslib_1.__extends(TimeUpdate, _super);
+    (0, tslib_1.__extends)(TimeUpdate, _super);
     function TimeUpdate() {
         var _this = _super.call(this, "Time Update", TimeUpdate.UUID, {
             format: "bool" /* BOOL */,
@@ -4516,7 +4858,7 @@ Characteristic_1.Characteristic.TimeUpdate = TimeUpdate;
  * @since iOS 14
  */
 var TransmitPower = /** @class */ (function (_super) {
-    tslib_1.__extends(TransmitPower, _super);
+    (0, tslib_1.__extends)(TransmitPower, _super);
     function TransmitPower() {
         var _this = _super.call(this, "Transmit Power", TransmitPower.UUID, {
             format: "int" /* INT */,
@@ -4534,7 +4876,7 @@ Characteristic_1.Characteristic.TransmitPower = TransmitPower;
  * Characteristic "Tunnel Connection Timeout"
  */
 var TunnelConnectionTimeout = /** @class */ (function (_super) {
-    tslib_1.__extends(TunnelConnectionTimeout, _super);
+    (0, tslib_1.__extends)(TunnelConnectionTimeout, _super);
     function TunnelConnectionTimeout() {
         var _this = _super.call(this, "Tunnel Connection Timeout", TunnelConnectionTimeout.UUID, {
             format: "int" /* INT */,
@@ -4552,7 +4894,7 @@ Characteristic_1.Characteristic.TunnelConnectionTimeout = TunnelConnectionTimeou
  * Characteristic "Tunneled Accessory Advertising"
  */
 var TunneledAccessoryAdvertising = /** @class */ (function (_super) {
-    tslib_1.__extends(TunneledAccessoryAdvertising, _super);
+    (0, tslib_1.__extends)(TunneledAccessoryAdvertising, _super);
     function TunneledAccessoryAdvertising() {
         var _this = _super.call(this, "Tunneled Accessory Advertising", TunneledAccessoryAdvertising.UUID, {
             format: "bool" /* BOOL */,
@@ -4570,7 +4912,7 @@ Characteristic_1.Characteristic.TunneledAccessoryAdvertising = TunneledAccessory
  * Characteristic "Tunneled Accessory Connected"
  */
 var TunneledAccessoryConnected = /** @class */ (function (_super) {
-    tslib_1.__extends(TunneledAccessoryConnected, _super);
+    (0, tslib_1.__extends)(TunneledAccessoryConnected, _super);
     function TunneledAccessoryConnected() {
         var _this = _super.call(this, "Tunneled Accessory Connected", TunneledAccessoryConnected.UUID, {
             format: "bool" /* BOOL */,
@@ -4588,7 +4930,7 @@ Characteristic_1.Characteristic.TunneledAccessoryConnected = TunneledAccessoryCo
  * Characteristic "Tunneled Accessory State Number"
  */
 var TunneledAccessoryStateNumber = /** @class */ (function (_super) {
-    tslib_1.__extends(TunneledAccessoryStateNumber, _super);
+    (0, tslib_1.__extends)(TunneledAccessoryStateNumber, _super);
     function TunneledAccessoryStateNumber() {
         var _this = _super.call(this, "Tunneled Accessory State Number", TunneledAccessoryStateNumber.UUID, {
             format: "int" /* INT */,
@@ -4606,7 +4948,7 @@ Characteristic_1.Characteristic.TunneledAccessoryStateNumber = TunneledAccessory
  * Characteristic "Valve Type"
  */
 var ValveType = /** @class */ (function (_super) {
-    tslib_1.__extends(ValveType, _super);
+    (0, tslib_1.__extends)(ValveType, _super);
     function ValveType() {
         var _this = _super.call(this, "Valve Type", ValveType.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4632,7 +4974,7 @@ Characteristic_1.Characteristic.ValveType = ValveType;
  * Characteristic "Version"
  */
 var Version = /** @class */ (function (_super) {
-    tslib_1.__extends(Version, _super);
+    (0, tslib_1.__extends)(Version, _super);
     function Version() {
         var _this = _super.call(this, "Version", Version.UUID, {
             format: "string" /* STRING */,
@@ -4652,7 +4994,7 @@ Characteristic_1.Characteristic.Version = Version;
  * @since iOS 14
  */
 var VideoAnalysisActive = /** @class */ (function (_super) {
-    tslib_1.__extends(VideoAnalysisActive, _super);
+    (0, tslib_1.__extends)(VideoAnalysisActive, _super);
     function VideoAnalysisActive() {
         var _this = _super.call(this, "Video Analysis Active", VideoAnalysisActive.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4670,7 +5012,7 @@ Characteristic_1.Characteristic.VideoAnalysisActive = VideoAnalysisActive;
  * Characteristic "VOC Density"
  */
 var VOCDensity = /** @class */ (function (_super) {
-    tslib_1.__extends(VOCDensity, _super);
+    (0, tslib_1.__extends)(VOCDensity, _super);
     function VOCDensity() {
         var _this = _super.call(this, "VOC Density", VOCDensity.UUID, {
             format: "float" /* FLOAT */,
@@ -4691,7 +5033,7 @@ Characteristic_1.Characteristic.VOCDensity = VOCDensity;
  * Characteristic "Volume"
  */
 var Volume = /** @class */ (function (_super) {
-    tslib_1.__extends(Volume, _super);
+    (0, tslib_1.__extends)(Volume, _super);
     function Volume() {
         var _this = _super.call(this, "Volume", Volume.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4713,7 +5055,7 @@ Characteristic_1.Characteristic.Volume = Volume;
  * Characteristic "Volume Control Type"
  */
 var VolumeControlType = /** @class */ (function (_super) {
-    tslib_1.__extends(VolumeControlType, _super);
+    (0, tslib_1.__extends)(VolumeControlType, _super);
     function VolumeControlType() {
         var _this = _super.call(this, "Volume Control Type", VolumeControlType.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4739,7 +5081,7 @@ Characteristic_1.Characteristic.VolumeControlType = VolumeControlType;
  * Characteristic "Volume Selector"
  */
 var VolumeSelector = /** @class */ (function (_super) {
-    tslib_1.__extends(VolumeSelector, _super);
+    (0, tslib_1.__extends)(VolumeSelector, _super);
     function VolumeSelector() {
         var _this = _super.call(this, "Volume Selector", VolumeSelector.UUID, {
             format: "uint8" /* UINT8 */,
@@ -4764,7 +5106,7 @@ Characteristic_1.Characteristic.VolumeSelector = VolumeSelector;
  * @since iOS 13.4
  */
 var WakeConfiguration = /** @class */ (function (_super) {
-    tslib_1.__extends(WakeConfiguration, _super);
+    (0, tslib_1.__extends)(WakeConfiguration, _super);
     function WakeConfiguration() {
         var _this = _super.call(this, "Wake Configuration", WakeConfiguration.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -4782,7 +5124,7 @@ Characteristic_1.Characteristic.WakeConfiguration = WakeConfiguration;
  * Characteristic "WAN Configuration List"
  */
 var WANConfigurationList = /** @class */ (function (_super) {
-    tslib_1.__extends(WANConfigurationList, _super);
+    (0, tslib_1.__extends)(WANConfigurationList, _super);
     function WANConfigurationList() {
         var _this = _super.call(this, "WAN Configuration List", WANConfigurationList.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -4800,7 +5142,7 @@ Characteristic_1.Characteristic.WANConfigurationList = WANConfigurationList;
  * Characteristic "WAN Status List"
  */
 var WANStatusList = /** @class */ (function (_super) {
-    tslib_1.__extends(WANStatusList, _super);
+    (0, tslib_1.__extends)(WANStatusList, _super);
     function WANStatusList() {
         var _this = _super.call(this, "WAN Status List", WANStatusList.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -4818,7 +5160,7 @@ Characteristic_1.Characteristic.WANStatusList = WANStatusList;
  * Characteristic "Water Level"
  */
 var WaterLevel = /** @class */ (function (_super) {
-    tslib_1.__extends(WaterLevel, _super);
+    (0, tslib_1.__extends)(WaterLevel, _super);
     function WaterLevel() {
         var _this = _super.call(this, "Water Level", WaterLevel.UUID, {
             format: "float" /* FLOAT */,
@@ -4841,7 +5183,7 @@ Characteristic_1.Characteristic.WaterLevel = WaterLevel;
  * @since iOS 14
  */
 var WiFiCapabilities = /** @class */ (function (_super) {
-    tslib_1.__extends(WiFiCapabilities, _super);
+    (0, tslib_1.__extends)(WiFiCapabilities, _super);
     function WiFiCapabilities() {
         var _this = _super.call(this, "Wi-Fi Capabilities", WiFiCapabilities.UUID, {
             format: "uint32" /* UINT32 */,
@@ -4860,7 +5202,7 @@ Characteristic_1.Characteristic.WiFiCapabilities = WiFiCapabilities;
  * @since iOS 14
  */
 var WiFiConfigurationControl = /** @class */ (function (_super) {
-    tslib_1.__extends(WiFiConfigurationControl, _super);
+    (0, tslib_1.__extends)(WiFiConfigurationControl, _super);
     function WiFiConfigurationControl() {
         var _this = _super.call(this, "Wi-Fi Configuration Control", WiFiConfigurationControl.UUID, {
             format: "tlv8" /* TLV8 */,
@@ -4878,7 +5220,7 @@ Characteristic_1.Characteristic.WiFiConfigurationControl = WiFiConfigurationCont
  * Characteristic "Wi-Fi Satellite Status"
  */
 var WiFiSatelliteStatus = /** @class */ (function (_super) {
-    tslib_1.__extends(WiFiSatelliteStatus, _super);
+    (0, tslib_1.__extends)(WiFiSatelliteStatus, _super);
     function WiFiSatelliteStatus() {
         var _this = _super.call(this, "Wi-Fi Satellite Status", WiFiSatelliteStatus.UUID, {
             format: "uint8" /* UINT8 */,

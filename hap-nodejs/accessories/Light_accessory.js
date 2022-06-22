@@ -16,48 +16,57 @@ var LightControllerClass = /** @class */ (function () {
         this.outputLogs = true; //output logs
     }
     LightControllerClass.prototype.setPower = function (status) {
-        if (this.outputLogs)
+        if (this.outputLogs) {
             console.log("Turning the '%s' %s", this.name, status ? "on" : "off");
+        }
         this.power = status;
     };
     LightControllerClass.prototype.getPower = function () {
-        if (this.outputLogs)
+        if (this.outputLogs) {
             console.log("'%s' is %s.", this.name, this.power ? "on" : "off");
+        }
         return this.power;
     };
     LightControllerClass.prototype.setBrightness = function (brightness) {
-        if (this.outputLogs)
+        if (this.outputLogs) {
             console.log("Setting '%s' brightness to %s", this.name, brightness);
+        }
         this.brightness = brightness;
     };
     LightControllerClass.prototype.getBrightness = function () {
-        if (this.outputLogs)
+        if (this.outputLogs) {
             console.log("'%s' brightness is %s", this.name, this.brightness);
+        }
         return this.brightness;
     };
     LightControllerClass.prototype.setSaturation = function (saturation) {
-        if (this.outputLogs)
+        if (this.outputLogs) {
             console.log("Setting '%s' saturation to %s", this.name, saturation);
+        }
         this.saturation = saturation;
     };
     LightControllerClass.prototype.getSaturation = function () {
-        if (this.outputLogs)
+        if (this.outputLogs) {
             console.log("'%s' saturation is %s", this.name, this.saturation);
+        }
         return this.saturation;
     };
     LightControllerClass.prototype.setHue = function (hue) {
-        if (this.outputLogs)
+        if (this.outputLogs) {
             console.log("Setting '%s' hue to %s", this.name, hue);
+        }
         this.hue = hue;
     };
     LightControllerClass.prototype.getHue = function () {
-        if (this.outputLogs)
+        if (this.outputLogs) {
             console.log("'%s' hue is %s", this.name, this.hue);
+        }
         return this.hue;
     };
     LightControllerClass.prototype.identify = function () {
-        if (this.outputLogs)
+        if (this.outputLogs) {
             console.log("Identify the '%s'", this.name);
+        }
     };
     return LightControllerClass;
 }());
@@ -65,15 +74,14 @@ var LightController = new LightControllerClass();
 // Generate a consistent UUID for our light Accessory that will remain the same even when
 // restarting our server. We use the `uuid.generate` helper function to create a deterministic
 // UUID based on an arbitrary "namespace" and the word "light".
-var lightUUID = __1.uuid.generate('hap-nodejs:accessories:light' + LightController.name);
+var lightUUID = __1.uuid.generate("hap-nodejs:accessories:light" + LightController.name);
 // This is the Accessory that we'll return to HAP-NodeJS that represents our light.
 var lightAccessory = exports.accessory = new __1.Accessory(LightController.name, lightUUID);
 // Add properties for publishing (in case we're using Core.js and not BridgedCore.js)
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 lightAccessory.username = LightController.username;
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 lightAccessory.pincode = LightController.pincode;
-// @ts-ignore
 lightAccessory.category = 5 /* LIGHTBULB */;
 // set some basic properties (these values are arbitrary and setting them is optional)
 lightAccessory
@@ -86,7 +94,8 @@ lightAccessory.on("identify" /* IDENTIFY */, function (paired, callback) {
     LightController.identify();
     callback();
 });
-var lightbulb = lightAccessory.addService(__1.Service.Lightbulb, LightController.name); // services exposed to the user should have "names" like "Light" for this case
+// services exposed to the user should have "names" like "Light" for this case
+var lightbulb = lightAccessory.addService(__1.Service.Lightbulb, LightController.name);
 lightbulb.getCharacteristic(__1.Characteristic.On)
     .on("set" /* SET */, function (value, callback) {
     LightController.setPower(value);

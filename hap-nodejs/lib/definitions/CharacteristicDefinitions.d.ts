@@ -1,5 +1,21 @@
 import { Characteristic } from "../Characteristic";
 /**
+ * Characteristic "Access Code Control Point"
+ * @since iOS 15
+ */
+export declare class AccessCodeControlPoint extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
+ * Characteristic "Access Code Supported Configuration"
+ * @since iOS 15
+ */
+export declare class AccessCodeSupportedConfiguration extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
  * Characteristic "Access Control Level"
  */
 export declare class AccessControlLevel extends Characteristic {
@@ -69,6 +85,13 @@ export declare class AirParticulateSize extends Characteristic {
     constructor();
 }
 /**
+ * Characteristic "AirPlay Enable"
+ */
+export declare class AirPlayEnable extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
  * Characteristic "Air Quality"
  */
 export declare class AirQuality extends Characteristic {
@@ -85,6 +108,13 @@ export declare class AirQuality extends Characteristic {
  * Characteristic "App Matching Identifier"
  */
 export declare class AppMatchingIdentifier extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
+ * Characteristic "Asset Update Readiness"
+ */
+export declare class AssetUpdateReadiness extends Characteristic {
     static readonly UUID: string;
     constructor();
 }
@@ -234,6 +264,14 @@ export declare class ClosedCaptions extends Characteristic {
  * Characteristic "Color Temperature"
  */
 export declare class ColorTemperature extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
+ * Characteristic "Configuration State"
+ * @since iOS 15
+ */
+export declare class ConfigurationState extends Characteristic {
     static readonly UUID: string;
     constructor();
 }
@@ -561,6 +599,14 @@ export declare class FirmwareUpdateStatus extends Characteristic {
     constructor();
 }
 /**
+ * Characteristic "Hardware Finish"
+ * @since iOS 15
+ */
+export declare class HardwareFinish extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
  * Characteristic "Hardware Revision"
  */
 export declare class HardwareRevision extends Characteristic {
@@ -837,6 +883,13 @@ export declare class MotionDetected extends Characteristic {
     constructor();
 }
 /**
+ * Characteristic "Multifunction Button"
+ */
+export declare class MultifunctionButton extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
  * Characteristic "Mute"
  */
 export declare class Mute extends Characteristic {
@@ -868,6 +921,22 @@ export declare class NetworkClientProfileControl extends Characteristic {
  * Characteristic "Network Client Status Control"
  */
 export declare class NetworkClientStatusControl extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
+ * Characteristic "NFC Access Control Point"
+ * @since iOS 15
+ */
+export declare class NFCAccessControlPoint extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
+ * Characteristic "NFC Access Supported Configuration"
+ * @since iOS 15
+ */
+export declare class NFCAccessSupportedConfiguration extends Characteristic {
     static readonly UUID: string;
     constructor();
 }
@@ -1243,6 +1312,13 @@ export declare class SelectedCameraRecordingConfiguration extends Characteristic
     constructor();
 }
 /**
+ * Characteristic "Selected Diagnostics Modes"
+ */
+export declare class SelectedDiagnosticsModes extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
  * Characteristic "Selected RTP Stream Configuration"
  */
 export declare class SelectedRTPStreamConfiguration extends Characteristic {
@@ -1310,11 +1386,53 @@ export declare class SignalToNoiseRatio extends Characteristic {
     constructor();
 }
 /**
+ * Characteristic "Siri Enable"
+ */
+export declare class SiriEnable extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
+ * Characteristic "Siri Endpoint Session Status"
+ */
+export declare class SiriEndpointSessionStatus extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
+ * Characteristic "Siri Engine Version"
+ */
+export declare class SiriEngineVersion extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
  * Characteristic "Siri Input Type"
  */
 export declare class SiriInputType extends Characteristic {
     static readonly UUID: string;
     static readonly PUSH_BUTTON_TRIGGERED_APPLE_TV = 0;
+    constructor();
+}
+/**
+ * Characteristic "Siri Light On Use"
+ */
+export declare class SiriLightOnUse extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
+ * Characteristic "Siri Listening"
+ */
+export declare class SiriListening extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
+ * Characteristic "Siri Touch To Use"
+ */
+export declare class SiriTouchToUse extends Characteristic {
+    static readonly UUID: string;
     constructor();
 }
 /**
@@ -1424,6 +1542,13 @@ export declare class SulphurDioxideDensity extends Characteristic {
     constructor();
 }
 /**
+ * Characteristic "Supported Asset Types"
+ */
+export declare class SupportedAssetTypes extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
  * Characteristic "Supported Audio Recording Configuration"
  */
 export declare class SupportedAudioRecordingConfiguration extends Characteristic {
@@ -1456,6 +1581,13 @@ export declare class SupportedCharacteristicValueTransitionConfiguration extends
  * Characteristic "Supported Data Stream Transport Configuration"
  */
 export declare class SupportedDataStreamTransportConfiguration extends Characteristic {
+    static readonly UUID: string;
+    constructor();
+}
+/**
+ * Characteristic "Supported Diagnostics Modes"
+ */
+export declare class SupportedDiagnosticsModes extends Characteristic {
     static readonly UUID: string;
     constructor();
 }

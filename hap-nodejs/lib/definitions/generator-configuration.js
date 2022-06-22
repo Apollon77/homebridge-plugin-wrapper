@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServiceSinceInformation = exports.CharacteristicSinceInformation = exports.ServiceManualAdditions = exports.ServiceCharacteristicConfigurationOverrides = exports.ServiceDeprecatedNames = exports.ServiceNameOverrides = exports.CharacteristicManualAdditions = exports.CharacteristicOverriding = exports.CharacteristicClassAdditions = exports.CharacteristicValidValuesOverride = exports.CharacteristicDeprecatedNames = exports.CharacteristicNameOverrides = exports.CharacteristicHidden = void 0;
 var tslib_1 = require("tslib");
-var assert_1 = tslib_1.__importDefault(require("assert"));
+var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
 var PropertyId;
 (function (PropertyId) {
     PropertyId[PropertyId["NOTIFY"] = 1] = "NOTIFY";
@@ -15,7 +15,7 @@ var PropertyId;
     PropertyId[PropertyId["WRITE_RESPONSE"] = 128] = "WRITE_RESPONSE";
 })(PropertyId || (PropertyId = {}));
 exports.CharacteristicHidden = new Set([
-    "service-signature",
+    "service-signature", // BLE
 ]);
 exports.CharacteristicNameOverrides = new Map([
     ["air-quality", "Air Quality"],
@@ -65,7 +65,9 @@ exports.CharacteristicValidValuesOverride = new Map([
     ["wifi-satellite-status", { "0": "Unknown", "1": "Connected", "2": "Not Connected" }],
 ]);
 exports.CharacteristicClassAdditions = new Map([
-    ["humidifier-dehumidifier.state.target", ["/**\n   * @deprecated Removed in iOS 11. Use {@link HUMIDIFIER_OR_DEHUMIDIFIER} instead.\n   */\n  public static readonly AUTO = 0;"]]
+    ["humidifier-dehumidifier.state.target", [
+            "/**\n   * @deprecated Removed in iOS 11. Use {@link HUMIDIFIER_OR_DEHUMIDIFIER} instead.\n   */\n  public static readonly AUTO = 0;",
+        ]],
 ]);
 exports.CharacteristicOverriding = new Map([
     ["rotation.speed", function (generated) {
@@ -84,7 +86,7 @@ exports.CharacteristicOverriding = new Map([
             generated.properties |= 128 /* WRITE_RESPONSE */;
         }],
     ["lock-mechanism.last-known-action", function (generated) {
-            assert_1.default(generated.maxValue === 8, "LockLastKnownAction seems to have changed in metadata!");
+            (0, assert_1.default)(generated.maxValue === 8, "LockLastKnownAction seems to have changed in metadata!");
             generated.maxValue = 10;
             generated.validValues["9"] = "SECURED_PHYSICALLY";
             generated.validValues["10"] = "UNSECURED_PHYSICALLY";
@@ -134,34 +136,34 @@ exports.CharacteristicOverriding = new Map([
             generated.format = "uint8";
         }],
     ["input-device-type", function (generated) {
-            // @ts-ignore
+            // @ts-expect-error: undefined access
             generated.validValues[6] = null;
         }],
     ["pairing-features", function (generated) {
             generated.properties &= ~4 /* WRITE */;
         }],
     ["picture-mode", function (generated) {
-            // @ts-ignore
+            // @ts-expect-error: undefined access
             generated.validValues[8] = null;
-            // @ts-ignore
+            // @ts-expect-error: undefined access
             generated.validValues[9] = null;
-            // @ts-ignore
+            // @ts-expect-error: undefined access
             generated.validValues[10] = null;
-            // @ts-ignore
+            // @ts-expect-error: undefined access
             generated.validValues[11] = null;
-            // @ts-ignore
+            // @ts-expect-error: undefined access
             generated.validValues[12] = null;
-            // @ts-ignore
+            // @ts-expect-error: undefined access
             generated.validValues[13] = null;
         }],
     ["remote-key", function (generated) {
-            // @ts-ignore
+            // @ts-expect-error: undefined access
             generated.validValues[12] = null;
-            // @ts-ignore
+            // @ts-expect-error: undefined access
             generated.validValues[13] = null;
-            // @ts-ignore
+            // @ts-expect-error: undefined access
             generated.validValues[14] = null;
-            // @ts-ignore
+            // @ts-expect-error: undefined access
             generated.validValues[16] = null;
         }],
     ["service-label-namespace", function (generated) {
@@ -178,7 +180,13 @@ exports.CharacteristicOverriding = new Map([
         }],
     ["identifier", function (generated) {
             generated.minValue = undefined;
-        }]
+        }],
+    ["access-code-control-point", function (generated) {
+            generated.properties |= 128 /* WRITE_RESPONSE */;
+        }],
+    ["nfc-access-control-point", function (generated) {
+            generated.properties |= 128 /* WRITE_RESPONSE */;
+        }],
 ]);
 exports.CharacteristicManualAdditions = new Map([
     ["diagonal-field-of-view", {
@@ -240,7 +248,7 @@ exports.CharacteristicManualAdditions = new Map([
             className: "CurrentTime",
             deprecatedNotice: "Removed and not used anymore",
             format: "string",
-            properties: 6,
+            properties: 6, // read, write
         }],
     ["day-of-the-week", {
             id: "day-of-the-week",
@@ -260,7 +268,7 @@ exports.CharacteristicManualAdditions = new Map([
             className: "TimeUpdate",
             deprecatedNotice: "Removed and not used anymore",
             format: "bool",
-            properties: 6,
+            properties: 6, // read, write
         }],
     ["reachable", {
             id: "reachable",
@@ -269,7 +277,7 @@ exports.CharacteristicManualAdditions = new Map([
             className: "Reachable",
             deprecatedNotice: "Removed and not used anymore",
             format: "bool",
-            properties: 6,
+            properties: 6, // read, write
         }],
     ["link-quality", {
             id: "link-quality",
@@ -300,7 +308,7 @@ exports.CharacteristicManualAdditions = new Map([
             className: "ConfigureBridgedAccessoryStatus",
             deprecatedNotice: "Removed and not used anymore",
             format: "tlv8",
-            properties: 3,
+            properties: 3, // read, notify
         }],
     ["configure-bridged-accessory", {
             id: "configure-bridged-accessory",
@@ -318,7 +326,7 @@ exports.CharacteristicManualAdditions = new Map([
             className: "DiscoverBridgedAccessories",
             deprecatedNotice: "Removed and not used anymore",
             format: "uint8",
-            properties: 7,
+            properties: 7, // read, write, notify
         }],
     ["discovered-bridged-accessories", {
             id: "discovered-bridged-accessories",
@@ -327,7 +335,7 @@ exports.CharacteristicManualAdditions = new Map([
             className: "DiscoveredBridgedAccessories",
             deprecatedNotice: "Removed and not used anymore",
             format: "uint16",
-            properties: 3,
+            properties: 3, // read, notify
         }],
 ]);
 exports.ServiceNameOverrides = new Map([
@@ -337,6 +345,7 @@ exports.ServiceNameOverrides = new Map([
     ["service-label", "Service Label"],
     ["smart-speaker", "Smart Speaker"],
     ["speaker", "Television Speaker"],
+    ["nfc-access", "NFC Access"],
 ]);
 exports.ServiceDeprecatedNames = new Map([
     ["battery", "Battery Service"],
@@ -366,7 +375,18 @@ exports.ServiceManualAdditions = new Map([
             className: "CameraControl",
             deprecatedNotice: "This service has no usage anymore and will be ignored by iOS",
             requiredCharacteristics: ["on"],
-            optionalCharacteristics: ["horizontal-tilt.current", "vertical-tilt.current", "horizontal-tilt.target", "vertical-tilt.target", "night-vision", "optical-zoom", "digital-zoom", "image-rotation", "image-mirroring", "name"]
+            optionalCharacteristics: [
+                "horizontal-tilt.current",
+                "vertical-tilt.current",
+                "horizontal-tilt.target",
+                "vertical-tilt.target",
+                "night-vision",
+                "optical-zoom",
+                "digital-zoom",
+                "image-rotation",
+                "image-mirroring",
+                "name",
+            ],
         }],
     ["time-information", {
             id: "time-information",
@@ -392,7 +412,12 @@ exports.ServiceManualAdditions = new Map([
             name: "Bridge Configuration",
             className: "BridgeConfiguration",
             deprecatedNotice: "Removed and not used anymore",
-            requiredCharacteristics: ["configure-bridged-accessory-status", "discover-bridged-accessories", "discovered-bridged-accessories", "configure-bridged-accessory"],
+            requiredCharacteristics: [
+                "configure-bridged-accessory-status",
+                "discover-bridged-accessories",
+                "discovered-bridged-accessories",
+                "configure-bridged-accessory",
+            ],
             optionalCharacteristics: ["name"],
         }],
 ]);
@@ -427,8 +452,16 @@ exports.CharacteristicSinceInformation = new Map([
     ["wake-configuration", "13.4"],
     ["wifi-capabilities", "14"],
     ["wifi-configuration-control", "14"],
+    ["access-code-control-point", "15"],
+    ["access-code-supported-configuration", "15"],
+    ["configuration-state", "15"],
+    ["hardware-finish", "15"],
+    ["nfc-access-control-point", "15"],
+    ["nfc-access-supported-configuration", "15"],
 ]);
 exports.ServiceSinceInformation = new Map([
     ["outlet", "13"],
+    ["access-code", "15"],
+    ["nfc-access", "15"],
 ]);
 //# sourceMappingURL=generator-configuration.js.map

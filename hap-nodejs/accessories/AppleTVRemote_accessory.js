@@ -1,16 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = require("tslib");
-var escape_html_1 = tslib_1.__importDefault(require("escape-html"));
+var escape_html_1 = (0, tslib_1.__importDefault)(require("escape-html"));
 var __1 = require("..");
-var http = tslib_1.__importStar(require("http"));
-var url_1 = tslib_1.__importDefault(require("url"));
+var http = (0, tslib_1.__importStar)(require("http"));
+var url_1 = (0, tslib_1.__importDefault)(require("url"));
 var gstreamer_audioProducer_1 = require("./gstreamer-audioProducer");
-var remoteUUID = __1.uuid.generate('hap-nodejs:accessories:remote');
-var remote = exports.accessory = new __1.Accessory('Remote', remoteUUID);
-// @ts-ignore
+var remoteUUID = __1.uuid.generate("hap-nodejs:accessories:remote");
+var remote = exports.accessory = new __1.Accessory("Remote", remoteUUID);
+// @ts-expect-error: Core/BridgeCore API
 remote.username = "DB:AF:E0:5C:69:76";
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 remote.pincode = "874-23-897";
 remote.category = 32 /* TARGET_CONTROLLER */;
 // ----------------- for siri support -----------------
@@ -77,7 +77,7 @@ http.createServer(function (request, response) {
         var targetIdentifier = controller.getTargetIdentifierByName(query.name);
         if (targetIdentifier === undefined) {
             response.writeHead(400, { "Content-Type": "text/html" });
-            response.end("Bad request. No target found for given name " + escape_html_1.default(query.name + ""));
+            response.end("Bad request. No target found for given name " + (0, escape_html_1.default)(query.name + ""));
             return;
         }
         response.writeHead(200, { "Content-Type": "text/html" });
@@ -92,16 +92,16 @@ http.createServer(function (request, response) {
         }
         var buttonState = parseInt(query.state, 10);
         var button = parseInt(query.button, 10);
-        // @ts-ignore
+        // @ts-expect-error: forceConsistentCasingInFileNames compiler option
         if (__1.ButtonState[buttonState] === undefined) {
             response.writeHead(400, { "Content-Type": "text/html" });
-            response.end("Bad request. Unknown button state " + escape_html_1.default(query.state + ""));
+            response.end("Bad request. Unknown button state " + (0, escape_html_1.default)(query.state + ""));
             return;
         }
-        // @ts-ignore
+        // @ts-expect-error: forceConsistentCasingInFileNames compiler option
         if (__1.ButtonType[button] === undefined) {
             response.writeHead(400, { "Content-Type": "text/html" });
-            response.end("Bad request. Unknown button " + escape_html_1.default(query.button + ""));
+            response.end("Bad request. Unknown button " + (0, escape_html_1.default)(query.button + ""));
             return;
         }
         if (buttonState === 0 /* UP */) {
@@ -123,14 +123,15 @@ http.createServer(function (request, response) {
         var time = 200;
         if (query.time !== undefined) {
             var parsedTime = parseInt(query.time, 10);
-            if (parsedTime)
+            if (parsedTime) {
                 time = parsedTime;
+            }
         }
         var button = parseInt(query.button, 10);
-        // @ts-ignore
+        // @ts-expect-error: forceConsistentCasingInFileNames compiler option
         if (__1.ButtonType[button] === undefined) {
             response.writeHead(400, { "Content-Type": "text/html" });
-            response.end("Bad request. Unknown button " + escape_html_1.default(query.button + ""));
+            response.end("Bad request. Unknown button " + (0, escape_html_1.default)(query.button + ""));
             return;
         }
         controller.pushAndReleaseButton(button, time);
@@ -151,7 +152,7 @@ http.createServer(function (request, response) {
     }
     else {
         response.writeHead(404, { "Content-Type": "text/html" });
-        response.end("Not Found. No path found for " + escape_html_1.default(pathname));
+        response.end("Not Found. No path found for " + (0, escape_html_1.default)(pathname));
         return;
     }
 }).listen(8080);

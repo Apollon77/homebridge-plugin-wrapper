@@ -10,20 +10,19 @@ var MOTION_SENSOR = {
     },
     identify: function () {
         console.log("Identify the motion sensor!");
-    }
+    },
 };
 // Generate a consistent UUID for our Motion Sensor Accessory that will remain the same even when
 // restarting our server. We use the `uuid.generate` helper function to create a deterministic
 // UUID based on an arbitrary "namespace" and the word "motionsensor".
-var motionSensorUUID = __1.uuid.generate('hap-nodejs:accessories:motionsensor');
+var motionSensorUUID = __1.uuid.generate("hap-nodejs:accessories:motionsensor");
 // This is the Accessory that we'll return to HAP-NodeJS that represents our fake motionSensor.
-var motionSensor = exports.accessory = new __1.Accessory('Motion Sensor', motionSensorUUID);
+var motionSensor = exports.accessory = new __1.Accessory("Motion Sensor", motionSensorUUID);
 // Add properties for publishing (in case we're using Core.js and not BridgedCore.js)
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 motionSensor.username = "1A:2B:3D:4D:2E:AF";
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 motionSensor.pincode = "031-45-154";
-// @ts-ignore
 motionSensor.category = 10 /* SENSOR */;
 // set some basic properties (these values are arbitrary and setting them is optional)
 motionSensor

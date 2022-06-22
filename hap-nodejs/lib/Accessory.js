@@ -2,11 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Accessory = exports.AccessoryEventTypes = exports.MDNSAdvertiser = exports.CharacteristicWarningType = exports.Categories = void 0;
 var tslib_1 = require("tslib");
-var assert_1 = tslib_1.__importDefault(require("assert"));
-var crypto_1 = tslib_1.__importDefault(require("crypto"));
-var debug_1 = tslib_1.__importDefault(require("debug"));
+var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
+var crypto_1 = (0, tslib_1.__importDefault)(require("crypto"));
+var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
 var events_1 = require("events");
-var net_1 = tslib_1.__importDefault(require("net"));
+var net_1 = (0, tslib_1.__importDefault)(require("net"));
 var Advertiser_1 = require("./Advertiser");
 // noinspection JSDeprecatedSymbols
 var camera_1 = require("./camera");
@@ -19,9 +19,9 @@ var IdentifierCache_1 = require("./model/IdentifierCache");
 var Service_1 = require("./Service");
 var clone_1 = require("./util/clone");
 var request_util_1 = require("./util/request-util");
-var uuid = tslib_1.__importStar(require("./util/uuid"));
+var uuid = (0, tslib_1.__importStar)(require("./util/uuid"));
 var uuid_1 = require("./util/uuid");
-var debug = debug_1.default('HAP-NodeJS:Accessory');
+var debug = (0, debug_1.default)("HAP-NodeJS:Accessory");
 var MAX_ACCESSORIES = 1000000; // Maximum number of bridged accessories per bridge.
 var MAX_SERVICES = 1000000;
 // Known category values. Category is a hint to iOS clients about what "type" of Accessory this represents, for UI only.
@@ -87,6 +87,10 @@ var MDNSAdvertiser;
      * Use the `bonjour-hap` module as advertiser.
      */
     MDNSAdvertiser["BONJOUR"] = "bonjour-hap";
+    /**
+     * Use Avahi/D-Bus as advertiser.
+     */
+    MDNSAdvertiser["AVAHI"] = "avahi";
 })(MDNSAdvertiser = exports.MDNSAdvertiser || (exports.MDNSAdvertiser = {}));
 var WriteRequestState;
 (function (WriteRequestState) {
@@ -105,7 +109,16 @@ var AccessoryEventTypes;
      * You must call the callback for identification to be successful.
      */
     AccessoryEventTypes["IDENTIFY"] = "identify";
+    /**
+     * This event is emitted once the HAP TCP socket is bound.
+     * At this point the mdns advertisement isn't yet available. Use the {@link ADVERTISED} if you require the accessory to be discoverable.
+     */
     AccessoryEventTypes["LISTENING"] = "listening";
+    /**
+     * This event is emitted once the mDNS suite has fully advertised the presence of the accessory.
+     * This event is guaranteed to be called after {@link LISTENING}.
+     */
+    AccessoryEventTypes["ADVERTISED"] = "advertised";
     AccessoryEventTypes["SERVICE_CONFIGURATION_CHANGE"] = "service-configurationChange";
     /**
      * Emitted after a change in the value of one of the provided Service's Characteristics.
@@ -125,7 +138,7 @@ var AccessoryEventTypes;
  * Accessories, Services, and Characteristics for iOS clients to reference later.
  */
 var Accessory = /** @class */ (function (_super) {
-    tslib_1.__extends(Accessory, _super);
+    (0, tslib_1.__extends)(Accessory, _super);
     function Accessory(displayName, UUID) {
         var _this = _super.call(this) || this;
         _this.displayName = displayName;
@@ -139,11 +152,17 @@ var Accessory = /** @class */ (function (_super) {
         _this.category = 1 /* OTHER */;
         _this.services = [];
         _this.shouldPurgeUnusedIDs = true; // Purge unused ids by default
+        /**
+         * Captures if initialization steps inside {@link publish} have been called.
+         * This is important when calling {@link publish} multiple times (e.g. after calling {@link unpublish}).
+         * @private Private API
+         */
+        _this.initialized = false;
         _this.controllers = {};
         _this._setupID = null;
         _this.controllerStorage = new ControllerStorage_1.ControllerStorage(_this);
         /**
-         * This property captures the time when we last server a /accessories request.
+         * This property captures the time when we last served a /accessories request.
          * For multiple bursts of /accessories request we don't want to always contact GET handlers
          */
         _this.lastAccessoriesRequest = 0;
@@ -156,32 +175,14 @@ var Accessory = /** @class */ (function (_super) {
         _this.getPrimaryAccessory = function () {
             return _this.bridged ? _this.bridge : _this;
         };
-        _this.disableUnusedIDPurge = function () {
-            _this.shouldPurgeUnusedIDs = false;
-        };
-        _this.enableUnusedIDPurge = function () {
-            _this.shouldPurgeUnusedIDs = true;
-        };
-        /**
-         * Manually purge the unused ids if you like, comes handy
-         * when you have disabled auto purge so you can do it manually
-         */
-        _this.purgeUnusedIDs = function () {
-            //Cache the state of the purge mechanism and set it to true
-            var oldValue = _this.shouldPurgeUnusedIDs;
-            _this.shouldPurgeUnusedIDs = true;
-            //Reassign all ids
-            _this._assignIDs(_this._identifierCache);
-            //Revert back the purge mechanism state
-            _this.shouldPurgeUnusedIDs = oldValue;
-        };
-        assert_1.default(displayName, "Accessories must be created with a non-empty displayName.");
-        assert_1.default(UUID, "Accessories must be created with a valid UUID.");
-        assert_1.default(uuid.isValid(UUID), "UUID '" + UUID + "' is not a valid UUID. Try using the provided 'generateUUID' function to create a valid UUID from any arbitrary string, like a serial number.");
+        (0, assert_1.default)(displayName, "Accessories must be created with a non-empty displayName.");
+        (0, assert_1.default)(UUID, "Accessories must be created with a valid UUID.");
+        (0, assert_1.default)(uuid.isValid(UUID), "UUID '" + UUID + "' is not a valid UUID. Try using the provided 'generateUUID' function to create a " +
+            "valid UUID from any arbitrary string, like a serial number.");
         // create our initial "Accessory Information" Service that all Accessories are expected to have
         _this.addService(Service_1.Service.AccessoryInformation)
             .setCharacteristic(Characteristic_1.Characteristic.Name, displayName);
-        // sign up for when iOS attempts to "set" the Identify characteristic - this means a paired device wishes
+        // sign up for when iOS attempts to "set" the `Identify` characteristic - this means a paired device wishes
         // for us to identify ourselves (as opposed to an unpaired device - that case is handled by HAPServer 'identify' event)
         _this.getService(Service_1.Service.AccessoryInformation)
             .getCharacteristic(Characteristic_1.Characteristic.Identify)
@@ -205,6 +206,7 @@ var Accessory = /** @class */ (function (_super) {
             callback();
         }
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Accessory.prototype.addService = function (serviceParam) {
         var e_1, _a;
         var constructorArgs = [];
@@ -213,19 +215,23 @@ var Accessory = /** @class */ (function (_super) {
         }
         // service might be a constructor like `Service.AccessoryInformation` instead of an instance
         // of Service. Coerce if necessary.
-        var service = typeof serviceParam === 'function'
+        var service = typeof serviceParam === "function"
             ? new serviceParam(constructorArgs[0], constructorArgs[1], constructorArgs[2])
             : serviceParam;
         try {
             // check for UUID+subtype conflict
-            for (var _b = tslib_1.__values(this.services), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.services), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var existing = _c.value;
                 if (existing.UUID === service.UUID) {
                     // OK we have two Services with the same UUID. Check that each defines a `subtype` property and that each is unique.
-                    if (!service.subtype)
-                        throw new Error("Cannot add a Service with the same UUID '" + existing.UUID + "' as another Service in this Accessory without also defining a unique 'subtype' property.");
-                    if (service.subtype === existing.subtype)
-                        throw new Error("Cannot add a Service with the same UUID '" + existing.UUID + "' and subtype '" + existing.subtype + "' as another Service in this Accessory.");
+                    if (!service.subtype) {
+                        throw new Error("Cannot add a Service with the same UUID '" + existing.UUID +
+                            "' as another Service in this Accessory without also defining a unique 'subtype' property.");
+                    }
+                    if (service.subtype === existing.subtype) {
+                        throw new Error("Cannot add a Service with the same UUID '" + existing.UUID +
+                            "' and subtype '" + existing.subtype + "' as another Service in this Accessory.");
+                    }
                 }
             }
         }
@@ -281,7 +287,7 @@ var Accessory = /** @class */ (function (_super) {
     Accessory.prototype.removeLinkedService = function (removed) {
         var e_2, _a;
         try {
-            for (var _b = tslib_1.__values(this.services), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.services), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var service = _c.value;
                 service.removeLinkedService(removed);
             }
@@ -297,12 +303,13 @@ var Accessory = /** @class */ (function (_super) {
     Accessory.prototype.getService = function (name) {
         var e_3, _a;
         try {
-            for (var _b = tslib_1.__values(this.services), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.services), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var service = _c.value;
-                if (typeof name === 'string' && (service.displayName === name || service.name === name || service.subtype === name)) {
+                if (typeof name === "string" && (service.displayName === name || service.name === name || service.subtype === name)) {
                     return service;
+                    // @ts-expect-error: UUID property
                 }
-                else if (typeof name === 'function' && ((service instanceof name) || (name.UUID === service.UUID))) {
+                else if (typeof name === "function" && ((service instanceof name) || (name.UUID === service.UUID))) {
                     return service;
                 }
             }
@@ -319,10 +326,11 @@ var Accessory = /** @class */ (function (_super) {
     Accessory.prototype.getServiceById = function (uuid, subType) {
         var e_4, _a;
         try {
-            for (var _b = tslib_1.__values(this.services), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.services), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var service = _c.value;
                 if (typeof uuid === "string" && (service.displayName === uuid || service.name === uuid) && service.subtype === subType) {
                     return service;
+                    // @ts-expect-error: UUID property
                 }
                 else if (typeof uuid === "function" && ((service instanceof uuid) || (uuid.UUID === service.UUID)) && service.subtype === subType) {
                     return service;
@@ -342,10 +350,11 @@ var Accessory = /** @class */ (function (_super) {
      * @deprecated Not supported anymore
      */
     Accessory.prototype.updateReachability = function (reachable) {
-        if (!this.bridged)
+        if (!this.bridged) {
             throw new Error("Cannot update reachability on non-bridged accessory!");
+        }
         this.reachable = reachable;
-        debug('Reachability update is no longer being supported.');
+        debug("Reachability update is no longer being supported.");
     };
     Accessory.prototype.addBridgedAccessory = function (accessory, deferUpdate) {
         var e_5, _a;
@@ -356,7 +365,7 @@ var Accessory = /** @class */ (function (_super) {
         }
         try {
             // check for UUID conflict
-            for (var _b = tslib_1.__values(this.bridgedAccessories), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.bridgedAccessories), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var existing = _c.value;
                 if (existing.UUID === accessory.UUID) {
                     throw new Error("Cannot add a bridged Accessory with the same UUID as another bridged Accessory: " + existing.UUID);
@@ -389,7 +398,7 @@ var Accessory = /** @class */ (function (_super) {
     Accessory.prototype.addBridgedAccessories = function (accessories) {
         var e_6, _a;
         try {
-            for (var accessories_1 = tslib_1.__values(accessories), accessories_1_1 = accessories_1.next(); !accessories_1_1.done; accessories_1_1 = accessories_1.next()) {
+            for (var accessories_1 = (0, tslib_1.__values)(accessories), accessories_1_1 = accessories_1.next(); !accessories_1_1.done; accessories_1_1 = accessories_1.next()) {
                 var accessory = accessories_1_1.value;
                 this.addBridgedAccessory(accessory, true);
             }
@@ -404,14 +413,16 @@ var Accessory = /** @class */ (function (_super) {
         this.enqueueConfigurationUpdate();
     };
     Accessory.prototype.removeBridgedAccessory = function (accessory, deferUpdate) {
-        if (accessory._isBridge)
+        if (accessory._isBridge) {
             throw new Error("Cannot Bridge another Bridge!");
+        }
         // check for UUID conflict
         var foundMatchAccessory = this.bridgedAccessories.findIndex(function (existing) {
             return existing.UUID === accessory.UUID;
         });
-        if (foundMatchAccessory === -1)
+        if (foundMatchAccessory === -1) {
             throw new Error("Cannot find the bridged Accessory to remove.");
+        }
         this.bridgedAccessories.splice(foundMatchAccessory, 1);
         accessory.removeAllListeners();
         if (!deferUpdate) {
@@ -421,7 +432,7 @@ var Accessory = /** @class */ (function (_super) {
     Accessory.prototype.removeBridgedAccessories = function (accessories) {
         var e_7, _a;
         try {
-            for (var accessories_2 = tslib_1.__values(accessories), accessories_2_1 = accessories_2.next(); !accessories_2_1.done; accessories_2_1 = accessories_2.next()) {
+            for (var accessories_2 = (0, tslib_1.__values)(accessories), accessories_2_1 = accessories_2.next(); !accessories_2_1.done; accessories_2_1 = accessories_2.next()) {
                 var accessory = accessories_2_1.value;
                 this.removeBridgedAccessory(accessory, true);
             }
@@ -444,7 +455,7 @@ var Accessory = /** @class */ (function (_super) {
     Accessory.prototype.getCharacteristicByIID = function (iid) {
         var e_8, _a;
         try {
-            for (var _b = tslib_1.__values(this.services), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.services), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var service = _c.value;
                 var characteristic = service.getCharacteristicByIID(iid);
                 if (characteristic) {
@@ -466,7 +477,7 @@ var Accessory = /** @class */ (function (_super) {
             return this;
         }
         try {
-            for (var _b = tslib_1.__values(this.bridgedAccessories), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.bridgedAccessories), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var accessory = _c.value;
                 if (accessory.aid === aid) {
                     return accessory;
@@ -529,7 +540,7 @@ var Accessory = /** @class */ (function (_super) {
                 return; // ignore those services, as they get replaced by the RTPStreamManagement
             }
             // all other services get added. We can't really control possibly linking to any of those ignored services
-            // so this is really only half baked stuff.
+            // so this is really only half-baked stuff.
             _this.addService(service);
         });
         // replace stream controllers; basically only to still support the "forceStop" call
@@ -558,15 +569,15 @@ var Accessory = /** @class */ (function (_super) {
             : controllerConstructor;
         var id = controller.controllerId();
         if (this.controllers[id]) {
-            throw new Error("A Controller with the type/id '" + id + "' was already added to the accessory " + this.displayName);
+            throw new Error("A Controller with the type/id '".concat(id, "' was already added to the accessory ").concat(this.displayName));
         }
         var savedServiceMap = this.serializedControllers && this.serializedControllers[id];
         var serviceMap;
         if (savedServiceMap) { // we found data to restore from
-            var clonedServiceMap = clone_1.clone(savedServiceMap);
+            var clonedServiceMap = (0, clone_1.clone)(savedServiceMap);
             var updatedServiceMap = controller.initWithServices(savedServiceMap); // init controller with existing services
-            serviceMap = updatedServiceMap || savedServiceMap; // initWithServices could return a updated serviceMap, otherwise just use the existing one
-            if (updatedServiceMap) { // controller returned a ServiceMap and thus signaled a updated set of services
+            serviceMap = updatedServiceMap || savedServiceMap; // initWithServices could return an updated serviceMap, otherwise just use the existing one
+            if (updatedServiceMap) { // controller returned a ServiceMap and thus signaled an updated set of services
                 // clonedServiceMap is altered by this method, should not be touched again after this call (for the future people)
                 this.handleUpdatedControllerServiceMap(clonedServiceMap, updatedServiceMap);
             }
@@ -591,7 +602,7 @@ var Accessory = /** @class */ (function (_super) {
             controller: controller,
             serviceMap: serviceMap,
         };
-        if (controller_1.isSerializableController(controller)) {
+        if ((0, controller_1.isSerializableController)(controller)) {
             this.controllerStorage.trackController(controller);
         }
         this.controllers[id] = context;
@@ -612,9 +623,10 @@ var Accessory = /** @class */ (function (_super) {
         var storedController = this.controllers[id];
         if (storedController) {
             if (storedController.controller !== controller) {
-                throw new Error("[" + this.displayName + "] tried removing a controller with the id/type '" + id + "' though provided controller isn't the same which is registered!");
+                throw new Error("[" + this.displayName + "] tried removing a controller with the id/type '" + id +
+                    "' though provided controller isn't the same which is registered!");
             }
-            if (controller_1.isSerializableController(controller)) {
+            if ((0, controller_1.isSerializableController)(controller)) {
                 // this will reset the state change delegate before we call handleControllerRemoved()
                 this.controllerStorage.untrackController(controller);
             }
@@ -639,13 +651,13 @@ var Accessory = /** @class */ (function (_super) {
     Accessory.prototype.handleAccessoryUnpairedForControllers = function () {
         var e_10, _a;
         try {
-            for (var _b = tslib_1.__values(Object.values(this.controllers)), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(Object.values(this.controllers)), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var context = _c.value;
                 var controller = context.controller;
                 if (controller.handleFactoryReset) { // if the controller implements handleFactoryReset, setup event handlers for this controller
                     controller.handleFactoryReset();
                 }
-                if (controller_1.isSerializableController(controller)) {
+                if ((0, controller_1.isSerializableController)(controller)) {
                     this.controllerStorage.purgeControllerData(controller);
                 }
             }
@@ -660,7 +672,7 @@ var Accessory = /** @class */ (function (_super) {
     };
     Accessory.prototype.handleUpdatedControllerServiceMap = function (originalServiceMap, updatedServiceMap) {
         var _this = this;
-        updatedServiceMap = clone_1.clone(updatedServiceMap); // clone it so we can alter it
+        updatedServiceMap = (0, clone_1.clone)(updatedServiceMap); // clone it so we can alter it
         Object.keys(originalServiceMap).forEach(function (name) {
             var service = originalServiceMap[name];
             var updatedService = updatedServiceMap[name];
@@ -690,7 +702,7 @@ var Accessory = /** @class */ (function (_super) {
             return this._setupURI;
         }
         var buffer = Buffer.alloc(8);
-        var setupCode = this._accessoryInfo && parseInt(this._accessoryInfo.pincode.replace(/-/g, ''), 10);
+        var setupCode = this._accessoryInfo && parseInt(this._accessoryInfo.pincode.replace(/-/g, ""), 10);
         var value_low = setupCode;
         var value_high = this._accessoryInfo && this._accessoryInfo.category >> 1;
         value_low |= 1 << 28; // Supports IP;
@@ -700,7 +712,7 @@ var Accessory = /** @class */ (function (_super) {
         }
         buffer.writeUInt32BE(value_high, 0);
         var encodedPayload = (buffer.readUInt32BE(4) + (buffer.readUInt32BE(0) * Math.pow(2, 32))).toString(36).toUpperCase();
-        if (encodedPayload.length != 9) {
+        if (encodedPayload.length !== 9) {
             for (var i = 0; i <= 9 - encodedPayload.length; i++) {
                 encodedPayload = "0" + encodedPayload;
             }
@@ -721,6 +733,7 @@ var Accessory = /** @class */ (function (_super) {
                 "This might prevent the accessory from being added to the Home app or leading to the accessory being unresponsive!");
         }
         else {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             var checkValue = function (name, value) {
                 if (!value) {
                     console.log("HAP-NodeJS WARNING: The accessory '" + _this.displayName + "' is getting published with the characteristic '" + name + "'" +
@@ -739,7 +752,7 @@ var Accessory = /** @class */ (function (_super) {
         }
         if (mainAccessory) {
             // the main accessory which is advertised via bonjour must have a name with length <= 63 (limitation of DNS FQDN names)
-            assert_1.default(Buffer.from(this.displayName, "utf8").length <= 63, "Accessory displayName cannot be longer than 63 bytes!");
+            (0, assert_1.default)(Buffer.from(this.displayName, "utf8").length <= 63, "Accessory displayName cannot be longer than 63 bytes!");
         }
         if (this.bridged) {
             this.bridgedAccessories.forEach(function (accessory) { return accessory.validateAccessory(); });
@@ -767,7 +780,7 @@ var Accessory = /** @class */ (function (_super) {
             this.aid = 1;
         }
         try {
-            for (var _c = tslib_1.__values(this.services), _d = _c.next(); !_d.done; _d = _c.next()) {
+            for (var _c = (0, tslib_1.__values)(this.services), _d = _c.next(); !_d.done; _d = _c.next()) {
                 var service = _d.value;
                 if (this._isBridge) {
                     service._assignIDs(identifierCache, this.UUID, 2000000000);
@@ -786,7 +799,7 @@ var Accessory = /** @class */ (function (_super) {
         }
         try {
             // now assign IDs for any Accessories we are bridging
-            for (var _e = tslib_1.__values(this.bridgedAccessories), _f = _e.next(); !_f.done; _f = _e.next()) {
+            for (var _e = (0, tslib_1.__values)(this.bridgedAccessories), _f = _e.next(); !_f.done; _f = _e.next()) {
                 var accessory = _f.value;
                 accessory._assignIDs(identifierCache);
             }
@@ -802,41 +815,62 @@ var Accessory = /** @class */ (function (_super) {
         // that have been removed since the last call to assignIDs())
         if (this._identifierCache) {
             //Check weather we want to purge the unused ids
-            if (this.shouldPurgeUnusedIDs)
+            if (this.shouldPurgeUnusedIDs) {
                 this._identifierCache.stopTrackingUsageAndExpireUnused();
+            }
             //Save in case we have new ones
             this._identifierCache.save();
         }
+    };
+    Accessory.prototype.disableUnusedIDPurge = function () {
+        this.shouldPurgeUnusedIDs = false;
+    };
+    Accessory.prototype.enableUnusedIDPurge = function () {
+        this.shouldPurgeUnusedIDs = true;
+    };
+    /**
+     * Manually purge the unused ids if you like, comes handy
+     * when you have disabled auto purge so you can do it manually
+     */
+    Accessory.prototype.purgeUnusedIDs = function () {
+        //Cache the state of the purge mechanism and set it to true
+        var oldValue = this.shouldPurgeUnusedIDs;
+        this.shouldPurgeUnusedIDs = true;
+        //Reassign all ids
+        this._assignIDs(this._identifierCache);
+        // Revert the purge mechanism state
+        this.shouldPurgeUnusedIDs = oldValue;
     };
     /**
      * Returns a JSON representation of this accessory suitable for delivering to HAP clients.
      */
     Accessory.prototype.toHAP = function (connection, contactGetHandlers) {
         if (contactGetHandlers === void 0) { contactGetHandlers = true; }
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var accessory, accessories, _a, _b, _c;
-            var _d;
-            return tslib_1.__generator(this, function (_e) {
-                switch (_e.label) {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+            var accessory, accessories, _a, _b, _c, _d;
+            var _e;
+            return (0, tslib_1.__generator)(this, function (_f) {
+                switch (_f.label) {
                     case 0:
-                        assert_1.default(this.aid, "aid cannot be undefined for accessory '" + this.displayName + "'");
-                        assert_1.default(this.services.length, "accessory '" + this.displayName + "' does not have any services!");
-                        _d = {
+                        (0, assert_1.default)(this.aid, "aid cannot be undefined for accessory '" + this.displayName + "'");
+                        (0, assert_1.default)(this.services.length, "accessory '" + this.displayName + "' does not have any services!");
+                        _e = {
                             aid: this.aid
                         };
                         return [4 /*yield*/, Promise.all(this.services.map(function (service) { return service.toHAP(connection, contactGetHandlers); }))];
                     case 1:
-                        accessory = (_d.services = _e.sent(),
-                            _d);
+                        accessory = (_e.services = _f.sent(),
+                            _e);
                         accessories = [accessory];
                         if (!!this.bridged) return [3 /*break*/, 3];
                         _b = (_a = accessories.push).apply;
                         _c = [accessories];
+                        _d = [[]];
                         return [4 /*yield*/, Promise.all(this.bridgedAccessories
                                 .map(function (accessory) { return accessory.toHAP(connection, contactGetHandlers).then(function (value) { return value[0]; }); }))];
                     case 2:
-                        _b.apply(_a, _c.concat([tslib_1.__spread.apply(void 0, [_e.sent()])]));
-                        _e.label = 3;
+                        _b.apply(_a, _c.concat([tslib_1.__spreadArray.apply(void 0, _d.concat([tslib_1.__read.apply(void 0, [_f.sent()]), false]))]));
+                        _f.label = 3;
                     case 3: return [2 /*return*/, accessories];
                 }
             });
@@ -851,8 +885,8 @@ var Accessory = /** @class */ (function (_super) {
         if (assignIds) {
             this._assignIDs(this._identifierCache); // make sure our aid/iid's are all assigned
         }
-        assert_1.default(this.aid, "aid cannot be undefined for accessory '" + this.displayName + "'");
-        assert_1.default(this.services.length, "accessory '" + this.displayName + "' does not have any services!");
+        (0, assert_1.default)(this.aid, "aid cannot be undefined for accessory '" + this.displayName + "'");
+        (0, assert_1.default)(this.services.length, "accessory '" + this.displayName + "' does not have any services!");
         var accessory = {
             aid: this.aid,
             services: this.services.map(function (service) { return service.internalHAPRepresentation(); }),
@@ -860,7 +894,7 @@ var Accessory = /** @class */ (function (_super) {
         var accessories = [accessory];
         if (!this.bridged) {
             try {
-                for (var _b = tslib_1.__values(this.bridgedAccessories), _c = _b.next(); !_c.done; _c = _b.next()) {
+                for (var _b = (0, tslib_1.__values)(this.bridgedAccessories), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var accessory_1 = _c.value;
                     accessories.push(accessory_1.internalHAPRepresentation(false)[0]);
                 }
@@ -890,130 +924,155 @@ var Accessory = /** @class */ (function (_super) {
      *                                new Accessory.
      */
     Accessory.prototype.publish = function (info, allowInsecureRequest) {
-        var _this = this;
         var _a, _b;
-        // noinspection JSDeprecatedSymbols
-        if (!info.advertiser && info.useLegacyAdvertiser != null) {
-            // noinspection JSDeprecatedSymbols
-            info.advertiser = info.useLegacyAdvertiser ? "bonjour-hap" /* BONJOUR */ : "ciao" /* CIAO */;
-            console.warn('DEPRECATED The PublishInfo.useLegacyAdvertiser option has been removed. Please use the PublishInfo.advertiser property to enable "ciao" (useLegacyAdvertiser=false) ' +
-                'or "bonjour-hap" (useLegacyAdvertiser=true) mdns advertiser libraries!');
-        }
-        // noinspection JSDeprecatedSymbols
-        if (info.mdns && info.advertiser !== "bonjour-hap" /* BONJOUR */) {
-            console.log("DEPRECATED user supplied a custom 'mdns' option. This option is deprecated and ignored. " +
-                "Please move to the new 'bind' option.");
-        }
-        var service = this.getService(Service_1.Service.ProtocolInformation);
-        if (!service) {
-            service = this.addService(Service_1.Service.ProtocolInformation); // add the protocol information service to the primary accessory
-        }
-        service.setCharacteristic(Characteristic_1.Characteristic.Version, Advertiser_1.CiaoAdvertiser.protocolVersionService);
-        if (this.lastKnownUsername && this.lastKnownUsername !== info.username) { // username changed since last publish
-            Accessory.cleanupAccessoryData(this.lastKnownUsername); // delete old Accessory data
-        }
-        if ((_a = info.addIdentifyingMaterial) !== null && _a !== void 0 ? _a : true) {
-            // adding some identifying material to our displayName
-            this.displayName = this.displayName + " " + crypto_1.default.createHash('sha512')
-                .update(info.username, 'utf8')
-                .digest('hex').slice(0, 4).toUpperCase();
-            this.getService(Service_1.Service.AccessoryInformation).updateCharacteristic(Characteristic_1.Characteristic.Name, this.displayName);
-        }
-        // attempt to load existing AccessoryInfo from disk
-        this._accessoryInfo = AccessoryInfo_1.AccessoryInfo.load(info.username);
-        // if we don't have one, create a new one.
-        if (!this._accessoryInfo) {
-            debug("[%s] Creating new AccessoryInfo for our HAP server", this.displayName);
-            this._accessoryInfo = AccessoryInfo_1.AccessoryInfo.create(info.username);
-        }
-        if (info.setupID) {
-            this._setupID = info.setupID;
-        }
-        else if (this._accessoryInfo.setupID === undefined || this._accessoryInfo.setupID === "") {
-            this._setupID = Accessory._generateSetupID();
-        }
-        else {
-            this._setupID = this._accessoryInfo.setupID;
-        }
-        this._accessoryInfo.setupID = this._setupID;
-        // make sure we have up-to-date values in AccessoryInfo, then save it in case they changed (or if we just created it)
-        this._accessoryInfo.displayName = this.displayName;
-        this._accessoryInfo.model = this.getService(Service_1.Service.AccessoryInformation).getCharacteristic(Characteristic_1.Characteristic.Model).value;
-        this._accessoryInfo.category = info.category || 1 /* OTHER */;
-        this._accessoryInfo.pincode = info.pincode;
-        this._accessoryInfo.save();
-        // create our IdentifierCache so we can provide clients with stable aid/iid's
-        this._identifierCache = IdentifierCache_1.IdentifierCache.load(info.username);
-        // if we don't have one, create a new one.
-        if (!this._identifierCache) {
-            debug("[%s] Creating new IdentifierCache", this.displayName);
-            this._identifierCache = new IdentifierCache_1.IdentifierCache(info.username);
-        }
-        //If it's bridge and there are not accessories already assigned to the bridge
-        //probably purge is not needed since it's going to delete all the ids
-        //of accessories that might be added later. Useful when dynamically adding
-        //accessories.
-        if (this._isBridge && this.bridgedAccessories.length == 0) {
-            this.disableUnusedIDPurge();
-            this.controllerStorage.purgeUnidentifiedAccessoryData = false;
-        }
-        this.controllerStorage.load(info.username); // initializing controller data
-        // assign aid/iid
-        this._assignIDs(this._identifierCache);
-        // get our accessory information in HAP format and determine if our configuration (that is, our
-        // Accessories/Services/Characteristics) has changed since the last time we were published. make
-        // sure to omit actual values since these are not part of the "configuration".
-        var config = this.internalHAPRepresentation(false); // TODO ensure this stuff is ordered
-        // TODO queue this check until about 5 seconds after startup, allowing some last changes after the publish call
-        //   without constantly incrementing the current config number
-        this._accessoryInfo.checkForCurrentConfigurationNumberIncrement(config, true);
-        this.validateAccessory(true);
-        // create our Advertiser which broadcasts our presence over mdns
-        var parsed = Accessory.parseBindOption(info);
-        switch ((_b = info.advertiser) !== null && _b !== void 0 ? _b : "bonjour-hap" /* BONJOUR */) {
-            case "ciao" /* CIAO */:
-                this._advertiser = new Advertiser_1.CiaoAdvertiser(this._accessoryInfo, {
-                    interface: parsed.advertiserAddress
-                }, {
-                    restrictedAddresses: parsed.serviceRestrictedAddress,
-                    disabledIpv6: parsed.serviceDisableIpv6,
-                });
-                break;
-            case "bonjour-hap" /* BONJOUR */:
-                // noinspection JSDeprecatedSymbols
-                this._advertiser = new Advertiser_1.BonjourHAPAdvertiser(this._accessoryInfo, info.mdns, {
-                    restrictedAddresses: parsed.serviceRestrictedAddress,
-                    disabledIpv6: parsed.serviceDisableIpv6,
-                });
-                break;
-            default:
-                throw new Error("Unsupported advertiser setting: '" + info.advertiser + "'");
-        }
-        this._advertiser.on("updated-name" /* UPDATED_NAME */, function (name) {
-            _this.displayName = name;
-            if (_this._accessoryInfo) {
-                _this._accessoryInfo.displayName = name;
-                _this._accessoryInfo.save();
-            }
-            // bonjour service name MUST match the name in the accessory information service
-            _this.getService(Service_1.Service.AccessoryInformation)
-                .updateCharacteristic(Characteristic_1.Characteristic.Name, name);
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+            var service, config, parsed, selectedAdvertiser, _c;
+            var _this = this;
+            return (0, tslib_1.__generator)(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        // noinspection JSDeprecatedSymbols
+                        if (!info.advertiser && info.useLegacyAdvertiser != null) {
+                            // noinspection JSDeprecatedSymbols
+                            info.advertiser = info.useLegacyAdvertiser ? "bonjour-hap" /* BONJOUR */ : "ciao" /* CIAO */;
+                            console.warn("DEPRECATED The PublishInfo.useLegacyAdvertiser option has been removed. " +
+                                "Please use the PublishInfo.advertiser property to enable \"ciao\" (useLegacyAdvertiser=false) " +
+                                "or \"bonjour-hap\" (useLegacyAdvertiser=true) mdns advertiser libraries!");
+                        }
+                        // noinspection JSDeprecatedSymbols
+                        if (info.mdns && info.advertiser !== "bonjour-hap" /* BONJOUR */) {
+                            console.log("DEPRECATED user supplied a custom 'mdns' option. This option is deprecated and ignored. " +
+                                "Please move to the new 'bind' option.");
+                        }
+                        service = this.getService(Service_1.Service.ProtocolInformation);
+                        if (!service) {
+                            service = this.addService(Service_1.Service.ProtocolInformation); // add the protocol information service to the primary accessory
+                        }
+                        service.setCharacteristic(Characteristic_1.Characteristic.Version, Advertiser_1.CiaoAdvertiser.protocolVersionService);
+                        if (this.lastKnownUsername && this.lastKnownUsername !== info.username) { // username changed since last publish
+                            Accessory.cleanupAccessoryData(this.lastKnownUsername); // delete old Accessory data
+                        }
+                        if (!this.initialized && ((_a = info.addIdentifyingMaterial) !== null && _a !== void 0 ? _a : true)) {
+                            // adding some identifying material to our displayName if its our first publish() call
+                            this.displayName = this.displayName + " " + crypto_1.default.createHash("sha512")
+                                .update(info.username, "utf8")
+                                .digest("hex").slice(0, 4).toUpperCase();
+                            this.getService(Service_1.Service.AccessoryInformation).updateCharacteristic(Characteristic_1.Characteristic.Name, this.displayName);
+                        }
+                        // attempt to load existing AccessoryInfo from disk
+                        this._accessoryInfo = AccessoryInfo_1.AccessoryInfo.load(info.username);
+                        // if we don't have one, create a new one.
+                        if (!this._accessoryInfo) {
+                            debug("[%s] Creating new AccessoryInfo for our HAP server", this.displayName);
+                            this._accessoryInfo = AccessoryInfo_1.AccessoryInfo.create(info.username);
+                        }
+                        if (info.setupID) {
+                            this._setupID = info.setupID;
+                        }
+                        else if (this._accessoryInfo.setupID === undefined || this._accessoryInfo.setupID === "") {
+                            this._setupID = Accessory._generateSetupID();
+                        }
+                        else {
+                            this._setupID = this._accessoryInfo.setupID;
+                        }
+                        this._accessoryInfo.setupID = this._setupID;
+                        // make sure we have up-to-date values in AccessoryInfo, then save it in case they changed (or if we just created it)
+                        this._accessoryInfo.displayName = this.displayName;
+                        this._accessoryInfo.model = this.getService(Service_1.Service.AccessoryInformation).getCharacteristic(Characteristic_1.Characteristic.Model).value;
+                        this._accessoryInfo.category = info.category || 1 /* OTHER */;
+                        this._accessoryInfo.pincode = info.pincode;
+                        this._accessoryInfo.save();
+                        // create our IdentifierCache so we can provide clients with stable aid/iid's
+                        this._identifierCache = IdentifierCache_1.IdentifierCache.load(info.username);
+                        // if we don't have one, create a new one.
+                        if (!this._identifierCache) {
+                            debug("[%s] Creating new IdentifierCache", this.displayName);
+                            this._identifierCache = new IdentifierCache_1.IdentifierCache(info.username);
+                        }
+                        //If it's bridge and there are not accessories already assigned to the bridge
+                        //probably purge is not needed since it's going to delete all the ids
+                        //of accessories that might be added later. Useful when dynamically adding
+                        //accessories.
+                        if (this._isBridge && this.bridgedAccessories.length === 0) {
+                            this.disableUnusedIDPurge();
+                            this.controllerStorage.purgeUnidentifiedAccessoryData = false;
+                        }
+                        if (!this.initialized) { // controller storage is only loaded from disk the first time we publish!
+                            this.controllerStorage.load(info.username); // initializing controller data
+                        }
+                        // assign aid/iid
+                        this._assignIDs(this._identifierCache);
+                        config = this.internalHAPRepresentation(false);
+                        // TODO queue this check until about 5 seconds after startup, allowing some last changes after the publish call
+                        //   without constantly incrementing the current config number
+                        this._accessoryInfo.checkForCurrentConfigurationNumberIncrement(config, true);
+                        this.validateAccessory(true);
+                        parsed = Accessory.parseBindOption(info);
+                        selectedAdvertiser = (_b = info.advertiser) !== null && _b !== void 0 ? _b : "bonjour-hap" /* BONJOUR */;
+                        _c = info.advertiser === "avahi" /* AVAHI */;
+                        if (!_c) return [3 /*break*/, 2];
+                        return [4 /*yield*/, Advertiser_1.AvahiAdvertiser.isAvailable()];
+                    case 1:
+                        _c = !(_d.sent());
+                        _d.label = 2;
+                    case 2:
+                        if (_c) {
+                            console.error("[${this.displayName}] Selected \"" + "avahi" /* AVAHI */ + "\" advertiser though it isn't available on the platform. " +
+                                "Reverting to \"" + "bonjour-hap" /* BONJOUR */ + "\"");
+                            selectedAdvertiser = "bonjour-hap" /* BONJOUR */;
+                        }
+                        switch (selectedAdvertiser) {
+                            case "ciao" /* CIAO */:
+                                this._advertiser = new Advertiser_1.CiaoAdvertiser(this._accessoryInfo, {
+                                    interface: parsed.advertiserAddress,
+                                }, {
+                                    restrictedAddresses: parsed.serviceRestrictedAddress,
+                                    disabledIpv6: parsed.serviceDisableIpv6,
+                                });
+                                break;
+                            case "bonjour-hap" /* BONJOUR */:
+                                // noinspection JSDeprecatedSymbols
+                                this._advertiser = new Advertiser_1.BonjourHAPAdvertiser(this._accessoryInfo, info.mdns, {
+                                    restrictedAddresses: parsed.serviceRestrictedAddress,
+                                    disabledIpv6: parsed.serviceDisableIpv6,
+                                });
+                                break;
+                            case "avahi" /* AVAHI */:
+                                this._advertiser = new Advertiser_1.AvahiAdvertiser(this._accessoryInfo);
+                                break;
+                            default:
+                                throw new Error("Unsupported advertiser setting: '" + info.advertiser + "'");
+                        }
+                        this._advertiser.on("updated-name" /* UPDATED_NAME */, function (name) {
+                            _this.displayName = name;
+                            if (_this._accessoryInfo) {
+                                _this._accessoryInfo.displayName = name;
+                                _this._accessoryInfo.save();
+                            }
+                            // bonjour service name MUST match the name in the accessory information service
+                            _this.getService(Service_1.Service.AccessoryInformation)
+                                .updateCharacteristic(Characteristic_1.Characteristic.Name, name);
+                        });
+                        // create our HAP server which handles all communication between iOS devices and us
+                        this._server = new HAPServer_1.HAPServer(this._accessoryInfo);
+                        this._server.allowInsecureRequest = !!allowInsecureRequest;
+                        this._server.on("listening" /* LISTENING */, this.onListening.bind(this));
+                        this._server.on("identify" /* IDENTIFY */, this.identificationRequest.bind(this, false));
+                        this._server.on("pair" /* PAIR */, this.handleInitialPairSetupFinished.bind(this));
+                        this._server.on("add-pairing" /* ADD_PAIRING */, this.handleAddPairing.bind(this));
+                        this._server.on("remove-pairing" /* REMOVE_PAIRING */, this.handleRemovePairing.bind(this));
+                        this._server.on("list-pairings" /* LIST_PAIRINGS */, this.handleListPairings.bind(this));
+                        this._server.on("accessories" /* ACCESSORIES */, this.handleAccessories.bind(this));
+                        this._server.on("get-characteristics" /* GET_CHARACTERISTICS */, this.handleGetCharacteristics.bind(this));
+                        this._server.on("set-characteristics" /* SET_CHARACTERISTICS */, this.handleSetCharacteristics.bind(this));
+                        this._server.on("connection-closed" /* CONNECTION_CLOSED */, this.handleHAPConnectionClosed.bind(this));
+                        this._server.on("request-resource" /* REQUEST_RESOURCE */, this.handleResource.bind(this));
+                        this._server.listen(info.port, parsed.serverAddress);
+                        this.initialized = true;
+                        return [2 /*return*/];
+                }
+            });
         });
-        // create our HAP server which handles all communication between iOS devices and us
-        this._server = new HAPServer_1.HAPServer(this._accessoryInfo);
-        this._server.allowInsecureRequest = !!allowInsecureRequest;
-        this._server.on("listening" /* LISTENING */, this.onListening.bind(this));
-        this._server.on("identify" /* IDENTIFY */, this.identificationRequest.bind(this, false));
-        this._server.on("pair" /* PAIR */, this.handleInitialPairSetupFinished.bind(this));
-        this._server.on("add-pairing" /* ADD_PAIRING */, this.handleAddPairing.bind(this));
-        this._server.on("remove-pairing" /* REMOVE_PAIRING */, this.handleRemovePairing.bind(this));
-        this._server.on("list-pairings" /* LIST_PAIRINGS */, this.handleListPairings.bind(this));
-        this._server.on("accessories" /* ACCESSORIES */, this.handleAccessories.bind(this));
-        this._server.on("get-characteristics" /* GET_CHARACTERISTICS */, this.handleGetCharacteristics.bind(this));
-        this._server.on("set-characteristics" /* SET_CHARACTERISTICS */, this.handleSetCharacteristics.bind(this));
-        this._server.on("connection-closed" /* CONNECTION_CLOSED */, this.handleHAPConnectionClosed.bind(this));
-        this._server.on("request-resource" /* REQUEST_RESOURCE */, this.handleResource.bind(this));
-        this._server.listen(info.port, parsed.serverAddress);
     };
     /**
      * Removes this Accessory from the local network
@@ -1021,7 +1080,7 @@ var Accessory = /** @class */ (function (_super) {
      * Trying to invoke publish() on the object will result undefined behavior
      */
     Accessory.prototype.destroy = function () {
-        this.unpublish();
+        var promise = this.unpublish();
         if (this._accessoryInfo) {
             Accessory.cleanupAccessoryData(this._accessoryInfo.username);
             this._accessoryInfo = undefined;
@@ -1029,17 +1088,29 @@ var Accessory = /** @class */ (function (_super) {
             this.controllerStorage = new ControllerStorage_1.ControllerStorage(this);
         }
         this.removeAllListeners();
+        return promise;
     };
     Accessory.prototype.unpublish = function () {
-        if (this._server) {
-            this._server.destroy();
-            this._server = undefined;
-        }
-        if (this._advertiser) {
-            // noinspection JSIgnoredPromiseFromCall
-            this._advertiser.destroy();
-            this._advertiser = undefined;
-        }
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
+            return (0, tslib_1.__generator)(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (this._server) {
+                            this._server.destroy();
+                            this._server = undefined;
+                        }
+                        if (!this._advertiser) return [3 /*break*/, 2];
+                        // noinspection JSIgnoredPromiseFromCall
+                        return [4 /*yield*/, this._advertiser.destroy()];
+                    case 1:
+                        // noinspection JSIgnoredPromiseFromCall
+                        _a.sent();
+                        this._advertiser = undefined;
+                        _a.label = 2;
+                    case 2: return [2 /*return*/];
+                }
+            });
+        });
     };
     Accessory.prototype.enqueueConfigurationUpdate = function () {
         var _this = this;
@@ -1065,11 +1136,13 @@ var Accessory = /** @class */ (function (_super) {
         // not responding or new accessories/services not yet shown
     };
     Accessory.prototype.onListening = function (port, hostname) {
-        assert_1.default(this._advertiser, "Advertiser wasn't created at onListening!");
+        var _this = this;
+        (0, assert_1.default)(this._advertiser, "Advertiser wasn't created at onListening!");
         // the HAP server is listening, so we can now start advertising our presence.
         this._advertiser.initPort(port);
-        // noinspection JSIgnoredPromiseFromCall
-        this._advertiser.startAdvertising();
+        this._advertiser.startAdvertising()
+            .then(function () { return _this.emit("advertised" /* ADVERTISED */); })
+            .catch(function (reason) { return console.error("Could not create mDNS advertisement. The HAP-Server won't be discoverable: " + reason); });
         this.emit("listening" /* LISTENING */, port, hostname);
     };
     Accessory.prototype.handleInitialPairSetupFinished = function (username, publicKey, callback) {
@@ -1123,7 +1196,7 @@ var Accessory = /** @class */ (function (_super) {
             this.emit("unpaired" /* UNPAIRED */);
             this.handleAccessoryUnpairedForControllers();
             try {
-                for (var _b = tslib_1.__values(this.bridgedAccessories), _c = _b.next(); !_c.done; _c = _b.next()) {
+                for (var _b = (0, tslib_1.__values)(this.bridgedAccessories), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var accessory = _c.value;
                     accessory.handleAccessoryUnpairedForControllers();
                 }
@@ -1177,7 +1250,7 @@ var Accessory = /** @class */ (function (_super) {
         var timeout = setTimeout(function () {
             var e_16, _a;
             try {
-                for (var missingCharacteristics_1 = tslib_1.__values(missingCharacteristics), missingCharacteristics_1_1 = missingCharacteristics_1.next(); !missingCharacteristics_1_1.done; missingCharacteristics_1_1 = missingCharacteristics_1.next()) {
+                for (var missingCharacteristics_1 = (0, tslib_1.__values)(missingCharacteristics), missingCharacteristics_1_1 = missingCharacteristics_1.next(); !missingCharacteristics_1_1.done; missingCharacteristics_1_1 = missingCharacteristics_1.next()) {
                     var id = missingCharacteristics_1_1.value;
                     var split = id.split(".");
                     var aid = parseInt(split[0], 10);
@@ -1200,7 +1273,7 @@ var Accessory = /** @class */ (function (_super) {
                 var e_17, _a;
                 timeout = undefined;
                 try {
-                    for (var missingCharacteristics_2 = tslib_1.__values(missingCharacteristics), missingCharacteristics_2_1 = missingCharacteristics_2.next(); !missingCharacteristics_2_1.done; missingCharacteristics_2_1 = missingCharacteristics_2.next()) {
+                    for (var missingCharacteristics_2 = (0, tslib_1.__values)(missingCharacteristics), missingCharacteristics_2_1 = missingCharacteristics_2.next(); !missingCharacteristics_2_1.done; missingCharacteristics_2_1 = missingCharacteristics_2.next()) {
                         var id = missingCharacteristics_2_1.value;
                         var split = id.split(".");
                         var aid = parseInt(split[0], 10);
@@ -1208,7 +1281,8 @@ var Accessory = /** @class */ (function (_super) {
                         var accessory = _this.getAccessoryByAID(aid);
                         var characteristic = accessory.getCharacteristicByIID(iid);
                         _this.sendCharacteristicWarning(characteristic, "timeout-read" /* TIMEOUT_READ */, "The read handler for the characteristic '" +
-                            characteristic.displayName + "' on the accessory '" + accessory.displayName + "' didn't respond at all!. Please check that you properly call the callback!");
+                            characteristic.displayName + "' on the accessory '" + accessory.displayName + "' didn't respond at all!. " +
+                            "Please check that you properly call the callback!");
                         characteristics.push({
                             aid: aid,
                             iid: iid,
@@ -1232,9 +1306,9 @@ var Accessory = /** @class */ (function (_super) {
         var _loop_1 = function (id) {
             var name = id.aid + "." + id.iid;
             this_1.handleCharacteristicRead(connection, id, request).then(function (value) {
-                return tslib_1.__assign({ aid: id.aid, iid: id.iid }, value);
+                return (0, tslib_1.__assign)({ aid: id.aid, iid: id.iid }, value);
             }, function (reason) {
-                console.error("[" + _this.displayName + "] Read request for characteristic " + name + " encountered an error: " + reason.stack);
+                console.error("[".concat(_this.displayName, "] Read request for characteristic ").concat(name, " encountered an error: ").concat(reason.stack));
                 return {
                     aid: id.aid,
                     iid: id.iid,
@@ -1257,7 +1331,7 @@ var Accessory = /** @class */ (function (_super) {
         };
         var this_1 = this;
         try {
-            for (var _b = tslib_1.__values(request.ids), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(request.ids), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var id = _c.value;
                 _loop_1(id);
             }
@@ -1271,34 +1345,34 @@ var Accessory = /** @class */ (function (_super) {
         }
     };
     Accessory.prototype.handleCharacteristicRead = function (connection, id, request) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
             var characteristic, verifiable;
             var _this = this;
-            return tslib_1.__generator(this, function (_a) {
+            return (0, tslib_1.__generator)(this, function (_a) {
                 characteristic = this.findCharacteristic(id.aid, id.iid);
                 if (!characteristic) {
-                    debug('[%s] Could not find a Characteristic with aid of %s and iid of %s', this.displayName, id.aid, id.iid);
+                    debug("[%s] Could not find a Characteristic with aid of %s and iid of %s", this.displayName, id.aid, id.iid);
                     return [2 /*return*/, { status: -70410 /* INVALID_VALUE_IN_REQUEST */ }];
                 }
                 if (!characteristic.props.perms.includes("pr" /* PAIRED_READ */)) { // check if read is allowed for this characteristic
-                    debug('[%s] Tried reading from characteristic which does not allow reading (aid of %s and iid of %s)', this.displayName, id.aid, id.iid);
+                    debug("[%s] Tried reading from characteristic which does not allow reading (aid of %s and iid of %s)", this.displayName, id.aid, id.iid);
                     return [2 /*return*/, { status: -70405 /* WRITE_ONLY_CHARACTERISTIC */ }];
                 }
                 if (characteristic.props.adminOnlyAccess && characteristic.props.adminOnlyAccess.includes(0 /* READ */)) {
                     verifiable = true;
                     if (!connection.username || !this._accessoryInfo) {
                         verifiable = false;
-                        debug('[%s] Could not verify admin permissions for Characteristic which requires admin permissions for reading (aid of %s and iid of %s)', this.displayName, id.aid, id.iid);
+                        debug("[%s] Could not verify admin permissions for Characteristic which requires admin permissions for reading (aid of %s and iid of %s)", this.displayName, id.aid, id.iid);
                     }
                     if (!verifiable || !this._accessoryInfo.hasAdminPermissions(connection.username)) {
                         return [2 /*return*/, { status: -70401 /* INSUFFICIENT_PRIVILEGES */ }];
                     }
                 }
                 return [2 /*return*/, characteristic.handleGetRequest(connection).then(function (value) {
-                        value = request_util_1.formatOutgoingCharacteristicValue(value, characteristic.props);
-                        debug('[%s] Got Characteristic "%s" value: "%s"', _this.displayName, characteristic.displayName, value);
+                        value = (0, request_util_1.formatOutgoingCharacteristicValue)(value, characteristic.props);
+                        debug("[%s] Got Characteristic \"%s\" value: \"%s\"", _this.displayName, characteristic.displayName, value);
                         var data = {
-                            value: value == undefined ? null : value,
+                            value: value == null ? null : value,
                         };
                         if (request.includeMeta) {
                             data.format = characteristic.props.format;
@@ -1312,15 +1386,15 @@ var Accessory = /** @class */ (function (_super) {
                             data.perms = characteristic.props.perms;
                         }
                         if (request.includeType) {
-                            data.type = uuid_1.toShortForm(_this.UUID);
+                            data.type = (0, uuid_1.toShortForm)(_this.UUID);
                         }
                         if (request.includeEvent) {
                             data.ev = connection.hasEventNotifications(id.aid, id.iid);
                         }
                         return data;
                     }, function (reason) {
-                        // @ts-expect-error
-                        debug('[%s] Error getting value for characteristic "%s": %s', _this.displayName, characteristic.displayName, HAPServer_1.HAPStatus[reason]);
+                        // @ts-expect-error: forceConsistentCasingInFileNames compiler option
+                        debug("[%s] Error getting value for characteristic \"%s\": %s", _this.displayName, characteristic.displayName, HAPServer_1.HAPStatus[reason]);
                         return { status: reason };
                     })];
             });
@@ -1356,7 +1430,7 @@ var Accessory = /** @class */ (function (_super) {
         var timeout = setTimeout(function () {
             var e_19, _a;
             try {
-                for (var missingCharacteristics_3 = tslib_1.__values(missingCharacteristics), missingCharacteristics_3_1 = missingCharacteristics_3.next(); !missingCharacteristics_3_1.done; missingCharacteristics_3_1 = missingCharacteristics_3.next()) {
+                for (var missingCharacteristics_3 = (0, tslib_1.__values)(missingCharacteristics), missingCharacteristics_3_1 = missingCharacteristics_3.next(); !missingCharacteristics_3_1.done; missingCharacteristics_3_1 = missingCharacteristics_3.next()) {
                     var id = missingCharacteristics_3_1.value;
                     var split = id.split(".");
                     var aid = parseInt(split[0], 10);
@@ -1379,7 +1453,7 @@ var Accessory = /** @class */ (function (_super) {
                 var e_20, _a;
                 timeout = undefined;
                 try {
-                    for (var missingCharacteristics_4 = tslib_1.__values(missingCharacteristics), missingCharacteristics_4_1 = missingCharacteristics_4.next(); !missingCharacteristics_4_1.done; missingCharacteristics_4_1 = missingCharacteristics_4.next()) {
+                    for (var missingCharacteristics_4 = (0, tslib_1.__values)(missingCharacteristics), missingCharacteristics_4_1 = missingCharacteristics_4.next(); !missingCharacteristics_4_1.done; missingCharacteristics_4_1 = missingCharacteristics_4.next()) {
                         var id = missingCharacteristics_4_1.value;
                         var split = id.split(".");
                         var aid = parseInt(split[0], 10);
@@ -1387,7 +1461,8 @@ var Accessory = /** @class */ (function (_super) {
                         var accessory = _this.getAccessoryByAID(aid);
                         var characteristic = accessory.getCharacteristicByIID(iid);
                         _this.sendCharacteristicWarning(characteristic, "timeout-write" /* TIMEOUT_WRITE */, "The write handler for the characteristic '" +
-                            characteristic.displayName + "' on the accessory '" + accessory.displayName + "' didn't respond at all!. Please check that you properly call the callback!");
+                            characteristic.displayName + "' on the accessory '" + accessory.displayName + "' didn't respond at all!. " +
+                            "Please check that you properly call the callback!");
                         characteristics.push({
                             aid: aid,
                             iid: iid,
@@ -1411,9 +1486,9 @@ var Accessory = /** @class */ (function (_super) {
         var _loop_2 = function (data) {
             var name = data.aid + "." + data.iid;
             this_2.handleCharacteristicWrite(connection, data, writeState).then(function (value) {
-                return tslib_1.__assign({ aid: data.aid, iid: data.iid }, value);
+                return (0, tslib_1.__assign)({ aid: data.aid, iid: data.iid }, value);
             }, function (reason) {
-                console.error("[" + _this.displayName + "] Write request for characteristic " + name + " encountered an error: " + reason.stack);
+                console.error("[".concat(_this.displayName, "] Write request for characteristic ").concat(name, " encountered an error: ").concat(reason.stack));
                 return {
                     aid: data.aid,
                     iid: data.iid,
@@ -1436,7 +1511,7 @@ var Accessory = /** @class */ (function (_super) {
         };
         var this_2 = this;
         try {
-            for (var _b = tslib_1.__values(writeRequest.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(writeRequest.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var data = _c.value;
                 _loop_2(data);
             }
@@ -1450,33 +1525,33 @@ var Accessory = /** @class */ (function (_super) {
         }
     };
     Accessory.prototype.handleCharacteristicWrite = function (connection, data, writeState) {
-        return tslib_1.__awaiter(this, void 0, void 0, function () {
+        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
             var characteristic, evResponse, notificationsEnabled, verifiable, verifiable, allowWrite;
             var _this = this;
-            return tslib_1.__generator(this, function (_a) {
+            return (0, tslib_1.__generator)(this, function (_a) {
                 characteristic = this.findCharacteristic(data.aid, data.iid);
                 evResponse = undefined;
                 if (!characteristic) {
-                    debug('[%s] Could not find a Characteristic with aid of %s and iid of %s', this.displayName, data.aid, data.iid);
+                    debug("[%s] Could not find a Characteristic with aid of %s and iid of %s", this.displayName, data.aid, data.iid);
                     return [2 /*return*/, { status: -70410 /* INVALID_VALUE_IN_REQUEST */ }];
                 }
                 if (writeState === 2 /* TIMED_WRITE_REJECTED */) {
                     return [2 /*return*/, { status: -70410 /* INVALID_VALUE_IN_REQUEST */ }];
                 }
-                if (data.ev != undefined) { // register/unregister event notifications
+                if (data.ev != null) { // register/unregister event notifications
                     notificationsEnabled = connection.hasEventNotifications(data.aid, data.iid);
                     // it seems like the Home App sends unregister requests for characteristics which don't have notify permissions
                     // see https://github.com/homebridge/HAP-NodeJS/issues/868
-                    if (notificationsEnabled != data.ev) {
+                    if (notificationsEnabled !== data.ev) {
                         if (!characteristic.props.perms.includes("ev" /* NOTIFY */)) { // check if notify is allowed for this characteristic
-                            debug('[%s] Tried %s notifications for Characteristic which does not allow notify (aid of %s and iid of %s)', this.displayName, data.ev ? "enabling" : "disabling", data.aid, data.iid);
+                            debug("[%s] Tried %s notifications for Characteristic which does not allow notify (aid of %s and iid of %s)", this.displayName, data.ev ? "enabling" : "disabling", data.aid, data.iid);
                             return [2 /*return*/, { status: -70406 /* NOTIFICATION_NOT_SUPPORTED */ }];
                         }
                         if (characteristic.props.adminOnlyAccess && characteristic.props.adminOnlyAccess.includes(2 /* NOTIFY */)) {
                             verifiable = true;
                             if (!connection.username || !this._accessoryInfo) {
                                 verifiable = false;
-                                debug('[%s] Could not verify admin permissions for Characteristic which requires admin permissions for notify (aid of %s and iid of %s)', this.displayName, data.aid, data.iid);
+                                debug("[%s] Could not verify admin permissions for Characteristic which requires admin permissions for notify (aid of %s and iid of %s)", this.displayName, data.aid, data.iid);
                             }
                             if (!verifiable || !this._accessoryInfo.hasAdminPermissions(connection.username)) {
                                 return [2 /*return*/, { status: -70401 /* INSUFFICIENT_PRIVILEGES */ }];
@@ -1487,27 +1562,27 @@ var Accessory = /** @class */ (function (_super) {
                             connection.enableEventNotifications(data.aid, data.iid);
                             characteristic.subscribe();
                             evResponse = true;
-                            debug('[%s] Registered Characteristic "%s" on "%s" for events', connection.remoteAddress, characteristic.displayName, this.displayName);
+                            debug("[%s] Registered Characteristic \"%s\" on \"%s\" for events", connection.remoteAddress, characteristic.displayName, this.displayName);
                         }
                         else {
                             characteristic.unsubscribe();
                             connection.disableEventNotifications(data.aid, data.iid);
                             evResponse = false;
-                            debug('[%s] Unregistered Characteristic "%s" on "%s" for events', connection.remoteAddress, characteristic.displayName, this.displayName);
+                            debug("[%s] Unregistered Characteristic \"%s\" on \"%s\" for events", connection.remoteAddress, characteristic.displayName, this.displayName);
                         }
                     }
                     // response is returned below in the else block
                 }
-                if (data.value != undefined) {
+                if (data.value != null) {
                     if (!characteristic.props.perms.includes("pw" /* PAIRED_WRITE */)) { // check if write is allowed for this characteristic
-                        debug('[%s] Tried writing to Characteristic which does not allow writing (aid of %s and iid of %s)', this.displayName, data.aid, data.iid);
+                        debug("[%s] Tried writing to Characteristic which does not allow writing (aid of %s and iid of %s)", this.displayName, data.aid, data.iid);
                         return [2 /*return*/, { status: -70404 /* READ_ONLY_CHARACTERISTIC */ }];
                     }
                     if (characteristic.props.adminOnlyAccess && characteristic.props.adminOnlyAccess.includes(1 /* WRITE */)) {
                         verifiable = true;
                         if (!connection.username || !this._accessoryInfo) {
                             verifiable = false;
-                            debug('[%s] Could not verify admin permissions for Characteristic which requires admin permissions for write (aid of %s and iid of %s)', this.displayName, data.aid, data.iid);
+                            debug("[%s] Could not verify admin permissions for Characteristic which requires admin permissions for write (aid of %s and iid of %s)", this.displayName, data.aid, data.iid);
                         }
                         if (!verifiable || !this._accessoryInfo.hasAdminPermissions(connection.username)) {
                             return [2 /*return*/, { status: -70401 /* INSUFFICIENT_PRIVILEGES */ }];
@@ -1519,7 +1594,7 @@ var Accessory = /** @class */ (function (_super) {
                             allowWrite = characteristic.additionalAuthorizationHandler(data.authData);
                         }
                         catch (error) {
-                            console.log("[" + this.displayName + "] Additional authorization handler has thrown an error when checking authData: " + error.stack);
+                            console.warn("[" + this.displayName + "] Additional authorization handler has thrown an error when checking authData: " + error.stack);
                             allowWrite = false;
                         }
                         if (!allowWrite) {
@@ -1527,18 +1602,19 @@ var Accessory = /** @class */ (function (_super) {
                         }
                     }
                     if (characteristic.props.perms.includes("tw" /* TIMED_WRITE */) && writeState !== 1 /* TIMED_WRITE_AUTHENTICATED */) {
-                        debug('[%s] Tried writing to a timed write only Characteristic without properly preparing (iid of %s and aid of %s)', this.displayName, data.aid, data.iid);
+                        debug("[%s] Tried writing to a timed write only Characteristic without properly preparing (iid of %s and aid of %s)", this.displayName, data.aid, data.iid);
                         return [2 /*return*/, { status: -70410 /* INVALID_VALUE_IN_REQUEST */ }];
                     }
                     return [2 /*return*/, characteristic.handleSetRequest(data.value, connection).then(function (value) {
-                            debug('[%s] Setting Characteristic "%s" to value %s', _this.displayName, characteristic.displayName, data.value);
+                            debug("[%s] Setting Characteristic \"%s\" to value %s", _this.displayName, characteristic.displayName, data.value);
                             return {
-                                value: data.r && value ? request_util_1.formatOutgoingCharacteristicValue(value, characteristic.props) : undefined,
+                                // if write response is requests and value is provided, return that
+                                value: data.r && value ? (0, request_util_1.formatOutgoingCharacteristicValue)(value, characteristic.props) : undefined,
                                 ev: evResponse,
                             };
                         }, function (status) {
-                            // @ts-expect-error
-                            debug('[%s] Error setting Characteristic "%s" to value %s: ', _this.displayName, characteristic.displayName, data.value, HAPServer_1.HAPStatus[status]);
+                            // @ts-expect-error: forceConsistentCasingInFileNames compiler option
+                            debug("[%s] Error setting Characteristic \"%s\" to value %s: ", _this.displayName, characteristic.displayName, data.value, HAPServer_1.HAPStatus[status]);
                             return { status: status };
                         })];
                 }
@@ -1562,6 +1638,7 @@ var Accessory = /** @class */ (function (_super) {
                 }
             }
             else if (this.activeCameraController) { // aid was not supplied, check if this accessory is a camera
+                // eslint-disable-next-line @typescript-eslint/no-this-alias
                 accessory = this;
                 controller = this.activeCameraController;
             }
@@ -1570,10 +1647,11 @@ var Accessory = /** @class */ (function (_super) {
                 callback({ httpCode: 404 /* NOT_FOUND */, status: -70409 /* RESOURCE_DOES_NOT_EXIST */ });
                 return;
             }
-            controller.handleSnapshotRequest(data["image-height"], data["image-width"], accessory === null || accessory === void 0 ? void 0 : accessory.displayName).then(function (buffer) {
+            controller.handleSnapshotRequest(data["image-height"], data["image-width"], accessory === null || accessory === void 0 ? void 0 : accessory.displayName, data.reason)
+                .then(function (buffer) {
                 callback(undefined, buffer);
             }, function (status) {
-                callback({ httpCode: 200 /* OK */, status: status });
+                callback({ httpCode: 207 /* MULTI_STATUS */, status: status });
             });
             return;
         }
@@ -1586,7 +1664,7 @@ var Accessory = /** @class */ (function (_super) {
             this.activeCameraController.handleCloseConnection(connection.sessionID);
         }
         try {
-            for (var _b = tslib_1.__values(connection.getRegisteredEvents()), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(connection.getRegisteredEvents()), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var event = _c.value;
                 var ids = event.split(".");
                 var aid = parseInt(ids[0], 10);
@@ -1627,17 +1705,17 @@ var Accessory = /** @class */ (function (_super) {
     };
     Accessory.prototype.handleCharacteristicChangeEvent = function (accessory, service, change) {
         if (this.bridged) { // forward this to our main accessory
-            this.emit("service-characteristic-change" /* SERVICE_CHARACTERISTIC_CHANGE */, tslib_1.__assign(tslib_1.__assign({}, change), { service: service }));
+            this.emit("service-characteristic-change" /* SERVICE_CHARACTERISTIC_CHANGE */, (0, tslib_1.__assign)((0, tslib_1.__assign)({}, change), { service: service }));
         }
         else {
             if (!this._server) {
                 return; // we're not running a HAPServer, so there's no one to notify about this event
             }
-            if (accessory.aid == undefined || change.characteristic.iid == undefined) {
+            if (accessory.aid == null || change.characteristic.iid == null) {
                 debug("[%s] Muting event notification for %s as ids aren't yet assigned!", accessory.displayName, change.characteristic.displayName);
                 return;
             }
-            if (change.context != undefined && typeof change.context === "object" && change.context.omitEventUpdate) {
+            if (change.context != null && typeof change.context === "object" && change.context.omitEventUpdate) {
                 debug("[%s] Omitting event updates for %s as specified in the context object!", accessory.displayName, change.characteristic.displayName);
                 return;
             }
@@ -1653,7 +1731,7 @@ var Accessory = /** @class */ (function (_super) {
             var uuid_2 = change.characteristic.UUID;
             var immediateDelivery = uuid_2 === Characteristic_1.Characteristic.ButtonEvent.UUID || uuid_2 === Characteristic_1.Characteristic.ProgrammableSwitchEvent.UUID
                 || uuid_2 === Characteristic_1.Characteristic.MotionDetected.UUID || uuid_2 === Characteristic_1.Characteristic.ContactSensorState.UUID;
-            var value = request_util_1.formatOutgoingCharacteristicValue(change.newValue, change.characteristic.props);
+            var value = (0, request_util_1.formatOutgoingCharacteristicValue)(change.newValue, change.characteristic.props);
             this._server.sendEventNotifications(accessory.aid, change.characteristic.iid, value, change.originator, immediateDelivery);
         }
     };
@@ -1668,10 +1746,10 @@ var Accessory = /** @class */ (function (_super) {
     };
     Accessory.prototype.handleCharacteristicWarning = function (warning) {
         var _a;
-        warning.originatorChain = tslib_1.__spread([this.displayName], warning.originatorChain);
+        warning.originatorChain = (0, tslib_1.__spreadArray)([this.displayName], (0, tslib_1.__read)(warning.originatorChain), false);
         var emitted = this.emit("characteristic-warning" /* CHARACTERISTIC_WARNING */, warning);
         if (!emitted) {
-            var message = "[" + warning.originatorChain.join("@") + "] " + warning.message;
+            var message = "[".concat(warning.originatorChain.join("@"), "] ").concat(warning.message);
             if (warning.type === "error-message" /* ERROR_MESSAGE */
                 || warning.type === "timeout-read" /* TIMEOUT_READ */ || warning.type === "timeout-write" /* TIMEOUT_WRITE */) {
                 console.error(message);
@@ -1691,7 +1769,7 @@ var Accessory = /** @class */ (function (_super) {
         var e_22, _a;
         var _this = this;
         try {
-            for (var targetServices_1 = tslib_1.__values(targetServices), targetServices_1_1 = targetServices_1.next(); !targetServices_1_1.done; targetServices_1_1 = targetServices_1.next()) {
+            for (var targetServices_1 = (0, tslib_1.__values)(targetServices), targetServices_1_1 = targetServices_1.next(); !targetServices_1_1.done; targetServices_1_1 = targetServices_1.next()) {
                 var service = targetServices_1_1.value;
                 this.setupServiceEventHandlers(service);
             }
@@ -1716,9 +1794,9 @@ var Accessory = /** @class */ (function (_super) {
         });
     };
     Accessory._generateSetupID = function () {
-        var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         var max = chars.length;
-        var setupID = '';
+        var setupID = "";
         for (var i = 0; i < 4; i++) {
             var index = Math.floor(Math.random() * max);
             setupID += chars.charAt(index);
@@ -1760,7 +1838,7 @@ var Accessory = /** @class */ (function (_super) {
         });
         // also save controller which didn't get initialized (could lead to service duplication if we throw that data away)
         accessory.serializedControllers && Object.entries(accessory.serializedControllers).forEach(function (_a) {
-            var _b = tslib_1.__read(_a, 2), id = _b[0], serviceMap = _b[1];
+            var _b = (0, tslib_1.__read)(_a, 2), id = _b[0], serviceMap = _b[1];
             controllers.push({
                 type: id,
                 services: Accessory.serializeServiceMap(serviceMap),
@@ -1797,8 +1875,8 @@ var Accessory = /** @class */ (function (_super) {
                 });
             };
             try {
-                for (var _b = tslib_1.__values(Object.entries(json.linkedServices)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var _d = tslib_1.__read(_c.value, 2), serviceId = _d[0], linkedServicesKeys = _d[1];
+                for (var _b = (0, tslib_1.__values)(Object.entries(json.linkedServices)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var _d = (0, tslib_1.__read)(_c.value, 2), serviceId = _d[0], linkedServicesKeys = _d[1];
                     _loop_3(serviceId, linkedServicesKeys);
                 }
             }
@@ -1827,7 +1905,7 @@ var Accessory = /** @class */ (function (_super) {
     Accessory.serializeServiceMap = function (serviceMap) {
         var serialized = {};
         Object.entries(serviceMap).forEach(function (_a) {
-            var _b = tslib_1.__read(_a, 2), name = _b[0], service = _b[1];
+            var _b = (0, tslib_1.__read)(_a, 2), name = _b[0], service = _b[1];
             if (!service) {
                 return;
             }
@@ -1838,7 +1916,7 @@ var Accessory = /** @class */ (function (_super) {
     Accessory.deserializeServiceMap = function (serializedServiceMap, servicesMap) {
         var controllerServiceMap = {};
         Object.entries(serializedServiceMap).forEach(function (_a) {
-            var _b = tslib_1.__read(_a, 2), name = _b[0], serviceId = _b[1];
+            var _b = (0, tslib_1.__read)(_a, 2), name = _b[0], serviceId = _b[1];
             var service = servicesMap[serviceId];
             if (service) {
                 controllerServiceMap[name] = service;
@@ -1883,7 +1961,7 @@ var Accessory = /** @class */ (function (_super) {
                 advertiserAddress = Array.from(entries);
                 var bindUnspecifiedIpv6 = false; // we bind on "::" if there are interface names, or we detect ipv6 addresses
                 try {
-                    for (var entries_1 = tslib_1.__values(entries), entries_1_1 = entries_1.next(); !entries_1_1.done; entries_1_1 = entries_1.next()) {
+                    for (var entries_1 = (0, tslib_1.__values)(entries), entries_1_1 = entries_1.next(); !entries_1_1.done; entries_1_1 = entries_1.next()) {
                         var entry = entries_1_1.value;
                         var version = net_1.default.isIP(entry);
                         if (version === 0 || version === 6) {
@@ -1915,9 +1993,9 @@ var Accessory = /** @class */ (function (_super) {
         };
     };
     /**
-     * @deprecated Please use the Categories const enum above. Scheduled to be removed in 2021-06.
+     * @deprecated Please use the Categories const enum above.
      */
-    // @ts-ignore
+    // @ts-expect-error: forceConsistentCasingInFileNames compiler option
     Accessory.Categories = Categories;
     return Accessory;
 }(events_1.EventEmitter));

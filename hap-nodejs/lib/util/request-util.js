@@ -85,6 +85,7 @@ function numericUpperBound(format) {
         case "uint32" /* UINT32 */:
             return 4294967295;
         case "uint64" /* UINT64 */:
+            // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
             return 18446744073709551615; // don't get fooled, javascript uses 18446744073709552000 here
         default:
             throw new Error("Unable to determine numeric lower bound for " + format);

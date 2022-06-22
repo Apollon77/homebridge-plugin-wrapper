@@ -2,14 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdaptiveLightingController = exports.AdaptiveLightingControllerEvents = exports.AdaptiveLightingControllerMode = void 0;
 var tslib_1 = require("tslib");
-var assert_1 = tslib_1.__importDefault(require("assert"));
-var uuid = tslib_1.__importStar(require("../util/uuid"));
-var debug_1 = tslib_1.__importDefault(require("debug"));
+var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
+var uuid = (0, tslib_1.__importStar)(require("../util/uuid"));
+var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
 var events_1 = require("events");
 var __1 = require("../..");
 var Characteristic_1 = require("../Characteristic");
-var tlv = tslib_1.__importStar(require("../util/tlv"));
-var debug = debug_1.default("HAP-NodeJS:Controller:TransitionControl");
+var tlv = (0, tslib_1.__importStar)(require("../util/tlv"));
+var debug = (0, debug_1.default)("HAP-NodeJS:Controller:TransitionControl");
 var SupportedCharacteristicValueTransitionConfigurationsTypes;
 (function (SupportedCharacteristicValueTransitionConfigurationsTypes) {
     SupportedCharacteristicValueTransitionConfigurationsTypes[SupportedCharacteristicValueTransitionConfigurationsTypes["SUPPORTED_TRANSITION_CONFIGURATION"] = 1] = "SUPPORTED_TRANSITION_CONFIGURATION";
@@ -83,6 +83,7 @@ var ValueTransitionConfigurationStatusTypes;
     ValueTransitionConfigurationStatusTypes[ValueTransitionConfigurationStatusTypes["TRANSITION_PARAMETERS"] = 2] = "TRANSITION_PARAMETERS";
     ValueTransitionConfigurationStatusTypes[ValueTransitionConfigurationStatusTypes["TIME_SINCE_START"] = 3] = "TIME_SINCE_START";
 })(ValueTransitionConfigurationStatusTypes || (ValueTransitionConfigurationStatusTypes = {}));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isAdaptiveLightingContext(context) {
     return context && "controller" in context;
 }
@@ -150,7 +151,7 @@ var AdaptiveLightingControllerEvents;
  *  The AdaptiveLightingController will go through setup procedure with HomeKit and automatically update
  *  the color temperature characteristic base on the current transition schedule.
  *  It is also adjusting the color temperature when a write to the brightness characteristic happens.
- *  Additionally it will also handle turning off AdaptiveLighting, when it detects a write happening to the
+ *  Additionally, it will also handle turning off AdaptiveLighting, when it detects a write happening to the
  *  ColorTemperature, Hue or Saturation characteristic (though it can only detect writes coming from HomeKit and
  *  can't detect changes done to the physical devices directly! See below).
  *
@@ -170,13 +171,13 @@ var AdaptiveLightingControllerEvents;
  *    of the ColorTemperature characteristic.
  *   - When using Hue/Saturation:
  *    When using Hue/Saturation in combination with the ColorTemperature characteristic you need to update the
- *    respective other in a particular way depending if being in "color mode" or "color temperature mode".
+ *    respective other in a particular way depending on if being in "color mode" or "color temperature mode".
  *    When a write happens to Hue/Saturation characteristic in is advised to set the internal value of the
- *    ColorTemperature to the minimal (NOT RAISING a event).
+ *    ColorTemperature to the minimal (NOT RAISING an event).
  *    When a write happens to the ColorTemperature characteristic just MUST convert to a proper representation
- *    in hue and saturation values, with RAISING a event.
+ *    in hue and saturation values, with RAISING an event.
  *    As noted above you MUST NOT call the {@link Characteristic.setValue} method for this, as this will be considered
- *    a write to the characteristic and will turn off AdaptiveLighting. Instead you should use
+ *    a write to the characteristic and will turn off AdaptiveLighting. Instead, you should use
  *    {@link Characteristic.updateValue} for this.
  *    You can and SHOULD use the supplied utility method {@link ColorUtils.colorTemperatureToHueAndSaturation}
  *    for converting mired to hue and saturation values.
@@ -188,13 +189,13 @@ var AdaptiveLightingControllerEvents;
  *  Like for example ZigBee lights which support sending transitions directly to the lightbulb which
  *  then get executed ON the lightbulb itself reducing unnecessary network traffic.
  *  Here is a quick overview what you have to consider to successfully implement AdaptiveLighting support.
- *  The AdaptiveLightingController will also in manual mode do all of the setup procedure.
+ *  The AdaptiveLightingController will also in manual mode do all the setup procedure.
  *  It will also save the transition schedule to disk to keep AdaptiveLighting enabled across reboots.
  *  The "only" thing you have to do yourself is handling the actual transitions, check that event notifications
  *  are only sent in the defined interval threshold, adjust the color temperature when brightness is changed
  *  and signal that Adaptive Lighting should be disabled if ColorTemperature, Hue or Saturation is changed manually.
  *
- *  First step is to setup up a event handler for the {@link AdaptiveLightingControllerEvents.UPDATE}, which is called
+ *  First step is to setup up an event handler for the {@link AdaptiveLightingControllerEvents.UPDATE}, which is called
  *  when AdaptiveLighting is enabled, the HomeHub updates the schedule for the next 24 hours or AdaptiveLighting
  *  is restored from disk on startup.
  *  In the event handler you can get the current schedule via {@link AdaptiveLightingController.getAdaptiveLightingTransitionCurve},
@@ -204,8 +205,8 @@ var AdaptiveLightingControllerEvents;
  *  Additionally {@link AdaptiveLightingController.getAdaptiveLightingBrightnessMultiplierRange} can be used
  *  to get the valid range for the brightness value to calculate the brightness adjustment factor.
  *  The method {@link AdaptiveLightingController.isAdaptiveLightingActive} can be used to check if AdaptiveLighting is enabled.
- *  Besides actually running the transition (see {@link AdaptiveLightingTransitionCurveEntry}) you must
- *  correctly update the color temperature when the brightness of the lightbulb changes (see {@link AdaptiveLightingTransitionCurveEntry.brightnessAdjustmentFactor}),
+ *  Besides, actually running the transition (see {@link AdaptiveLightingTransitionCurveEntry}) you must correctly update
+ *  the color temperature when the brightness of the lightbulb changes (see {@link AdaptiveLightingTransitionCurveEntry.brightnessAdjustmentFactor}),
  *  and signal when AdaptiveLighting got disabled by calling {@link AdaptiveLightingController.disableAdaptiveLighting}
  *  when ColorTemperature, Hue or Saturation where changed manually.
  *  Lastly you should set up a event handler for the {@link AdaptiveLightingControllerEvents.DISABLED} event.
@@ -213,7 +214,7 @@ var AdaptiveLightingControllerEvents;
  *  Be prepared to handle that.
  */
 var AdaptiveLightingController = /** @class */ (function (_super) {
-    tslib_1.__extends(AdaptiveLightingController, _super);
+    (0, tslib_1.__extends)(AdaptiveLightingController, _super);
     /**
      * Creates a new instance of the AdaptiveLightingController.
      * Refer to the {@link AdaptiveLightingController} documentation on how to use it.
@@ -232,8 +233,8 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
         _this.lightbulb = service;
         _this.mode = (_a = options === null || options === void 0 ? void 0 : options.controllerMode) !== null && _a !== void 0 ? _a : 1 /* AUTOMATIC */;
         _this.customTemperatureAdjustment = (_b = options === null || options === void 0 ? void 0 : options.customTemperatureAdjustment) !== null && _b !== void 0 ? _b : 0;
-        assert_1.default(_this.lightbulb.testCharacteristic(Characteristic_1.Characteristic.ColorTemperature), "Lightbulb must have the ColorTemperature characteristic added!");
-        assert_1.default(_this.lightbulb.testCharacteristic(Characteristic_1.Characteristic.Brightness), "Lightbulb must have the Brightness characteristic added!");
+        (0, assert_1.default)(_this.lightbulb.testCharacteristic(Characteristic_1.Characteristic.ColorTemperature), "Lightbulb must have the ColorTemperature characteristic added!");
+        (0, assert_1.default)(_this.lightbulb.testCharacteristic(Characteristic_1.Characteristic.Brightness), "Lightbulb must have the Brightness characteristic added!");
         _this.adjustmentFactorChangedListener = _this.handleAdjustmentFactorChanged.bind(_this);
         _this.characteristicManualWrittenChangeListener = _this.handleCharacteristicManualWritten.bind(_this);
         return _this;
@@ -259,6 +260,7 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
      * (or if any of those values is changed by physical interaction with the lightbulb).
      */
     AdaptiveLightingController.prototype.disableAdaptiveLighting = function () {
+        var _a;
         if (this.updateTimeout) {
             clearTimeout(this.updateTimeout);
             this.updateTimeout = undefined;
@@ -273,7 +275,7 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
                 this.saturationCharacteristic.removeListener("change" /* CHANGE */, this.characteristicManualWrittenChangeListener);
             }
             this.activeTransition = undefined;
-            this.stateChangeDelegate && this.stateChangeDelegate();
+            (_a = this.stateChangeDelegate) === null || _a === void 0 ? void 0 : _a.call(this);
         }
         this.colorTemperatureCharacteristic = undefined;
         this.brightnessCharacteristic = undefined;
@@ -353,6 +355,7 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
     };
     // ----------- PUBLIC API END -----------
     AdaptiveLightingController.prototype.handleActiveTransitionUpdated = function (calledFromDeserializer) {
+        var _a;
         if (calledFromDeserializer === void 0) { calledFromDeserializer = false; }
         if (!calledFromDeserializer) {
             this.activeTransitionCount.sendEventNotification(1);
@@ -370,7 +373,7 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
             throw new Error("Unsupported adaptive lighting controller mode: " + this.mode);
         }
         if (!calledFromDeserializer) {
-            this.stateChangeDelegate && this.stateChangeDelegate();
+            (_a = this.stateChangeDelegate) === null || _a === void 0 ? void 0 : _a.call(this);
         }
     };
     AdaptiveLightingController.prototype.handleAdaptiveLightingEnabled = function () {
@@ -530,10 +533,10 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
         else {
             var timePercentage = (transitionPoint.transitionOffset - ((_a = lowerBound.duration) !== null && _a !== void 0 ? _a : 0)) / upperBound.transitionTime;
             interpolatedTemperature = lowerBound.temperature + (upperBound.temperature - lowerBound.temperature) * timePercentage;
-            interpolatedAdjustmentFactor = lowerBound.brightnessAdjustmentFactor + (upperBound.brightnessAdjustmentFactor - lowerBound.brightnessAdjustmentFactor) * timePercentage;
+            interpolatedAdjustmentFactor = lowerBound.brightnessAdjustmentFactor
+                + (upperBound.brightnessAdjustmentFactor - lowerBound.brightnessAdjustmentFactor) * timePercentage;
         }
-        var adjustmentMultiplier = Math.max(this.activeTransition.brightnessAdjustmentRange.minBrightnessValue, Math.min(this.activeTransition.brightnessAdjustmentRange.maxBrightnessValue, this.brightnessCharacteristic.value // get handler is not called for optimal performance
-        ));
+        var adjustmentMultiplier = Math.max(this.activeTransition.brightnessAdjustmentRange.minBrightnessValue, Math.min(this.activeTransition.brightnessAdjustmentRange.maxBrightnessValue, this.brightnessCharacteristic.value));
         var temperature = Math.round(interpolatedTemperature + interpolatedAdjustmentFactor * adjustmentMultiplier);
         // apply any manually applied temperature adjustments
         temperature += this.customTemperatureAdjustment;
@@ -571,7 +574,8 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
             debug("[%s] Failed to next adaptive lighting transition point: %d", _this.lightbulb.displayName, reason);
         });
         if (!this.activeTransition) {
-            console.warn("[" + this.lightbulb.displayName + "] Adaptive Lighting was probably disable my mistake by some call in the SET handler of the ColorTemperature characteristic! " +
+            console.warn("[" + this.lightbulb.displayName + "] Adaptive Lighting was probably disable my mistake by some call in " +
+                "the SET handler of the ColorTemperature characteristic! " +
                 "Please check that you don't call setValue/setCharacteristic on the Hue, Saturation or ColorTemperature characteristic!");
             return;
         }
@@ -608,6 +612,7 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
     /**
      * @private
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     AdaptiveLightingController.prototype.initWithServices = function (serviceMap) {
         // do nothing
     };
@@ -632,7 +637,7 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
                 return _this.handleTransitionControlWrite(value);
             }
             catch (error) {
-                console.warn("[%s] DEBUG: '" + value + "'");
+                console.warn("[%s] DEBUG: '".concat(value, "'"));
                 console.warn("[%s] Encountered error on CharacteristicValueTransitionControl characteristic: " + error.stack);
                 _this.disableAdaptiveLighting();
                 throw new __1.HapStatusError(-70402 /* SERVICE_COMMUNICATION_FAILURE */);
@@ -675,9 +680,9 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
         this.activeTransition = serialized.activeTransition;
         // Data migrations from beta builds
         if (!this.activeTransition.transitionId) {
-            // @ts-ignore
+            // @ts-expect-error: data migration from beta builds
             this.activeTransition.transitionId = this.activeTransition.id1;
-            // @ts-ignore
+            // @ts-expect-error: data migration from beta builds
             delete this.activeTransition.id1;
         }
         if (!this.activeTransition.timeMillisOffset) { // compatibility to data produced by early betas
@@ -694,8 +699,8 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
     AdaptiveLightingController.prototype.handleSupportedTransitionConfigurationRead = function () {
         var brightnessIID = this.lightbulb.getCharacteristic(Characteristic_1.Characteristic.Brightness).iid;
         var temperatureIID = this.lightbulb.getCharacteristic(Characteristic_1.Characteristic.ColorTemperature).iid;
-        assert_1.default(brightnessIID, "iid for brightness characteristic is undefined");
-        assert_1.default(temperatureIID, "iid for temperature characteristic is undefined");
+        (0, assert_1.default)(brightnessIID, "iid for brightness characteristic is undefined");
+        (0, assert_1.default)(temperatureIID, "iid for temperature characteristic is undefined");
         return tlv.encode(1 /* SUPPORTED_TRANSITION_CONFIGURATION */, [
             tlv.encode(1 /* CHARACTERISTIC_IID */, tlv.writeVariableUIntLE(brightnessIID), 2 /* TRANSITION_TYPE */, 1 /* BRIGHTNESS */),
             tlv.encode(1 /* CHARACTERISTIC_IID */, tlv.writeVariableUIntLE(temperatureIID), 2 /* TRANSITION_TYPE */, 2 /* COLOR_TEMPERATURE */),
@@ -745,7 +750,8 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
         var iid = tlv.readVariableUIntLE(readTransition[1 /* CHARACTERISTIC_IID */]);
         if (this.activeTransition) {
             if (this.activeTransition.iid !== iid) {
-                console.warn("[" + this.lightbulb.displayName + "] iid of current adaptive lighting transition (" + this.activeTransition.iid + ") doesn't match the requested one " + iid);
+                console.warn("[" + this.lightbulb.displayName + "] iid of current adaptive lighting transition (" + this.activeTransition.iid
+                    + ") doesn't match the requested one " + iid);
                 throw new __1.HapStatusError(-70410 /* INVALID_VALUE_IN_REQUEST */);
             }
             var parameters = tlv.encode(1 /* TRANSITION_ID */, uuid.write(this.activeTransition.transitionId), 2 /* START_TIME */, Buffer.from(this.activeTransition.transitionStartBuffer, "hex"));
@@ -786,13 +792,13 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
         var transitionId = parametersTLV[1 /* TRANSITION_ID */];
         var startTime = parametersTLV[2 /* START_TIME */];
         var id3 = parametersTLV[3 /* UNKNOWN_3 */]; // this may be undefined
-        var startTimeMillis = __1.epochMillisFromMillisSince2001_01_01Buffer(startTime);
+        var startTimeMillis = (0, __1.epochMillisFromMillisSince2001_01_01Buffer)(startTime);
         var timeMillisOffset = Date.now() - startTimeMillis;
         var transitionCurve = [];
         var previous = undefined;
         var transitions = curveConfiguration[1 /* TRANSITION_ENTRY */];
         try {
-            for (var transitions_1 = tslib_1.__values(transitions), transitions_1_1 = transitions_1.next(); !transitions_1_1.done; transitions_1_1 = transitions_1.next()) {
+            for (var transitions_1 = (0, tslib_1.__values)(transitions), transitions_1_1 = transitions_1.next(); !transitions_1_1.done; transitions_1_1 = transitions_1.next()) {
                 var entry = transitions_1_1.value;
                 var tlvEntry = tlv.decode(entry);
                 var adjustmentFactor = tlvEntry[1 /* ADJUSTMENT_FACTOR */].readFloatLE(0);

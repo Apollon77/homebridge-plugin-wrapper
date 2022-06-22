@@ -16,6 +16,7 @@ const log = logger_1.Logger.internal;
 class PluginManager {
     constructor(api, options) {
         this.searchPaths = new Set(); // unique set of search paths we will use to discover installed plugins
+        this.strictPluginResolution = false;
         this.plugins = new Map();
         // we have some plugins which simply pass a wrong or misspelled plugin name to the api calls, this translation tries to mitigate this
         this.pluginIdentifierTranslation = new Map();
@@ -26,6 +27,7 @@ class PluginManager {
             if (options.customPluginPath) {
                 this.searchPaths.add(path_1.default.resolve(process.cwd(), options.customPluginPath));
             }
+            this.strictPluginResolution = options.strictPluginResolution || false;
             this.activePlugins = options.activePlugins;
             this.disabledPlugins = Array.isArray(options.disabledPlugins) ? options.disabledPlugins : undefined;
         }
@@ -56,12 +58,12 @@ class PluginManager {
     static getPluginIdentifier(identifier) {
         return identifier.split(".")[0];
     }
-    initializeInstalledPlugins() {
+    async initializeInstalledPlugins() {
         log.info("---");
         this.loadInstalledPlugins();
-        this.plugins.forEach((plugin, identifier) => {
+        for (const [identifier, plugin] of this.plugins) {
             try {
-                plugin.load();
+                await plugin.load();
             }
             catch (error) {
                 log.error("====================");
@@ -69,7 +71,7 @@ class PluginManager {
                 log.error(error.stack);
                 log.error("====================");
                 this.plugins.delete(identifier);
-                return;
+                continue;
             }
             if (this.disabledPlugins && this.disabledPlugins.includes(plugin.getPluginIdentifier())) {
                 plugin.disabled = true;
@@ -80,15 +82,15 @@ class PluginManager {
             else {
                 log.info(`Loaded plugin: ${identifier}@${plugin.version}`);
             }
-            this.initializePlugin(plugin, identifier);
+            await this.initializePlugin(plugin, identifier);
             log.info("---");
-        });
+        }
         this.currentInitializingPlugin = undefined;
     }
-    initializePlugin(plugin, identifier) {
+    async initializePlugin(plugin, identifier) {
         try {
             this.currentInitializingPlugin = plugin;
-            plugin.initialize(this.api); // call the plugin's initializer and pass it our API instance
+            await plugin.initialize(this.api); // call the plugin's initializer and pass it our API instance
         }
         catch (error) {
             log.error("====================");
@@ -283,7 +285,7 @@ class PluginManager {
             }
         });
         if (this.plugins.size === 0) {
-            log.warn("No plugins found. See the README for information on installing plugins.");
+            log.warn("No plugins found.");
         }
     }
     loadPlugin(absolutePath) {
@@ -321,6 +323,15 @@ class PluginManager {
         return packageJson;
     }
     loadDefaultPaths() {
+        if (this.strictPluginResolution) {
+            // if strict plugin resolution is enabled:
+            // * only use custom plugin path, if set;
+            // * otherwise add the current npm global prefix (eg. /usr/local/lib/node_modules)
+            if (this.searchPaths.size === 0) {
+                this.addNpmPrefixToSearchPaths();
+            }
+            return;
+        }
         if (require.main) {
             // add the paths used by require()
             require.main.paths.forEach(path => this.searchPaths.add(path));
@@ -337,15 +348,20 @@ class PluginManager {
                 .forEach(path => this.searchPaths.add(path));
         }
         else {
-            // Default paths for each system
-            if (process.platform === "win32") {
-                this.searchPaths.add(path_1.default.join(process.env.APPDATA, "npm/node_modules"));
-            }
-            else {
+            // Default paths for non-windows systems
+            if (process.platform !== "win32") {
                 this.searchPaths.add("/usr/local/lib/node_modules");
                 this.searchPaths.add("/usr/lib/node_modules");
-                this.searchPaths.add(child_process_1.execSync("/bin/echo -n \"$(npm --no-update-notifier -g prefix)/lib/node_modules\"").toString("utf8"));
             }
+            this.addNpmPrefixToSearchPaths();
+        }
+    }
+    addNpmPrefixToSearchPaths() {
+        if (process.platform === "win32") {
+            this.searchPaths.add(path_1.default.join(process.env.APPDATA, "npm/node_modules"));
+        }
+        else {
+            this.searchPaths.add((0, child_process_1.execSync)("/bin/echo -n \"$(npm --no-update-notifier -g prefix)/lib/node_modules\"").toString("utf8"));
         }
     }
 }

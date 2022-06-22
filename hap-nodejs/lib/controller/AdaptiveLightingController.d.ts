@@ -214,7 +214,7 @@ interface SerializedAdaptiveLightingControllerState {
  *  The AdaptiveLightingController will go through setup procedure with HomeKit and automatically update
  *  the color temperature characteristic base on the current transition schedule.
  *  It is also adjusting the color temperature when a write to the brightness characteristic happens.
- *  Additionally it will also handle turning off AdaptiveLighting, when it detects a write happening to the
+ *  Additionally, it will also handle turning off AdaptiveLighting, when it detects a write happening to the
  *  ColorTemperature, Hue or Saturation characteristic (though it can only detect writes coming from HomeKit and
  *  can't detect changes done to the physical devices directly! See below).
  *
@@ -234,13 +234,13 @@ interface SerializedAdaptiveLightingControllerState {
  *    of the ColorTemperature characteristic.
  *   - When using Hue/Saturation:
  *    When using Hue/Saturation in combination with the ColorTemperature characteristic you need to update the
- *    respective other in a particular way depending if being in "color mode" or "color temperature mode".
+ *    respective other in a particular way depending on if being in "color mode" or "color temperature mode".
  *    When a write happens to Hue/Saturation characteristic in is advised to set the internal value of the
- *    ColorTemperature to the minimal (NOT RAISING a event).
+ *    ColorTemperature to the minimal (NOT RAISING an event).
  *    When a write happens to the ColorTemperature characteristic just MUST convert to a proper representation
- *    in hue and saturation values, with RAISING a event.
+ *    in hue and saturation values, with RAISING an event.
  *    As noted above you MUST NOT call the {@link Characteristic.setValue} method for this, as this will be considered
- *    a write to the characteristic and will turn off AdaptiveLighting. Instead you should use
+ *    a write to the characteristic and will turn off AdaptiveLighting. Instead, you should use
  *    {@link Characteristic.updateValue} for this.
  *    You can and SHOULD use the supplied utility method {@link ColorUtils.colorTemperatureToHueAndSaturation}
  *    for converting mired to hue and saturation values.
@@ -252,13 +252,13 @@ interface SerializedAdaptiveLightingControllerState {
  *  Like for example ZigBee lights which support sending transitions directly to the lightbulb which
  *  then get executed ON the lightbulb itself reducing unnecessary network traffic.
  *  Here is a quick overview what you have to consider to successfully implement AdaptiveLighting support.
- *  The AdaptiveLightingController will also in manual mode do all of the setup procedure.
+ *  The AdaptiveLightingController will also in manual mode do all the setup procedure.
  *  It will also save the transition schedule to disk to keep AdaptiveLighting enabled across reboots.
  *  The "only" thing you have to do yourself is handling the actual transitions, check that event notifications
  *  are only sent in the defined interval threshold, adjust the color temperature when brightness is changed
  *  and signal that Adaptive Lighting should be disabled if ColorTemperature, Hue or Saturation is changed manually.
  *
- *  First step is to setup up a event handler for the {@link AdaptiveLightingControllerEvents.UPDATE}, which is called
+ *  First step is to setup up an event handler for the {@link AdaptiveLightingControllerEvents.UPDATE}, which is called
  *  when AdaptiveLighting is enabled, the HomeHub updates the schedule for the next 24 hours or AdaptiveLighting
  *  is restored from disk on startup.
  *  In the event handler you can get the current schedule via {@link AdaptiveLightingController.getAdaptiveLightingTransitionCurve},
@@ -268,8 +268,8 @@ interface SerializedAdaptiveLightingControllerState {
  *  Additionally {@link AdaptiveLightingController.getAdaptiveLightingBrightnessMultiplierRange} can be used
  *  to get the valid range for the brightness value to calculate the brightness adjustment factor.
  *  The method {@link AdaptiveLightingController.isAdaptiveLightingActive} can be used to check if AdaptiveLighting is enabled.
- *  Besides actually running the transition (see {@link AdaptiveLightingTransitionCurveEntry}) you must
- *  correctly update the color temperature when the brightness of the lightbulb changes (see {@link AdaptiveLightingTransitionCurveEntry.brightnessAdjustmentFactor}),
+ *  Besides, actually running the transition (see {@link AdaptiveLightingTransitionCurveEntry}) you must correctly update
+ *  the color temperature when the brightness of the lightbulb changes (see {@link AdaptiveLightingTransitionCurveEntry.brightnessAdjustmentFactor}),
  *  and signal when AdaptiveLighting got disabled by calling {@link AdaptiveLightingController.disableAdaptiveLighting}
  *  when ColorTemperature, Hue or Saturation where changed manually.
  *  Lastly you should set up a event handler for the {@link AdaptiveLightingControllerEvents.DISABLED} event.

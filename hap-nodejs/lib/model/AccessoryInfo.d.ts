@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { AccessoryJsonObject } from "../../internal-types";
 import { MacAddress } from "../../types";
-import { Categories } from '../Accessory';
+import { Categories } from "../Accessory";
 import { HAPConnection, HAPUsername } from "../util/eventedhttp";
 export declare const enum PermissionTypes {
     USER = 0,
@@ -67,11 +67,11 @@ export declare class AccessoryInfo {
     checkForCurrentConfigurationNumberIncrement(configuration: AccessoryJsonObject[], checkFirmwareIncrement?: boolean): boolean;
     getConfigVersion(): number;
     private ensureConfigVersionBounds;
-    save: () => void;
-    static persistKey: (username: MacAddress) => string;
-    static create: (username: MacAddress) => AccessoryInfo;
-    static load: (username: MacAddress) => import("../../types").Nullable<AccessoryInfo>;
+    save(): void;
+    static persistKey(username: MacAddress): string;
+    static create(username: MacAddress): AccessoryInfo;
+    static load(username: MacAddress): AccessoryInfo | null;
     static remove(username: MacAddress): void;
-    static assertValidUsername: (username: MacAddress) => void;
+    static assertValidUsername(username: MacAddress): void;
 }
 //# sourceMappingURL=AccessoryInfo.d.ts.map

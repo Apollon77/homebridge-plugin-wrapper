@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -30,23 +34,24 @@ const logger_1 = require("./logger");
 const server_1 = require("./server");
 const semver_1 = require("semver");
 const log = logger_1.Logger.internal;
-const requiredNodeVersion = version_1.getRequiredNodeVersion();
-if (requiredNodeVersion && !semver_1.satisfies(process.version, requiredNodeVersion)) {
+const requiredNodeVersion = (0, version_1.getRequiredNodeVersion)();
+if (requiredNodeVersion && !(0, semver_1.satisfies)(process.version, requiredNodeVersion)) {
     log.warn(`Homebridge requires Node.js version of ${requiredNodeVersion} which does \
-not satisfy the current Node.js version of ${process.version}. You may need to upgrade your installation of Node.js - see https://git.io/JTKEF`);
+not satisfy the current Node.js version of ${process.version}. You may need to upgrade your installation of Node.js - see https://homebridge.io/w/JTKEF`);
 }
 module.exports = function cli() {
     let insecureAccess = false;
     let hideQRCode = false;
     let keepOrphans = false;
     let customPluginPath = undefined;
+    let strictPluginResolution = false;
     let noLogTimestamps = false;
     let debugModeEnabled = false;
     let forceColourLogging = false;
     let customStoragePath = undefined;
     let shuttingDown = false;
     commander_1.default
-        .version(version_1.default())
+        .version((0, version_1.default)())
         .option("-C, --color", "force color in logging", () => forceColourLogging = true)
         .option("-D, --debug", "turn on debug level logging", () => debugModeEnabled = true)
         .option("-I, --insecure", "allow unauthenticated requests (for easier hacking)", () => insecureAccess = true)
@@ -59,6 +64,7 @@ module.exports = function cli() {
         .option("-K, --keep-orphans", "keep cached accessories for which the associated plugin is not loaded", () => keepOrphans = true)
         .option("-T, --no-timestamp", "do not issue timestamps in logging", () => noLogTimestamps = true)
         .option("-U, --user-storage-path [path]", "look for homebridge user files at [path] instead of the default location (~/.homebridge)", path => customStoragePath = path)
+        .option("--strict-plugin-resolution", "only load plugins from the --plugin-path if set, otherwise from the primary global node_modules", () => strictPluginResolution = true)
         .parse(process.argv);
     if (noLogTimestamps) {
         logger_1.Logger.setTimestampEnabled(false);
@@ -83,6 +89,7 @@ module.exports = function cli() {
         debugModeEnabled: debugModeEnabled,
         forceColourLogging: forceColourLogging,
         customStoragePath: customStoragePath,
+        strictPluginResolution: strictPluginResolution,
     };
     const server = new server_1.Server(options);
     const signalHandler = (signal, signalNum) => {

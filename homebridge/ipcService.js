@@ -5,6 +5,8 @@ const events_1 = require("events");
 var IpcIncomingEvent;
 (function (IpcIncomingEvent) {
     IpcIncomingEvent["RESTART_CHILD_BRIDGE"] = "restartChildBridge";
+    IpcIncomingEvent["STOP_CHILD_BRIDGE"] = "stopChildBridge";
+    IpcIncomingEvent["START_CHILD_BRIDGE"] = "startChildBridge";
     IpcIncomingEvent["CHILD_BRIDGE_METADATA_REQUEST"] = "childBridgeMetadataRequest";
 })(IpcIncomingEvent = exports.IpcIncomingEvent || (exports.IpcIncomingEvent = {}));
 var IpcOutgoingEvent;

@@ -1,15 +1,14 @@
 /// <reference types="node" />
 import { EventEmitter } from "events";
-import { Socket } from 'net';
+import { Socket } from "net";
 import { HAPConnection } from "../util/eventedhttp";
-import Timeout = NodeJS.Timeout;
 export declare type PreparedDataStreamSession = {
     connection: HAPConnection;
     accessoryToControllerEncryptionKey: Buffer;
     controllerToAccessoryEncryptionKey: Buffer;
     accessoryKeySalt: Buffer;
     port?: number;
-    connectTimeout?: Timeout;
+    connectTimeout?: NodeJS.Timeout;
 };
 export declare type PrepareSessionCallback = (error?: Error, preparedSession?: PreparedDataStreamSession) => void;
 export declare type EventHandler = (message: Record<any, any>) => void;
@@ -43,14 +42,34 @@ export declare enum HDSStatus {
     MISSING_PROTOCOL = 5,
     PROTOCOL_SPECIFIC_ERROR = 6
 }
-export declare enum DataSendCloseReason {
+/**
+ * @deprecated Renamed to {@link HDSProtocolSpecificErrorReason}.
+ */
+export declare type DataSendCloseReason = HDSProtocolSpecificErrorReason;
+export declare const enum HDSProtocolSpecificErrorReason {
     NORMAL = 0,
     NOT_ALLOWED = 1,
     BUSY = 2,
     CANCELLED = 3,
     UNSUPPORTED = 4,
     UNEXPECTED_FAILURE = 5,
-    TIMEOUT = 6
+    TIMEOUT = 6,
+    BAD_DATA = 7,
+    PROTOCOL_ERROR = 8,
+    INVALID_CONFIGURATION = 9
+}
+/**
+ * An error indicating a protocol level HDS error.
+ * E.g. it may be used to encode a {@link HDSStatus.PROTOCOL_SPECIFIC_ERROR} in the {@link Protocols.DATA_SEND} protocol.
+ */
+export declare class HDSProtocolError extends Error {
+    reason: HDSProtocolSpecificErrorReason;
+    /**
+     * Initializes a new `HDSProtocolError`
+     * @param reason - The {@link HDSProtocolSpecificErrorReason}.
+     *  Values MUST NOT be {@link HDSProtocolSpecificErrorReason.NORMAL}.
+     */
+    constructor(reason: HDSProtocolSpecificErrorReason);
 }
 declare type HDSFrame = {
     header: Buffer;
@@ -180,6 +199,15 @@ export declare interface DataStreamConnection {
     emit(event: "handle-message-globally", message: DataStreamMessage): boolean;
     emit(event: "closed"): boolean;
 }
+export declare const enum HDSConnectionErrorType {
+    ILLEGAL_STATE = 1,
+    CLOSED_SOCKET = 2,
+    MAX_PAYLOAD_LENGTH = 3
+}
+export declare class HDSConnectionError extends Error {
+    readonly type: HDSConnectionErrorType;
+    constructor(message: string, type: HDSConnectionErrorType);
+}
 /**
  * DataStream connection which holds any necessary state information, encryption an decryption keys, manages
  * protocol handlers and also handles sending and receiving of data stream frames.
@@ -253,6 +281,7 @@ export declare class DataStreamConnection extends EventEmitter {
     private decodePayloads;
     private sendHDSFrame;
     close(): void;
+    isConsideredClosed(): boolean;
     private onHAPSessionClosed;
     private onSocketError;
     private onSocketClose;

@@ -2,20 +2,20 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.toLongForm = exports.toShortForm = exports.write = exports.unparse = exports.isValid = exports.generate = exports.BASE_UUID = void 0;
 var tslib_1 = require("tslib");
-var crypto_1 = tslib_1.__importDefault(require("crypto"));
-exports.BASE_UUID = '-0000-1000-8000-0026BB765291';
+var crypto_1 = (0, tslib_1.__importDefault)(require("crypto"));
+exports.BASE_UUID = "-0000-1000-8000-0026BB765291";
 // http://stackoverflow.com/a/25951500/66673
 function generate(data) {
-    var sha1sum = crypto_1.default.createHash('sha1');
+    var sha1sum = crypto_1.default.createHash("sha1");
     sha1sum.update(data);
-    var s = sha1sum.digest('hex');
+    var s = sha1sum.digest("hex");
     var i = -1;
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
         i += 1;
         switch (c) {
-            case 'y':
-                return ((parseInt('0x' + s[i], 16) & 0x3) | 0x8).toString(16);
-            case 'x':
+            case "y":
+                return ((parseInt("0x" + s[i], 16) & 0x3) | 0x8).toString(16);
+            case "x":
             default:
                 return s[i];
         }
@@ -66,25 +66,31 @@ exports.write = write;
 var SHORT_FORM_REGEX = /^0*([0-9a-f]{1,8})-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
 function toShortForm(uuid, base) {
     if (base === void 0) { base = exports.BASE_UUID; }
-    if (!isValid(uuid))
-        throw new TypeError('uuid was not a valid UUID or short form UUID');
-    if (base && !isValid('00000000' + base))
-        throw new TypeError('base was not a valid base UUID');
-    if (base && !uuid.endsWith(base))
+    if (!isValid(uuid)) {
+        throw new TypeError("uuid was not a valid UUID or short form UUID");
+    }
+    if (base && !isValid("00000000" + base)) {
+        throw new TypeError("base was not a valid base UUID");
+    }
+    if (base && !uuid.endsWith(base)) {
         return uuid.toUpperCase();
-    return uuid.replace(SHORT_FORM_REGEX, '$1').toUpperCase();
+    }
+    return uuid.replace(SHORT_FORM_REGEX, "$1").toUpperCase();
 }
 exports.toShortForm = toShortForm;
 var VALID_SHORT_REGEX = /^[0-9a-f]{1,8}$/i;
 function toLongForm(uuid, base) {
     if (base === void 0) { base = exports.BASE_UUID; }
-    if (isValid(uuid))
+    if (isValid(uuid)) {
         return uuid.toUpperCase();
-    if (!VALID_SHORT_REGEX.test(uuid))
-        throw new TypeError('uuid was not a valid UUID or short form UUID');
-    if (!isValid('00000000' + base))
-        throw new TypeError('base was not a valid base UUID');
-    return (('00000000' + uuid).substr(-8) + base).toUpperCase();
+    }
+    if (!VALID_SHORT_REGEX.test(uuid)) {
+        throw new TypeError("uuid was not a valid UUID or short form UUID");
+    }
+    if (!isValid("00000000" + base)) {
+        throw new TypeError("base was not a valid base UUID");
+    }
+    return (("00000000" + uuid).substr(-8) + base).toUpperCase();
 }
 exports.toLongForm = toLongForm;
 //# sourceMappingURL=uuid.js.map

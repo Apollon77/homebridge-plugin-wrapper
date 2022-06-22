@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -63,33 +67,33 @@ class BridgeService {
     }
     // characteristic warning event has additional parameter originatorChain: string[] which is currently unused
     static printCharacteristicWriteWarning(plugin, accessory, opts, warning) {
-        const wikiInfo = "See https://git.io/JtMGR for more info.";
+        const wikiInfo = "See https://homebridge.io/w/JtMGR for more info.";
         switch (warning.type) {
             case "slow-read" /* SLOW_READ */:
             case "slow-write" /* SLOW_WRITE */:
                 if (!opts.ignoreSlow) {
-                    log.info(logger_1.getLogPrefix(plugin.getPluginIdentifier()), "This plugin slows down Homebridge.", warning.message, wikiInfo);
+                    log.info((0, logger_1.getLogPrefix)(plugin.getPluginIdentifier()), "This plugin slows down Homebridge.", warning.message, wikiInfo);
                 }
                 break;
             case "timeout-read" /* TIMEOUT_READ */:
             case "timeout-write" /* TIMEOUT_WRITE */:
-                log.error(logger_1.getLogPrefix(plugin.getPluginIdentifier()), "This plugin slows down Homebridge.", warning.message, wikiInfo);
+                log.error((0, logger_1.getLogPrefix)(plugin.getPluginIdentifier()), "This plugin slows down Homebridge.", warning.message, wikiInfo);
                 break;
             case "warn-message" /* WARN_MESSAGE */:
-                log.info(logger_1.getLogPrefix(plugin.getPluginIdentifier()), `This plugin generated a warning from the characteristic '${warning.characteristic.displayName}':`, warning.message + ".", wikiInfo);
+                log.info((0, logger_1.getLogPrefix)(plugin.getPluginIdentifier()), `This plugin generated a warning from the characteristic '${warning.characteristic.displayName}':`, warning.message + ".", wikiInfo);
                 break;
             case "error-message" /* ERROR_MESSAGE */:
-                log.error(logger_1.getLogPrefix(plugin.getPluginIdentifier()), `This plugin threw an error from the characteristic '${warning.characteristic.displayName}':`, warning.message + ".", wikiInfo);
+                log.error((0, logger_1.getLogPrefix)(plugin.getPluginIdentifier()), `This plugin threw an error from the characteristic '${warning.characteristic.displayName}':`, warning.message + ".", wikiInfo);
                 break;
             case "debug-message" /* DEBUG_MESSAGE */:
-                log.debug(logger_1.getLogPrefix(plugin.getPluginIdentifier()), `Characteristic '${warning.characteristic.displayName}':`, warning.message + ".", wikiInfo);
+                log.debug((0, logger_1.getLogPrefix)(plugin.getPluginIdentifier()), `Characteristic '${warning.characteristic.displayName}':`, warning.message + ".", wikiInfo);
                 break;
             default: // generic message for yet unknown types
-                log.info(logger_1.getLogPrefix(plugin.getPluginIdentifier()), `This plugin generated a warning from the characteristic '${warning.characteristic.displayName}':`, warning.message + ".", wikiInfo);
+                log.info((0, logger_1.getLogPrefix)(plugin.getPluginIdentifier()), `This plugin generated a warning from the characteristic '${warning.characteristic.displayName}':`, warning.message + ".", wikiInfo);
                 break;
         }
         if (warning.stack) {
-            log.debug(logger_1.getLogPrefix(plugin.getPluginIdentifier()), warning.stack);
+            log.debug((0, logger_1.getLogPrefix)(plugin.getPluginIdentifier()), warning.stack);
         }
     }
     publishBridge() {
@@ -98,9 +102,9 @@ class BridgeService {
         info.setCharacteristic(hap_nodejs_1.Characteristic.Manufacturer, bridgeConfig.manufacturer || "homebridge.io");
         info.setCharacteristic(hap_nodejs_1.Characteristic.Model, bridgeConfig.model || "homebridge");
         info.setCharacteristic(hap_nodejs_1.Characteristic.SerialNumber, bridgeConfig.username);
-        info.setCharacteristic(hap_nodejs_1.Characteristic.FirmwareRevision, version_1.default());
+        info.setCharacteristic(hap_nodejs_1.Characteristic.FirmwareRevision, (0, version_1.default)());
         this.bridge.on("listening" /* LISTENING */, (port) => {
-            log.info("Homebridge v%s (%s) is running on port %s.", version_1.default(), bridgeConfig.name, port);
+            log.info("Homebridge v%s (HAP v%s) (%s) is running on port %s.", (0, version_1.default)(), (0, hap_nodejs_1.HAPLibraryVersion)(), bridgeConfig.name, port);
         });
         // noinspection JSDeprecatedSymbols
         const publishInfo = {
@@ -116,6 +120,7 @@ class BridgeService {
         if (bridgeConfig.setupID && bridgeConfig.setupID.length === 4) {
             publishInfo.setupID = bridgeConfig.setupID;
         }
+        log.debug("Publishing bridge accessory (name: %s, publishInfo: %o).", this.bridge.displayName, BridgeService.strippingPinCode(publishInfo));
         this.bridge.publish(publishInfo, this.allowInsecureAccess);
     }
     /**
@@ -225,7 +230,7 @@ class BridgeService {
                 this.bridge.addBridgedAccessory(accessory._associatedHAPAccessory);
             }
             catch (e) {
-                log.warn(`${accessory._associatedPlugin ? logger_1.getLogPrefix(accessory._associatedPlugin) : ""} Could not restore cached accessory '${accessory._associatedHAPAccessory.displayName}':`, e === null || e === void 0 ? void 0 : e.message);
+                log.warn(`${accessory._associatedPlugin ? (0, logger_1.getLogPrefix)(accessory._associatedPlugin) : ""} Could not restore cached accessory '${accessory._associatedHAPAccessory.displayName}':`, e === null || e === void 0 ? void 0 : e.message);
                 return false; // filter it from the list
             }
             return true; // keep it in the list
@@ -319,7 +324,7 @@ class BridgeService {
                 log.info("Please add [%s] manually in Home app. Setup Code: %s", hapAccessory.displayName, accessoryPin);
             });
             // noinspection JSDeprecatedSymbols
-            hapAccessory.publish({
+            const publishInfo = {
                 username: advertiseAddress,
                 pincode: accessoryPin,
                 category: accessory.category,
@@ -328,7 +333,9 @@ class BridgeService {
                 mdns: this.config.mdns,
                 addIdentifyingMaterial: true,
                 advertiser: this.bridgeConfig.advertiser,
-            }, this.allowInsecureAccess);
+            };
+            log.debug("Publishing external accessory (name: %s, publishInfo: %o).", hapAccessory.displayName, BridgeService.strippingPinCode(publishInfo));
+            hapAccessory.publish(publishInfo, this.allowInsecureAccess);
         }
     }
     createHAPAccessory(plugin, accessoryInstance, displayName, accessoryType, uuidBase) {
@@ -393,9 +400,9 @@ class BridgeService {
         return new Promise(resolve => {
             // warn the user if the static platform is blocking the startup of Homebridge for to long
             const loadDelayWarningInterval = setInterval(() => {
-                log.warn(logger_1.getLogPrefix(plugin.getPluginIdentifier()), "This plugin is taking long time to load and preventing Homebridge from starting. See https://git.io/JtMGR for more info.");
+                log.warn((0, logger_1.getLogPrefix)(plugin.getPluginIdentifier()), "This plugin is taking long time to load and preventing Homebridge from starting. See https://homebridge.io/w/JtMGR for more info.");
             }, 20000);
-            platformInstance.accessories(hap_nodejs_1.once((accessories) => {
+            platformInstance.accessories((0, hap_nodejs_1.once)((accessories) => {
                 // clear the load delay warning interval
                 clearInterval(loadDelayWarningInterval);
                 // loop through accessories adding them to the list and registering them
@@ -426,6 +433,13 @@ class BridgeService {
         }
         this.saveCachedPlatformAccessoriesOnDisk();
         this.api.signalShutdown();
+    }
+    static strippingPinCode(publishInfo) {
+        const info = {
+            ...publishInfo,
+        };
+        info.pincode = "***-**-***";
+        return info;
     }
 }
 exports.BridgeService = BridgeService;

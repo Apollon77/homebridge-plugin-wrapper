@@ -17,14 +17,14 @@ var LegacyCameraSourceAdapter = /** @class */ (function () {
         });
     };
     LegacyCameraSourceAdapter.prototype.handleStreamRequest = function (request, callback) {
-        // @ts-ignore
+        // @ts-expect-error: compatible types
         this.cameraSource.handleStreamRequest(request);
         callback();
     };
     LegacyCameraSourceAdapter.prototype.forwardCloseConnection = function (sessionID) {
-        // In the legacy type CameraSource API it was need that the plugin dev would forward this call to the
+        // In the legacy type CameraSource API it was required that the plugin dev would forward this call to the
         // handleCloseConnection of the "StreamController". This is not needed anymore and is automatically handled
-        // by HAP-NodeJS. However devs could possibly define other stuff in there so we still forward this call.
+        // by HAP-NodeJS. However, devs could possibly define other stuff in there so we still forward this call.
         this.cameraSource.handleCloseConnection(sessionID);
     };
     return LegacyCameraSourceAdapter;

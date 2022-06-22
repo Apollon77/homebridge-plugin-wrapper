@@ -1,13 +1,16 @@
 /// <reference types="node" />
-import { LegacyCameraSource } from "../../index";
-import { SessionIdentifier } from '../../types';
+import { LegacyCameraSource, ResourceRequestReason, StateChangeDelegate } from "../../index";
+import { SessionIdentifier } from "../../types";
 import { CameraStreamingDelegate } from "../controller";
 import type { CameraRTPStreamManagement } from "../definitions";
-import RTPProxy from './RTPProxy';
+import RTPProxy from "./RTPProxy";
 declare const enum StreamingStatus {
     AVAILABLE = 0,
     IN_USE = 1,
     UNAVAILABLE = 2
+}
+export declare const enum VideoCodecType {
+    H264 = 0
 }
 export declare const enum H264Profile {
     BASELINE = 0,
@@ -58,10 +61,10 @@ export declare type VideoStreamingOptions = {
     resolutions: Resolution[];
     cvoId?: number;
 };
-export declare type H264CodecParameters = {
+export interface H264CodecParameters {
     levels: H264Level[];
     profiles: H264Profile[];
-};
+}
 export declare type Resolution = [number, number, number];
 export declare type AudioStreamingOptions = {
     codecs: AudioStreamingCodec[];
@@ -92,6 +95,13 @@ export declare type StreamSessionIdentifier = string;
 export declare type SnapshotRequest = {
     height: number;
     width: number;
+    /**
+     * An optional {@link ResourceRequestReason}. The client decides if it wants to send this value. It is typically
+     * only sent in the context of HomeKit Secure Video Cameras.
+     * This value might be used by a `CameraStreamingDelegate` for informational purposes.
+     * When `handleSnapshotRequest` is called, it is already checked if the respective reason is allowed in the current camera configuration.
+     */
+    reason?: ResourceRequestReason;
 };
 export declare type PrepareStreamRequest = {
     sessionID: StreamSessionIdentifier;
@@ -127,7 +137,7 @@ export declare type PrepareStreamResponse = {
  */
 export declare type Address = {
     address: string;
-    type?: 'v4' | 'v6';
+    type?: "v4" | "v6";
 };
 export interface SourceResponse {
     port: number;
@@ -185,6 +195,7 @@ export declare type AudioInfo = {
     comfortNoiseEnabled: boolean;
 };
 export declare type VideoInfo = {
+    codec: VideoCodecType;
     profile: H264Profile;
     level: H264Level;
     packetizationMode: VideoCodecPacketizationMode;
@@ -205,25 +216,31 @@ export declare type ReconfiguredVideoInfo = {
     max_bit_rate: number;
     rtcp_interval: number;
 };
+export interface RTPStreamManagementState {
+    id: number;
+    active: boolean;
+}
 export declare class RTPStreamManagement {
     /**
-     * @deprecated Please use the SRTPCryptoSuites const enum above. Scheduled to be removed in 2021-06.
+     * @deprecated Please use the SRTPCryptoSuites const enum above.
      */
     static SRTPCryptoSuites: typeof SRTPCryptoSuites;
     /**
-     * @deprecated Please use the H264Profile const enum above. Scheduled to be removed in 2021-06.
+     * @deprecated Please use the H264Profile const enum above.
      */
     static VideoCodecParamProfileIDTypes: typeof H264Profile;
     /**
-     * @deprecated won't be updated anymore. Please use the H264Level const enum above. Scheduled to be removed in 2021-06.
+     * @deprecated won't be updated anymore. Please use the H264Level const enum above.
      */
     static VideoCodecParamLevelTypes: Readonly<{
         TYPE3_1: number;
         TYPE3_2: number;
         TYPE4_0: number;
     }>;
+    private readonly id;
     private readonly delegate;
     readonly service: CameraRTPStreamManagement;
+    private stateChangeDelegate?;
     requireProxy: boolean;
     disableAudioProxy: boolean;
     supportedCryptoSuites: SRTPCryptoSuites[];
@@ -244,7 +261,13 @@ export declare class RTPStreamManagement {
     setupEndpointsResponse: string;
     audioProxy?: RTPProxy;
     videoProxy?: RTPProxy;
-    constructor(id: number, options: CameraStreamingOptions, delegate: CameraStreamingDelegate, service?: CameraRTPStreamManagement);
+    /**
+     * A RTPStreamManagement is considered disabled if `HomeKitCameraActive` is set to false.
+     * We use a closure based approach to retrieve the value of this characteristic.
+     * The characteristic is managed by the RecordingManagement.
+     */
+    private readonly disabledThroughOperatingMode?;
+    constructor(id: number, options: CameraStreamingOptions, delegate: CameraStreamingDelegate, service?: CameraRTPStreamManagement, disabledThroughOperatingMode?: () => boolean);
     forceStop(): void;
     getService(): CameraRTPStreamManagement;
     /**
@@ -256,6 +279,7 @@ export declare class RTPStreamManagement {
     private constructService;
     private setupServiceHandlers;
     private handleSessionClosed;
+    private streamingIsDisabled;
     private _handleSelectedStreamConfigurationWrite;
     private _handleStartStream;
     private handleReconfigureStream;
@@ -269,6 +293,18 @@ export declare class RTPStreamManagement {
     private _supportedAudioStreamConfiguration;
     private resetSetupEndpointsResponse;
     private resetSelectedStreamConfiguration;
+    /**
+     * @private
+     */
+    serialize(): RTPStreamManagementState | undefined;
+    /**
+     * @private
+     */
+    deserialize(serialized: RTPStreamManagementState): void;
+    /**
+     * @private
+     */
+    setupStateChangeDelegate(delegate?: StateChangeDelegate): void;
 }
 /**
  * @deprecated - only there for backwards compatibility, please use {@see RTPStreamManagement} directly

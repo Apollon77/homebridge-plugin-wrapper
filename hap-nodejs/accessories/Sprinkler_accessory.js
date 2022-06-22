@@ -14,23 +14,29 @@ var SPRINKLER = {
     },
     identify: function () {
         console.log("Identify the sprinkler!");
-    }
+    },
 };
 // Generate a consistent UUID for our Motion Sensor Accessory that will remain the same even when
 // restarting our server. We use the `uuid.generate` helper function to create a deterministic
 // UUID based on an arbitrary "namespace" and the word "motionsensor".
-var sprinklerUUID = __1.uuid.generate('hap-nodejs:accessories:sprinkler');
+var sprinklerUUID = __1.uuid.generate("hap-nodejs:accessories:sprinkler");
 // This is the Accessory that we'll return to HAP-NodeJS that represents our fake motionSensor.
-var sprinkler = exports.accessory = new __1.Accessory('💦 Sprinkler', sprinklerUUID);
+var sprinkler = exports.accessory = new __1.Accessory("💦 Sprinkler", sprinklerUUID);
 // Add properties for publishing (in case we're using Core.js and not BridgedCore.js)
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 sprinkler.username = "A3:AB:3D:4D:2E:A3";
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 sprinkler.pincode = "123-44-567";
-// @ts-ignore
 sprinkler.category = 28 /* SPRINKLER */;
 // Add the actual Valve Service and listen for change events from iOS.
 var sprinklerService = sprinkler.addService(__1.Service.Valve, "💦 Sprinkler");
+// Sprinkler Controll
+function openVentile() {
+    // Add your code here
+}
+function closeVentile() {
+    // Add your code here
+}
 // set some basic properties (these values are arbitrary and setting them is optional)
 sprinklerService
     .setCharacteristic(__1.Characteristic.ValveType, "1") // IRRIGATION/SPRINKLER = 1; SHOWER_HEAD = 2; WATER_FAUCET = 3;
@@ -119,11 +125,4 @@ sprinklerService
     SPRINKLER.defaultDuration = newValue;
     callback();
 });
-// Sprinkler Controll
-function openVentile() {
-    // Add your code here
-}
-function closeVentile() {
-    // Add your code here
-}
 //# sourceMappingURL=Sprinkler_accessory.js.map

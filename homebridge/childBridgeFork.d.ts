@@ -16,7 +16,7 @@ export declare class ChildBridgeFork {
     private portRequestCallback;
     constructor();
     sendMessage<T = unknown>(type: ChildProcessMessageEventType, data?: T): void;
-    loadPlugin(data: ChildProcessLoadEventData): void;
+    loadPlugin(data: ChildProcessLoadEventData): Promise<void>;
     startBridge(): Promise<void>;
     /**
      * Request the next available external port from the parent process
@@ -28,6 +28,10 @@ export declare class ChildBridgeFork {
      * @param data
      */
     handleExternalResponse(data: ChildProcessPortAllocatedEventData): void;
+    /**
+     * Sends the current pairing status of the child bridge to the parent process
+     */
+    sendPairedStatusEvent(): void;
     shutdown(): void;
 }
 //# sourceMappingURL=childBridgeFork.d.ts.map

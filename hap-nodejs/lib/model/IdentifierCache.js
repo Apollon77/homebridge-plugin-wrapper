@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IdentifierCache = void 0;
 var tslib_1 = require("tslib");
-var crypto_1 = tslib_1.__importDefault(require("crypto"));
-var util_1 = tslib_1.__importDefault(require("util"));
+var crypto_1 = (0, tslib_1.__importDefault)(require("crypto"));
+var util_1 = (0, tslib_1.__importDefault)(require("util"));
 var HAPStorage_1 = require("./HAPStorage");
 /**
  * IdentifierCache is a model class that manages a system of associating HAP "Accessory IDs" and "Instance IDs"
@@ -15,75 +15,72 @@ var HAPStorage_1 = require("./HAPStorage");
  */
 var IdentifierCache = /** @class */ (function () {
     function IdentifierCache(username) {
-        var _this = this;
         this.username = username;
         this._cache = {}; // cache[key:string] = id:number
         this._usedCache = null; // for usage tracking and expiring old keys
         this._savedCacheHash = ""; // for checking if new cache need to be saved
-        this.startTrackingUsage = function () {
-            _this._usedCache = {};
-        };
-        this.stopTrackingUsageAndExpireUnused = function () {
-            // simply rotate in the new cache that was built during our normal getXYZ() calls.
-            _this._cache = _this._usedCache || _this._cache;
-            _this._usedCache = null;
-        };
-        this.getCache = function (key) {
-            var value = _this._cache[key];
-            // track this cache item if needed
-            if (_this._usedCache && typeof value !== 'undefined')
-                _this._usedCache[key] = value;
-            return value;
-        };
-        this.setCache = function (key, value) {
-            _this._cache[key] = value;
-            // track this cache item if needed
-            if (_this._usedCache)
-                _this._usedCache[key] = value;
-            return value;
-        };
-        this.getAID = function (accessoryUUID) {
-            var key = accessoryUUID;
-            // ensure that our "next AID" field is not expired
-            _this.getCache('|nextAID');
-            return _this.getCache(key) || _this.setCache(key, _this.getNextAID());
-        };
-        this.getIID = function (accessoryUUID, serviceUUID, serviceSubtype, characteristicUUID) {
-            var key = accessoryUUID
-                + '|' + serviceUUID
-                + (serviceSubtype ? '|' + serviceSubtype : '')
-                + (characteristicUUID ? '|' + characteristicUUID : '');
-            // ensure that our "next IID" field for this accessory is not expired
-            _this.getCache(accessoryUUID + '|nextIID');
-            return _this.getCache(key) || _this.setCache(key, _this.getNextIID(accessoryUUID));
-        };
-        this.getNextAID = function () {
-            var key = '|nextAID';
-            var nextAID = _this.getCache(key) || 2; // start at 2 because the root Accessory or Bridge must be 1
-            _this.setCache(key, nextAID + 1); // increment
-            return nextAID;
-        };
-        this.getNextIID = function (accessoryUUID) {
-            var key = accessoryUUID + '|nextIID';
-            var nextIID = _this.getCache(key) || 2; // iid 1 is reserved for the Accessory Information service
-            _this.setCache(key, nextIID + 1); // increment
-            return nextIID;
-        };
-        this.save = function () {
-            var newCacheHash = crypto_1.default.createHash('sha1').update(JSON.stringify(_this._cache)).digest('hex'); //calculate hash of new cache
-            if (newCacheHash != _this._savedCacheHash) { //check if cache need to be saved and proceed accordingly
-                var saved = {
-                    cache: _this._cache
-                };
-                var key = IdentifierCache.persistKey(_this.username);
-                HAPStorage_1.HAPStorage.storage().setItemSync(key, saved);
-                _this._savedCacheHash = newCacheHash; //update hash of saved cache for future use
-            }
-        };
     }
-    IdentifierCache.remove = function (username) {
-        var key = this.persistKey(username);
-        HAPStorage_1.HAPStorage.storage().removeItemSync(key);
+    IdentifierCache.prototype.startTrackingUsage = function () {
+        this._usedCache = {};
+    };
+    IdentifierCache.prototype.stopTrackingUsageAndExpireUnused = function () {
+        // simply rotate in the new cache that was built during our normal getXYZ() calls.
+        this._cache = this._usedCache || this._cache;
+        this._usedCache = null;
+    };
+    IdentifierCache.prototype.getCache = function (key) {
+        var value = this._cache[key];
+        // track this cache item if needed
+        if (this._usedCache && typeof value !== "undefined") {
+            this._usedCache[key] = value;
+        }
+        return value;
+    };
+    IdentifierCache.prototype.setCache = function (key, value) {
+        this._cache[key] = value;
+        // track this cache item if needed
+        if (this._usedCache) {
+            this._usedCache[key] = value;
+        }
+        return value;
+    };
+    IdentifierCache.prototype.getAID = function (accessoryUUID) {
+        var key = accessoryUUID;
+        // ensure that our "next AID" field is not expired
+        this.getCache("|nextAID");
+        return this.getCache(key) || this.setCache(key, this.getNextAID());
+    };
+    IdentifierCache.prototype.getIID = function (accessoryUUID, serviceUUID, serviceSubtype, characteristicUUID) {
+        var key = accessoryUUID
+            + "|" + serviceUUID
+            + (serviceSubtype ? "|" + serviceSubtype : "")
+            + (characteristicUUID ? "|" + characteristicUUID : "");
+        // ensure that our "next IID" field for this accessory is not expired
+        this.getCache(accessoryUUID + "|nextIID");
+        return this.getCache(key) || this.setCache(key, this.getNextIID(accessoryUUID));
+    };
+    IdentifierCache.prototype.getNextAID = function () {
+        var key = "|nextAID";
+        var nextAID = this.getCache(key) || 2; // start at 2 because the root Accessory or Bridge must be 1
+        this.setCache(key, nextAID + 1); // increment
+        return nextAID;
+    };
+    IdentifierCache.prototype.getNextIID = function (accessoryUUID) {
+        var key = accessoryUUID + "|nextIID";
+        var nextIID = this.getCache(key) || 2; // iid 1 is reserved for the Accessory Information service
+        this.setCache(key, nextIID + 1); // increment
+        return nextIID;
+    };
+    IdentifierCache.prototype.save = function () {
+        var newCacheHash = crypto_1.default.createHash("sha1").update(JSON.stringify(this._cache)).digest("hex"); //calculate hash of new cache
+        if (newCacheHash !== this._savedCacheHash) { //check if cache need to be saved and proceed accordingly
+            var saved = {
+                cache: this._cache,
+            };
+            var key = IdentifierCache.persistKey(this.username);
+            HAPStorage_1.HAPStorage.storage().setItemSync(key, saved);
+            this._savedCacheHash = newCacheHash; //update hash of saved cache for future use
+        }
     };
     /**
      * Persisting to File System
@@ -98,12 +95,17 @@ var IdentifierCache = /** @class */ (function () {
         if (saved) {
             var info = new IdentifierCache(username);
             info._cache = saved.cache;
-            info._savedCacheHash = crypto_1.default.createHash('sha1').update(JSON.stringify(info._cache)).digest('hex'); //calculate hash of the saved hash to decide in future if saving of new cache is needed
+            // calculate hash of the saved hash to decide in future if saving of new cache is needed
+            info._savedCacheHash = crypto_1.default.createHash("sha1").update(JSON.stringify(info._cache)).digest("hex");
             return info;
         }
         else {
             return null;
         }
+    };
+    IdentifierCache.remove = function (username) {
+        var key = this.persistKey(username);
+        HAPStorage_1.HAPStorage.storage().removeItemSync(key);
     };
     return IdentifierCache;
 }());

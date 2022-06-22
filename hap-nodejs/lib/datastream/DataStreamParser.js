@@ -2,13 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataStreamWriter = exports.DataStreamReader = exports.DataStreamParser = exports.DataFormatTags = exports.UUID = exports.SecondsSince2001 = exports.Float64 = exports.Float32 = exports.Int64 = exports.Int32 = exports.Int16 = exports.Int8 = exports.ValueWrapper = void 0;
 var tslib_1 = require("tslib");
-var uuid = tslib_1.__importStar(require("../util/uuid"));
-var hapCrypto = tslib_1.__importStar(require("../util/hapCrypto"));
-var assert_1 = tslib_1.__importDefault(require("assert"));
-var debug_1 = tslib_1.__importDefault(require("debug"));
+var uuid = (0, tslib_1.__importStar)(require("../util/uuid"));
+var hapCrypto = (0, tslib_1.__importStar)(require("../util/hapCrypto"));
+var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
+var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
 // welcome to hell :)
-// in this file lies madness and frustration. and its not only about HDS. also JavaScript is hell
-var debug = debug_1.default("HAP-NodeJS:DataStream:Parser");
+// in this file lies madness and frustration. and It's not only about HDS. Also, JavaScript is hell
+var debug = (0, debug_1.default)("HAP-NodeJS:DataStream:Parser");
 var Magics = /** @class */ (function () {
     function Magics() {
     }
@@ -26,7 +26,7 @@ var ValueWrapper = /** @class */ (function () {
 }());
 exports.ValueWrapper = ValueWrapper;
 var Int8 = /** @class */ (function (_super) {
-    tslib_1.__extends(Int8, _super);
+    (0, tslib_1.__extends)(Int8, _super);
     function Int8() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -34,7 +34,7 @@ var Int8 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.Int8 = Int8;
 var Int16 = /** @class */ (function (_super) {
-    tslib_1.__extends(Int16, _super);
+    (0, tslib_1.__extends)(Int16, _super);
     function Int16() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -42,7 +42,7 @@ var Int16 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.Int16 = Int16;
 var Int32 = /** @class */ (function (_super) {
-    tslib_1.__extends(Int32, _super);
+    (0, tslib_1.__extends)(Int32, _super);
     function Int32() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -50,7 +50,7 @@ var Int32 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.Int32 = Int32;
 var Int64 = /** @class */ (function (_super) {
-    tslib_1.__extends(Int64, _super);
+    (0, tslib_1.__extends)(Int64, _super);
     function Int64() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -58,7 +58,7 @@ var Int64 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.Int64 = Int64;
 var Float32 = /** @class */ (function (_super) {
-    tslib_1.__extends(Float32, _super);
+    (0, tslib_1.__extends)(Float32, _super);
     function Float32() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -66,7 +66,7 @@ var Float32 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.Float32 = Float32;
 var Float64 = /** @class */ (function (_super) {
-    tslib_1.__extends(Float64, _super);
+    (0, tslib_1.__extends)(Float64, _super);
     function Float64() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -74,7 +74,7 @@ var Float64 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.Float64 = Float64;
 var SecondsSince2001 = /** @class */ (function (_super) {
-    tslib_1.__extends(SecondsSince2001, _super);
+    (0, tslib_1.__extends)(SecondsSince2001, _super);
     function SecondsSince2001() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
@@ -82,10 +82,10 @@ var SecondsSince2001 = /** @class */ (function (_super) {
 }(ValueWrapper));
 exports.SecondsSince2001 = SecondsSince2001;
 var UUID = /** @class */ (function (_super) {
-    tslib_1.__extends(UUID, _super);
+    (0, tslib_1.__extends)(UUID, _super);
     function UUID(value) {
         var _this = this;
-        assert_1.default(uuid.isValid(value), "invalid uuid format");
+        (0, assert_1.default)(uuid.isValid(value), "invalid uuid format");
         _this = _super.call(this, value) || this;
         return _this;
     }
@@ -136,6 +136,7 @@ var DataFormatTags;
 var DataStreamParser = /** @class */ (function () {
     function DataStreamParser() {
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     DataStreamParser.decode = function (buffer) {
         var tag = buffer.readTag();
         if (tag === 0 /* INVALID */) {
@@ -236,13 +237,14 @@ var DataStreamParser = /** @class */ (function () {
         else if (tag === 223 /* ARRAY_TERMINATED */) {
             var array = [];
             var element = void 0;
-            while ((element = this.decode(buffer)) != Magics.TERMINATOR) {
+            while ((element = this.decode(buffer)) !== Magics.TERMINATOR) {
                 array.push(element);
             }
             return array;
         }
         else if (tag >= 224 /* DICTIONARY_LENGTH_START */ && tag <= 238 /* DICTIONARY_LENGTH_STOP */) {
             var length = tag - 224 /* DICTIONARY_LENGTH_START */;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             var dictionary = {};
             for (var i = 0; i < length; i++) {
                 var key = this.decode(buffer);
@@ -251,9 +253,10 @@ var DataStreamParser = /** @class */ (function () {
             return dictionary;
         }
         else if (tag === 239 /* DICTIONARY_TERMINATED */) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             var dictionary = {};
             var key = void 0;
-            while ((key = this.decode(buffer)) != Magics.TERMINATOR) {
+            while ((key = this.decode(buffer)) !== Magics.TERMINATOR) {
                 dictionary[key] = this.decode(buffer); // decode value
             }
             return dictionary;
@@ -262,6 +265,7 @@ var DataStreamParser = /** @class */ (function () {
             throw new Error("HDSDecoder: encountered unknown tag on index " + buffer.readerIndex + ": " + tag.toString(16));
         }
     };
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-explicit-any
     DataStreamParser.encode = function (data, buffer) {
         var _this = this;
         if (data === undefined) {
@@ -340,7 +344,8 @@ var DataStreamParser = /** @class */ (function () {
                     buffer.writeData(data);
                 }
                 else { // object is treated as dictionary
-                    var entries = Object.entries(data);
+                    var entries = Object.entries(data)
+                        .filter(function (entry) { return entry[1] !== undefined; }); // explicitly setting undefined will result in an entry here
                     if (entries.length <= 14) {
                         buffer.writeTag(224 /* DICTIONARY_LENGTH_START */ + entries.length);
                     }
@@ -365,6 +370,7 @@ var DataStreamParser = /** @class */ (function () {
 exports.DataStreamParser = DataStreamParser;
 var DataStreamReader = /** @class */ (function () {
     function DataStreamReader(data) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.trackedCompressedData = [];
         this.data = data;
         this.readerIndex = 0;
@@ -375,9 +381,11 @@ var DataStreamReader = /** @class */ (function () {
             debug("WARNING Finished reading HDS stream, but there are still %d bytes remaining () %s", this.data.length - this.readerIndex, remainingHex);
         }
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     DataStreamReader.prototype.decompressData = function (index) {
         if (index >= this.trackedCompressedData.length) {
-            throw new Error("HDSDecoder: Tried decompression of data for an index out of range (index " + index + " and got " + this.trackedCompressedData.length + " elements)");
+            throw new Error("HDSDecoder: Tried decompression of data for an index out of range (index " + index +
+                " and got " + this.trackedCompressedData.length + " elements)");
         }
         return this.trackedCompressedData[index];
     };
@@ -469,7 +477,7 @@ var DataStreamReader = /** @class */ (function () {
     };
     DataStreamReader.prototype.readUTF8 = function (length) {
         this.ensureLength(length);
-        var value = this.data.toString('utf8', this.readerIndex, this.readerIndex + length);
+        var value = this.data.toString("utf8", this.readerIndex, this.readerIndex + length);
         this.readerIndex += length;
         return this.trackData(value);
     };
@@ -504,7 +512,7 @@ var DataStreamReader = /** @class */ (function () {
                 offset++;
             }
         }
-        var value = this.data.toString('utf8', this.readerIndex, offset);
+        var value = this.data.toString("utf8", this.readerIndex, offset);
         this.readerIndex = offset + 1;
         return this.trackData(value);
     };
@@ -564,6 +572,7 @@ var DataStreamReader = /** @class */ (function () {
 exports.DataStreamReader = DataStreamReader;
 var WrittenDataList = /** @class */ (function () {
     function WrittenDataList() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.writtenData = [];
     }
     WrittenDataList.prototype.push = function (data) {
@@ -862,7 +871,7 @@ var DataStreamWriter = /** @class */ (function () {
         this.writerIndex += 8;
     };
     DataStreamWriter.prototype.writeUUID = function (uuid_string) {
-        assert_1.default(uuid.isValid(uuid_string), "supplied uuid is invalid");
+        (0, assert_1.default)(uuid.isValid(uuid_string), "supplied uuid is invalid");
         if (this.compressDataIfPossible(new UUID(uuid_string))) {
             return;
         }

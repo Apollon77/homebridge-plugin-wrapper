@@ -4,7 +4,13 @@ export interface PackageJSON {
     name: string;
     version: string;
     keywords?: string[];
+    exports?: string | Record<string, string | Record<string, string>>;
     main?: string;
+    /**
+     * When set as module, it marks .js file to be treated as ESM.
+     * See https://nodejs.org/dist/latest-v14.x/docs/api/esm.html#esm_enabling
+     */
+    type?: "module" | "commonjs";
     engines?: Record<string, string>;
     dependencies?: Record<string, string>;
     devDependencies?: Record<string, string>;
@@ -15,6 +21,10 @@ export interface PluginManagerOptions {
      * Additional path to search for plugins in. Specified relative to the current working directory.
      */
     customPluginPath?: string;
+    /**
+     * If set, only load plugins from the customPluginPath, if set, otherwise only from the primary global node_modules.
+     */
+    strictPluginResolution?: boolean;
     /**
      * When defined, only plugins specified here will be initialized.
      */
@@ -31,6 +41,7 @@ export declare class PluginManager {
     private static readonly PLUGIN_IDENTIFIER_PATTERN;
     private readonly api;
     private readonly searchPaths;
+    private readonly strictPluginResolution;
     private readonly activePlugins?;
     private readonly disabledPlugins?;
     private readonly plugins;
@@ -45,8 +56,8 @@ export declare class PluginManager {
     static getAccessoryName(identifier: AccessoryIdentifier): AccessoryName;
     static getPlatformName(identifier: PlatformIdentifier): PlatformIdentifier;
     static getPluginIdentifier(identifier: AccessoryIdentifier | PlatformIdentifier): PluginIdentifier;
-    initializeInstalledPlugins(): void;
-    initializePlugin(plugin: Plugin, identifier: string): void;
+    initializeInstalledPlugins(): Promise<void>;
+    initializePlugin(plugin: Plugin, identifier: string): Promise<void>;
     private handleRegisterAccessory;
     private handleRegisterPlatform;
     getPluginForAccessory(accessoryIdentifier: AccessoryIdentifier | AccessoryName): Plugin;
@@ -61,5 +72,6 @@ export declare class PluginManager {
     loadPlugin(absolutePath: string): Plugin;
     private static loadPackageJSON;
     private loadDefaultPaths;
+    private addNpmPrefixToSearchPaths;
 }
 //# sourceMappingURL=pluginManager.d.ts.map

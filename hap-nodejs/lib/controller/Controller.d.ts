@@ -7,8 +7,8 @@ export interface ControllerServiceMap {
     [name: string]: Service | undefined;
 }
 /**
- * ControllerType is basically a string uniquely identifying the type of a {@link Controller}.
- * An {@link Accessory} only allows one type of a {@link Controller} to be configured.
+ * ControllerType is basically a string uniquely identifying the type of {@link Controller}.
+ * An {@link Accessory} only allows one type of {@link Controller} to be configured.
  *
  * There are predefined types {@link DefaultControllerType} for all controller implementations provided by hap-nodejs.
  * You can define custom ControllerTypes if you wish to, but be careful that it does not collide with any known definitions.
@@ -41,7 +41,7 @@ export interface ControllerConstructor {
  *
  * The constructor of a Controller should only initialize controller specific configuration and states
  * and MUST NOT create any services or characteristics.
- * Additionally it must implement all necessary methods as noted below. Those methods will get called
+ * Additionally, it must implement all necessary methods as noted below. Those methods will get called
  * when the accessory gets added to an Accessory or a Accessory is restored from disk.
  */
 export interface Controller<M extends ControllerServiceMap = ControllerServiceMap> {

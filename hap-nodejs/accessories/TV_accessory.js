@@ -4,15 +4,14 @@ var __1 = require("..");
 // Generate a consistent UUID for TV that will remain the same even when
 // restarting our server. We use the `uuid.generate` helper function to create a deterministic
 // UUID based on an arbitrary "namespace" and the word "tv".
-var tvUUID = __1.uuid.generate('hap-nodejs:accessories:tv');
+var tvUUID = __1.uuid.generate("hap-nodejs:accessories:tv");
 // This is the Accessory that we'll return to HAP-NodeJS.
-var tv = exports.accessory = new __1.Accessory('TV', tvUUID);
+var tv = exports.accessory = new __1.Accessory("TV", tvUUID);
 // Add properties for publishing (in case we're using Core.js and not BridgedCore.js)
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 tv.username = "A3:FB:3D:4D:2E:AC";
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 tv.pincode = "031-45-154";
-// @ts-ignore
 tv.category = 31 /* TELEVISION */;
 // Add the actual TV Service and listen for change events from iOS.
 var televisionService = tv.addService(__1.Service.Television, "Television", "Television");

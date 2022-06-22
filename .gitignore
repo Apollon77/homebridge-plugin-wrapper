@@ -6,3 +6,5 @@ coverage
 .idea
 config.json
 /accessories/cachedAccessories
+persist
+accessories

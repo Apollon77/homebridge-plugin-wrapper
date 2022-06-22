@@ -28,7 +28,7 @@ class ChildBridgeFork {
             });
         }
     }
-    loadPlugin(data) {
+    async loadPlugin(data) {
         // set data
         this.type = data.type;
         this.identifier = data.identifier;
@@ -60,9 +60,9 @@ class ChildBridgeFork {
         this.pluginManager = new pluginManager_1.PluginManager(this.api);
         this.externalPortService = new externalPortService_1.ChildBridgeExternalPortService(this);
         // load plugin
-        this.plugin = this.pluginManager.loadPlugin(data.pluginPath);
-        this.plugin.load();
-        this.pluginManager.initializePlugin(this.plugin, data.identifier);
+        this.plugin = await this.pluginManager.loadPlugin(data.pluginPath);
+        await this.plugin.load();
+        await this.pluginManager.initializePlugin(this.plugin, data.identifier);
         // change process title to include plugin name
         process.title = `homebridge: ${this.plugin.getPluginIdentifier()}`;
         this.sendMessage("loaded" /* LOADED */, {
@@ -71,6 +71,18 @@ class ChildBridgeFork {
     }
     async startBridge() {
         this.bridgeService = new bridgeService_1.BridgeService(this.api, this.pluginManager, this.externalPortService, this.bridgeOptions, this.bridgeConfig, this.homebridgeConfig);
+        // watch bridge events to check when server is online
+        this.bridgeService.bridge.on("advertised" /* ADVERTISED */, () => {
+            this.sendPairedStatusEvent();
+        });
+        // watch for the paired event to update the server status
+        this.bridgeService.bridge.on("paired" /* PAIRED */, () => {
+            this.sendPairedStatusEvent();
+        });
+        // watch for the unpaired event to update the server status
+        this.bridgeService.bridge.on("unpaired" /* UNPAIRED */, () => {
+            this.sendPairedStatusEvent();
+        });
         // load the cached accessories
         await this.bridgeService.loadCachedPlatformAccessoriesFromDisk();
         for (const config of this.pluginConfig) {
@@ -148,6 +160,16 @@ class ChildBridgeFork {
         if (callback) {
             callback(data.port);
         }
+    }
+    /**
+     * Sends the current pairing status of the child bridge to the parent process
+     */
+    sendPairedStatusEvent() {
+        var _a, _b, _c, _d, _e, _f, _g;
+        this.sendMessage("status" /* STATUS_UPDATE */, {
+            paired: (_d = (_c = (_b = (_a = this.bridgeService) === null || _a === void 0 ? void 0 : _a.bridge) === null || _b === void 0 ? void 0 : _b._accessoryInfo) === null || _c === void 0 ? void 0 : _c.paired()) !== null && _d !== void 0 ? _d : null,
+            setupUri: (_g = (_f = (_e = this.bridgeService) === null || _e === void 0 ? void 0 : _e.bridge) === null || _f === void 0 ? void 0 : _f.setupURI()) !== null && _g !== void 0 ? _g : null,
+        });
     }
     shutdown() {
         this.bridgeService.teardown();

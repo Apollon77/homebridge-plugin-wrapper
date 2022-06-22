@@ -33,7 +33,11 @@ export declare const enum ChildProcessMessageEventType {
     /**
      * Sent from the parent with the port allocation response
      */
-    PORT_ALLOCATED = "portAllocated"
+    PORT_ALLOCATED = "portAllocated",
+    /**
+     * Sent from the child to update it's current status
+     */
+    STATUS_UPDATE = "status"
 }
 export declare const enum ChildBridgeStatus {
     /**
@@ -72,12 +76,20 @@ export interface ChildProcessPortAllocatedEventData {
     username: MacAddress;
     port?: number;
 }
+export interface ChildBridgePairedStatusEventData {
+    paired: boolean | null;
+    setupUri: string | null;
+}
 export interface ChildMetadata {
     status: ChildBridgeStatus;
+    paired?: boolean | null;
+    setupUri?: string | null;
     username: MacAddress;
+    pin: string;
     name: string;
     plugin: string;
     identifier: string;
+    manuallyStopped: boolean;
     pid?: number;
 }
 /**
@@ -98,6 +110,9 @@ export declare class ChildBridgeService {
     private args;
     private shuttingDown;
     private lastBridgeStatus;
+    private pairedStatus;
+    private manuallyStopped;
+    private setupUri;
     private pluginConfig;
     private log;
     private displayName?;
@@ -152,9 +167,21 @@ export declare class ChildBridgeService {
      */
     private teardown;
     /**
+     * Trigger sending child bridge metdata to the process parent via IPC
+     */
+    private sendStatusUpdate;
+    /**
      * Restarts the child bridge process
      */
-    restartBridge(): void;
+    restartChildBridge(): void;
+    /**
+     * Stops the child bridge, not starting it again
+     */
+    stopChildBridge(): void;
+    /**
+     * Starts the child bridge, only if it was manually stopped and is no longer running
+     */
+    startChildBridge(): void;
     /**
      * Read the config.json file from disk and refresh the plugin config block for just this plugin
      */

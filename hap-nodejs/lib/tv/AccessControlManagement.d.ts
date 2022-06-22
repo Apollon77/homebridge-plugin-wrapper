@@ -1,6 +1,6 @@
 /// <reference types="node" />
 import { EventEmitter } from "events";
-import type { AccessControl } from '../definitions';
+import type { AccessControl } from "../definitions";
 /**
  * This defines the Access Level for TVs and Speakers. It is pretty much only used for the AirPlay 2 protocol
  * so this information is not really useful.

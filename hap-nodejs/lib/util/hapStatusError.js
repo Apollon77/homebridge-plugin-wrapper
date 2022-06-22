@@ -12,11 +12,11 @@ var HAPServer_1 = require("../HAPServer");
  * ```
  */
 var HapStatusError = /** @class */ (function (_super) {
-    tslib_1.__extends(HapStatusError, _super);
+    (0, tslib_1.__extends)(HapStatusError, _super);
     function HapStatusError(status) {
-        var _this = _super.call(this, 'HAP Status Error: ' + status) || this;
+        var _this = _super.call(this, "HAP Status Error: " + status) || this;
         Object.setPrototypeOf(_this, HapStatusError.prototype);
-        if (HAPServer_1.IsKnownHAPStatusError(status)) {
+        if ((0, HAPServer_1.IsKnownHAPStatusError)(status)) {
             _this.hapStatus = status;
         }
         else {

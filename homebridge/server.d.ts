@@ -7,6 +7,7 @@ export interface HomebridgeOptions {
     debugModeEnabled?: boolean;
     forceColourLogging?: boolean;
     customStoragePath?: string;
+    strictPluginResolution?: boolean;
 }
 export declare const enum ServerStatus {
     /**

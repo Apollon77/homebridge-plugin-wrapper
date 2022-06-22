@@ -1,9 +1,9 @@
 /// <reference types="node" />
 import { EventEmitter } from "events";
 import { SrpServer } from "fast-srp-hap";
-import { IncomingMessage, ServerResponse } from 'http';
-import { Socket } from 'net';
-import { CharacteristicValue, Nullable, SessionIdentifier } from '../../types';
+import { IncomingMessage, ServerResponse } from "http";
+import { Socket } from "net";
+import { CharacteristicValue, Nullable, SessionIdentifier } from "../../types";
 export declare type HAPUsername = string;
 export declare type EventName = string;
 /**
@@ -44,7 +44,7 @@ export declare interface EventedHTTPServer {
  * Implementation
  * --------------
  * In order to implement the "custom HTTP" server required by the HAP protocol (see HAPServer.js) without completely
- * reinventing the wheel, we create both a generic TCP socket server as well as a standard Node HTTP server.
+ * reinventing the wheel, we create both a generic TCP socket server and a standard Node HTTP server.
  * The TCP socket server acts as a proxy, allowing users of this class to transform data (for encryption) as necessary
  * and passing through bytes directly to the HTTP server for processing. This way we get Node to do all
  * the "heavy lifting" of HTTP like parsing headers and formatting responses.
@@ -75,15 +75,15 @@ export declare class EventedHTTPServer extends EventEmitter {
     stop(): void;
     destroy(): void;
     /**
-     * Send a even notification for given characteristic and changed value to all connected clients.
+     * Send an event notification for given characteristic and changed value to all connected clients.
      * If {@param originator} is specified, the given {@link HAPConnection} will be excluded from the broadcast.
      *
      * @param aid - The accessory id of the updated characteristic.
      * @param iid - The instance id of the updated characteristic.
      * @param value - The newly set value of the characteristic.
-     * @param originator - If specified, the connection will not get a event message.
+     * @param originator - If specified, the connection will not get an event message.
      * @param immediateDelivery - The HAP spec requires some characteristics to be delivery immediately.
-     *   Namely for the {@link ButtonEvent} and the {@link ProgrammableSwitchEvent} characteristics.
+     *   Namely, for the {@link ButtonEvent} and the {@link ProgrammableSwitchEvent} characteristics.
      */
     broadcastEvent(aid: number, iid: number, value: Nullable<CharacteristicValue>, originator?: HAPConnection, immediateDelivery?: boolean): void;
     private onConnection;
@@ -164,7 +164,7 @@ export declare class HAPConnection extends EventEmitter {
     private writeQueuedEventNotifications;
     /**
      * This will create an EVENT/1.0 notification header with the provided event notification.
-     * If currently a HTTP request is in progress the assembled packet will be
+     * If currently an HTTP request is in progress the assembled packet will be
      * added to the pending events list.
      *
      * @param notification - The event which should be sent out

@@ -3,17 +3,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.HAPConnection = exports.HAPConnectionEvent = exports.HAPConnectionState = exports.EventedHTTPServer = exports.EventedHTTPServerEvent = exports.HAPEncryption = void 0;
 var tslib_1 = require("tslib");
 var domain_formatter_1 = require("@homebridge/ciao/lib/util/domain-formatter");
-var assert_1 = tslib_1.__importDefault(require("assert"));
-var debug_1 = tslib_1.__importDefault(require("debug"));
+var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
+var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
 var events_1 = require("events");
-var http_1 = tslib_1.__importDefault(require("http"));
-var net_1 = tslib_1.__importDefault(require("net"));
-var os_1 = tslib_1.__importDefault(require("os"));
-var hapCrypto = tslib_1.__importStar(require("./hapCrypto"));
+var http_1 = (0, tslib_1.__importDefault)(require("http"));
+var net_1 = (0, tslib_1.__importDefault)(require("net"));
+var os_1 = (0, tslib_1.__importDefault)(require("os"));
+var hapCrypto = (0, tslib_1.__importStar)(require("./hapCrypto"));
 var net_utils_1 = require("./net-utils");
-var uuid = tslib_1.__importStar(require("./uuid"));
-var debug = debug_1.default('HAP-NodeJS:EventedHTTPServer');
-var debugCon = debug_1.default("HAP-NodeJS:EventedHTTPServer:Connection");
+var uuid = (0, tslib_1.__importStar)(require("./uuid"));
+var debug = (0, debug_1.default)("HAP-NodeJS:EventedHTTPServer");
+var debugCon = (0, debug_1.default)("HAP-NodeJS:EventedHTTPServer:Connection");
 /**
  * Simple struct to hold vars needed to support HAP encryption.
  */
@@ -45,7 +45,7 @@ var EventedHTTPServerEvent;
  * Implementation
  * --------------
  * In order to implement the "custom HTTP" server required by the HAP protocol (see HAPServer.js) without completely
- * reinventing the wheel, we create both a generic TCP socket server as well as a standard Node HTTP server.
+ * reinventing the wheel, we create both a generic TCP socket server and a standard Node HTTP server.
  * The TCP socket server acts as a proxy, allowing users of this class to transform data (for encryption) as necessary
  * and passing through bytes directly to the HTTP server for processing. This way we get Node to do all
  * the "heavy lifting" of HTTP like parsing headers and formatting responses.
@@ -57,7 +57,7 @@ var EventedHTTPServerEvent;
  * for safe event insertion.
  */
 var EventedHTTPServer = /** @class */ (function (_super) {
-    tslib_1.__extends(EventedHTTPServer, _super);
+    (0, tslib_1.__extends)(EventedHTTPServer, _super);
     function EventedHTTPServer() {
         var _this = _super.call(this) || this;
         /**
@@ -74,7 +74,7 @@ var EventedHTTPServer = /** @class */ (function (_super) {
             var e_1, _a;
             var connectionString = "";
             try {
-                for (var _b = tslib_1.__values(_this.connections), _c = _b.next(); !_c.done; _c = _b.next()) {
+                for (var _b = (0, tslib_1.__values)(_this.connections), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var connection = _c.value;
                     if (connectionString) {
                         connectionString += ", ";
@@ -104,7 +104,7 @@ var EventedHTTPServer = /** @class */ (function (_super) {
         var currentTime = new Date().getTime();
         var nextTimeout = -1;
         try {
-            for (var _b = tslib_1.__values(this.connections), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.connections), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var connection = _c.value;
                 var timeDelta = currentTime - connection.lastSocketOperation;
                 if (timeDelta >= EventedHTTPServer.MAX_CONNECTION_IDLE_TIME) {
@@ -131,7 +131,7 @@ var EventedHTTPServer = /** @class */ (function (_super) {
         var _this = this;
         this.tcpServer.listen(targetPort, hostname, function () {
             var address = _this.tcpServer.address(); // address() is only a string when listening to unix domain sockets
-            debug("Server listening on %s:%s", address.family === "IPv6" ? "[" + address.address + "]" : address.address, address.port);
+            debug("Server listening on %s:%s", address.family === "IPv6" ? "[".concat(address.address, "]") : address.address, address.port);
             _this.emit("listening" /* LISTENING */, address.port, address.address);
         });
         this.tcpServer.on("connection", this.onConnection.bind(this));
@@ -140,7 +140,7 @@ var EventedHTTPServer = /** @class */ (function (_super) {
         var e_3, _a;
         this.tcpServer.close();
         try {
-            for (var _b = tslib_1.__values(this.connections), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.connections), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var connection = _c.value;
                 connection.close();
             }
@@ -158,20 +158,20 @@ var EventedHTTPServer = /** @class */ (function (_super) {
         this.removeAllListeners();
     };
     /**
-     * Send a even notification for given characteristic and changed value to all connected clients.
+     * Send an event notification for given characteristic and changed value to all connected clients.
      * If {@param originator} is specified, the given {@link HAPConnection} will be excluded from the broadcast.
      *
      * @param aid - The accessory id of the updated characteristic.
      * @param iid - The instance id of the updated characteristic.
      * @param value - The newly set value of the characteristic.
-     * @param originator - If specified, the connection will not get a event message.
+     * @param originator - If specified, the connection will not get an event message.
      * @param immediateDelivery - The HAP spec requires some characteristics to be delivery immediately.
-     *   Namely for the {@link ButtonEvent} and the {@link ProgrammableSwitchEvent} characteristics.
+     *   Namely, for the {@link ButtonEvent} and the {@link ProgrammableSwitchEvent} characteristics.
      */
     EventedHTTPServer.prototype.broadcastEvent = function (aid, iid, value, originator, immediateDelivery) {
         var e_4, _a;
         try {
-            for (var _b = tslib_1.__values(this.connections), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.connections), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var connection = _c.value;
                 if (connection === originator) {
                     debug("[%s] Muting event '%s' notification for this connection since it originated here.", connection.remoteAddress, aid + "." + iid);
@@ -190,6 +190,7 @@ var EventedHTTPServer = /** @class */ (function (_super) {
     };
     EventedHTTPServer.prototype.onConnection = function (socket) {
         var _this = this;
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         var connection = new HAPConnection(this, socket);
         connection.on("request" /* REQUEST */, function (request, response) {
             _this.emit("request" /* REQUEST */, connection, request, response);
@@ -233,7 +234,7 @@ var EventedHTTPServer = /** @class */ (function (_super) {
         var connections = initiator.server.connectionsByUsername.get(username);
         if (connections) {
             try {
-                for (var connections_1 = tslib_1.__values(connections), connections_1_1 = connections_1.next(); !connections_1_1.done; connections_1_1 = connections_1.next()) {
+                for (var connections_1 = (0, tslib_1.__values)(connections), connections_1_1 = connections_1.next(); !connections_1_1.done; connections_1_1 = connections_1.next()) {
                     var connection = connections_1_1.value;
                     connection.closeConnectionAsOfUnpair(initiator);
                 }
@@ -260,7 +261,7 @@ var HAPConnectionState;
     HAPConnectionState[HAPConnectionState["CONNECTING"] = 0] = "CONNECTING";
     HAPConnectionState[HAPConnectionState["FULLY_SET_UP"] = 1] = "FULLY_SET_UP";
     HAPConnectionState[HAPConnectionState["AUTHENTICATED"] = 2] = "AUTHENTICATED";
-    // above signals are represent a alive connection
+    // above signals represent an alive connection
     // below states are considered "closed or soon closed"
     HAPConnectionState[HAPConnectionState["TO_BE_TEARED_DOWN"] = 3] = "TO_BE_TEARED_DOWN";
     HAPConnectionState[HAPConnectionState["CLOSING"] = 4] = "CLOSING";
@@ -277,7 +278,7 @@ var HAPConnectionEvent;
  * @private
  */
 var HAPConnection = /** @class */ (function (_super) {
-    tslib_1.__extends(HAPConnection, _super);
+    (0, tslib_1.__extends)(HAPConnection, _super);
     function HAPConnection(server, clientSocket) {
         var _this = _super.call(this) || this;
         _this.state = 0 /* CONNECTING */;
@@ -285,31 +286,33 @@ var HAPConnection = /** @class */ (function (_super) {
         _this.pendingClientSocketData = Buffer.alloc(0); // data received from client before HTTP proxy is fully setup
         _this.handlingRequest = false; // true while we are composing an HTTP response (so events can wait)
         _this.registeredEvents = new Set();
-        _this.queuedEvents = new Map();
-        _this.pendingEventData = []; // queue of unencrypted event data waiting to be sent until after an in-progress HTTP response is being written
+        _this.queuedEvents = [];
+        // queue of unencrypted event data waiting to be sent until after an in-progress HTTP response is being written
+        _this.pendingEventData = [];
         _this.server = server;
-        _this.sessionID = uuid.generate(clientSocket.remoteAddress + ':' + clientSocket.remotePort);
+        _this.sessionID = uuid.generate(clientSocket.remoteAddress + ":" + clientSocket.remotePort);
         _this.localAddress = clientSocket.localAddress;
         _this.remoteAddress = clientSocket.remoteAddress; // cache because it becomes undefined in 'onClientSocketClose'
         _this.remotePort = clientSocket.remotePort;
         _this.networkInterface = HAPConnection.getLocalNetworkInterface(clientSocket);
         // clientSocket is the socket connected to the actual iOS device
         _this.tcpSocket = clientSocket;
-        _this.tcpSocket.on('data', _this.onTCPSocketData.bind(_this));
-        _this.tcpSocket.on('close', _this.onTCPSocketClose.bind(_this));
-        _this.tcpSocket.on('error', _this.onTCPSocketError.bind(_this)); // we MUST register for this event, otherwise the error will bubble up to the top and crash the node process entirely.
+        _this.tcpSocket.on("data", _this.onTCPSocketData.bind(_this));
+        _this.tcpSocket.on("close", _this.onTCPSocketClose.bind(_this));
+        // we MUST register for this event, otherwise the error will bubble up to the top and crash the node process entirely.
+        _this.tcpSocket.on("error", _this.onTCPSocketError.bind(_this));
         _this.tcpSocket.setNoDelay(true); // disable Nagle algorithm
         // "HAP accessory servers must not use keepalive messages, which periodically wake up iOS devices".
-        // Thus we don't configure any tcp keepalive
+        // Thus, we don't configure any tcp keepalive
         // create our internal HTTP server for this connection that we will proxy data to and from
         _this.internalHttpServer = http_1.default.createServer();
         _this.internalHttpServer.timeout = 0; // clients expect to hold connections open as long as they want
         _this.internalHttpServer.keepAliveTimeout = 0; // workaround for https://github.com/nodejs/node/issues/13391
         _this.internalHttpServer.on("listening", _this.onHttpServerListening.bind(_this));
-        _this.internalHttpServer.on('request', _this.handleHttpServerRequest.bind(_this));
-        _this.internalHttpServer.on('error', _this.onHttpServerError.bind(_this));
+        _this.internalHttpServer.on("request", _this.handleHttpServerRequest.bind(_this));
+        _this.internalHttpServer.on("error", _this.onHttpServerError.bind(_this));
         // close event is added later on the "connect" event as possible listen retries would throw unnecessary close events
-        _this.internalHttpServer.listen(0, _this.internalHttpServerAddress = net_utils_1.getOSLoopbackAddressIfAvailable());
+        _this.internalHttpServer.listen(0, _this.internalHttpServerAddress = (0, net_utils_1.getOSLoopbackAddressIfAvailable)());
         return _this;
     }
     /**
@@ -346,34 +349,45 @@ var HAPConnection = /** @class */ (function (_super) {
         }
     };
     HAPConnection.prototype.sendEvent = function (aid, iid, value, immediateDelivery) {
-        assert_1.default(aid != undefined, "HAPConnection.sendEvent: aid must be defined!");
-        assert_1.default(iid != undefined, "HAPConnection.sendEvent: iid must be defined!");
+        (0, assert_1.default)(aid != null, "HAPConnection.sendEvent: aid must be defined!");
+        (0, assert_1.default)(iid != null, "HAPConnection.sendEvent: iid must be defined!");
         var eventName = aid + "." + iid;
         if (!this.registeredEvents.has(eventName)) {
             return;
         }
+        var event = {
+            aid: aid,
+            iid: iid,
+            value: value,
+        };
         if (immediateDelivery) {
             // some characteristics are required to deliver notifications immediately
-            this.writeEventNotification({
-                characteristics: [{
-                        aid: aid,
-                        iid: iid,
-                        value: value,
-                    }],
-            });
-        }
-        else {
-            // TODO should a new event not remove a previous event (to support censor open -> censor closed :thinking:)
-            //   any only remove previous events if the same value was set?
-            this.queuedEvents.set(eventName, {
-                aid: aid,
-                iid: iid,
-                value: value,
-            });
-            if (!this.handlingRequest && !this.eventsTimer) { // if we are handling a request or there is already a timer running we just add it in the queue
-                this.eventsTimer = setTimeout(this.handleEventsTimeout.bind(this), 250);
-                this.eventsTimer.unref();
+            // we will flush all other events too, on that occasion.
+            this.queuedEvents.push(event);
+            if (this.eventsTimer) {
+                clearTimeout(this.eventsTimer);
             }
+            this.handleEventsTimeout();
+            return;
+        }
+        // we search the list of queued events in reverse order.
+        // if the last element with the same aid and iid has the same value we don't want to send the event notification twice.
+        // BUT, we do not want to override previous event notifications which have a different value. Automations must be executed!
+        for (var i = this.queuedEvents.length - 1; i >= 0; i--) {
+            var queuedEvent = this.queuedEvents[i];
+            if (queuedEvent.aid === aid && queuedEvent.iid === iid) {
+                if (queuedEvent.value === value) {
+                    return; // the same event was already queued. do not add it again!
+                }
+                break; // we break in any case
+            }
+        }
+        this.queuedEvents.push(event);
+        // if we are handling a request or there is already a timer running we just add it in the queue.
+        // remember: we flush the event queue after we send out the response.
+        if (!this.handlingRequest && !this.eventsTimer) {
+            this.eventsTimer = setTimeout(this.handleEventsTimeout.bind(this), 250);
+            this.eventsTimer.unref();
         }
     };
     HAPConnection.prototype.handleEventsTimeout = function () {
@@ -388,7 +402,7 @@ var HAPConnection = /** @class */ (function (_super) {
     HAPConnection.prototype.writePendingEventNotifications = function () {
         var e_6, _a;
         try {
-            for (var _b = tslib_1.__values(this.pendingEventData), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.pendingEventData), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var buffer = _c.value;
                 this.tcpSocket.write(this.encrypt(buffer));
             }
@@ -404,17 +418,19 @@ var HAPConnection = /** @class */ (function (_super) {
     };
     HAPConnection.prototype.writeQueuedEventNotifications = function () {
         var e_7, _a;
-        if (this.queuedEvents.size === 0 || this.eventsTimer) {
+        if (this.queuedEvents.length === 0 || this.eventsTimer) {
             return; // don't send empty event notifications or if there is a timeout running
         }
-        var eventData = { characteristics: [] };
+        var eventData = {
+            characteristics: [],
+        };
         try {
-            for (var _b = tslib_1.__values(this.queuedEvents), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var _d = tslib_1.__read(_c.value, 2), eventName = _d[0], characteristic = _d[1];
-                if (!this.registeredEvents.has(eventName)) { // client unregistered events in the mean time
-                    continue;
+            for (var _b = (0, tslib_1.__values)(this.queuedEvents), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var queuedEvent = _c.value;
+                if (!this.registeredEvents.has(queuedEvent.aid + "." + queuedEvent.iid)) {
+                    continue; // client unregistered that event in the meantime
                 }
-                eventData.characteristics.push(characteristic);
+                eventData.characteristics.push(queuedEvent);
             }
         }
         catch (e_7_1) { e_7 = { error: e_7_1 }; }
@@ -424,12 +440,12 @@ var HAPConnection = /** @class */ (function (_super) {
             }
             finally { if (e_7) throw e_7.error; }
         }
-        this.queuedEvents.clear();
+        this.queuedEvents.splice(0, this.queuedEvents.length);
         this.writeEventNotification(eventData);
     };
     /**
      * This will create an EVENT/1.0 notification header with the provided event notification.
-     * If currently a HTTP request is in progress the assembled packet will be
+     * If currently an HTTP request is in progress the assembled packet will be
      * added to the pending events list.
      *
      * @param notification - The event which should be sent out
@@ -440,8 +456,7 @@ var HAPConnection = /** @class */ (function (_super) {
         var header = Buffer.from("EVENT/1.0 200 OK\r\n" +
             "Content-Type: application/hap+json\r\n" +
             "Content-Length: " + dataBuffer.length + "\r\n" +
-            "\r\n", "utf8" // buffer encoding
-        );
+            "\r\n", "utf8");
         var buffer = Buffer.concat([header, dataBuffer]);
         if (this.handlingRequest) {
             // it is important that we not encrypt the pending event data. This would increment the nonce used in encryption
@@ -474,29 +489,30 @@ var HAPConnection = /** @class */ (function (_super) {
         if (this.encryption && this.encryption.accessoryToControllerKey.length > 0 && this.encryption.controllerToAccessoryCount > 0) {
             return hapCrypto.layerEncrypt(data, this.encryption);
         }
-        return data; // otherwise we don't encrypt and return plaintext
+        return data; // otherwise, we don't encrypt and return plaintext
     };
     HAPConnection.prototype.decrypt = function (data) {
         if (this.encryption && this.encryption.controllerToAccessoryKey.length > 0) {
             // below call may throw an error if decryption failed
             return hapCrypto.layerDecrypt(data, this.encryption);
         }
-        return data; // otherwise we don't decrypt and return plaintext
+        return data; // otherwise, we don't decrypt and return plaintext
     };
     HAPConnection.prototype.onHttpServerListening = function () {
         var _this = this;
         var addressInfo = this.internalHttpServer.address(); // address() is only a string when listening to unix domain sockets
-        var addressString = addressInfo.family === "IPv6" ? "[" + addressInfo.address + "]" : addressInfo.address;
+        var addressString = addressInfo.family === "IPv6" ? "[".concat(addressInfo.address, "]") : addressInfo.address;
         this.internalHttpServerPort = addressInfo.port;
         debugCon("[%s] Internal HTTP server listening on %s:%s", this.remoteAddress, addressString, addressInfo.port);
-        this.internalHttpServer.on('close', this.onHttpServerClose.bind(this));
+        this.internalHttpServer.on("close", this.onHttpServerClose.bind(this));
         // now we can establish a connection to this running HTTP server for proxying data
         this.httpSocket = net_1.default.createConnection(this.internalHttpServerPort, this.internalHttpServerAddress); // previously we used addressInfo.address
         this.httpSocket.setNoDelay(true); // disable Nagle algorithm
-        this.httpSocket.on('data', this.handleHttpServerResponse.bind(this));
-        this.httpSocket.on('error', this.onHttpSocketError.bind(this)); // we MUST register for this event, otherwise the error will bubble up to the top and crash the node process entirely.
-        this.httpSocket.on('close', this.onHttpSocketClose.bind(this));
-        this.httpSocket.on('connect', function () {
+        this.httpSocket.on("data", this.handleHttpServerResponse.bind(this));
+        // we MUST register for this event, otherwise the error will bubble up to the top and crash the node process entirely.
+        this.httpSocket.on("error", this.onHttpSocketError.bind(this));
+        this.httpSocket.on("close", this.onHttpSocketClose.bind(this));
+        this.httpSocket.on("connect", function () {
             // we are now fully set up:
             //  - clientSocket is connected to the iOS device
             //  - serverSocket is connected to the httpServer
@@ -589,10 +605,10 @@ var HAPConnection = /** @class */ (function (_super) {
     };
     HAPConnection.prototype.onHttpServerError = function (err) {
         debugCon("[%s] HTTP server error: %s", this.remoteAddress, err.message);
-        if (err.code === 'EADDRINUSE') {
+        if (err.code === "EADDRINUSE") {
             this.internalHttpServerPort = undefined;
             this.internalHttpServer.close();
-            this.internalHttpServer.listen(0, this.internalHttpServerAddress = net_utils_1.getOSLoopbackAddressIfAvailable());
+            this.internalHttpServer.listen(0, this.internalHttpServerAddress = (0, net_utils_1.getOSLoopbackAddressIfAvailable)());
         }
     };
     HAPConnection.prototype.onHttpServerClose = function () {
@@ -615,9 +631,10 @@ var HAPConnection = /** @class */ (function (_super) {
         var infos = os_1.default.networkInterfaces()[this.networkInterface];
         if (ipVersion === "ipv4") {
             try {
-                for (var infos_1 = tslib_1.__values(infos), infos_1_1 = infos_1.next(); !infos_1_1.done; infos_1_1 = infos_1.next()) {
+                for (var infos_1 = (0, tslib_1.__values)(infos), infos_1_1 = infos_1.next(); !infos_1_1.done; infos_1_1 = infos_1.next()) {
                     var info = infos_1_1.value;
-                    if (info.family === "IPv4") {
+                    // @ts-expect-error Nodejs 18+ uses the number 4 the string "IPv4"
+                    if (info.family === "IPv4" || info.family === 4) {
                         return info.address;
                     }
                 }
@@ -634,9 +651,10 @@ var HAPConnection = /** @class */ (function (_super) {
         else {
             var localUniqueAddress = undefined;
             try {
-                for (var infos_2 = tslib_1.__values(infos), infos_2_1 = infos_2.next(); !infos_2_1.done; infos_2_1 = infos_2.next()) {
+                for (var infos_2 = (0, tslib_1.__values)(infos), infos_2_1 = infos_2.next(); !infos_2_1.done; infos_2_1 = infos_2.next()) {
                     var info = infos_2_1.value;
-                    if (info.family === "IPv6") {
+                    // @ts-expect-error Nodejs 18+ uses the number 6 instead of the string "IPv6"
+                    if (info.family === "IPv6" || info.family === 6) {
                         if (!info.scopeid) {
                             return info.address;
                         }
@@ -673,10 +691,10 @@ var HAPConnection = /** @class */ (function (_super) {
         }
         var interfaces = os_1.default.networkInterfaces();
         try {
-            for (var _e = tslib_1.__values(Object.entries(interfaces)), _f = _e.next(); !_f.done; _f = _e.next()) {
-                var _g = tslib_1.__read(_f.value, 2), name = _g[0], infos = _g[1];
+            for (var _e = (0, tslib_1.__values)(Object.entries(interfaces)), _f = _e.next(); !_f.done; _f = _e.next()) {
+                var _g = (0, tslib_1.__read)(_f.value, 2), name = _g[0], infos = _g[1];
                 try {
-                    for (var infos_3 = (e_11 = void 0, tslib_1.__values(infos)), infos_3_1 = infos_3.next(); !infos_3_1.done; infos_3_1 = infos_3.next()) {
+                    for (var infos_3 = (e_11 = void 0, (0, tslib_1.__values)(infos)), infos_3_1 = infos_3.next(); !infos_3_1.done; infos_3_1 = infos_3.next()) {
                         var info = infos_3_1.value;
                         if (info.address === localAddress) {
                             return name;
@@ -702,16 +720,16 @@ var HAPConnection = /** @class */ (function (_super) {
         // we couldn't map the address from above, we try now to match subnets (see https://github.com/homebridge/HAP-NodeJS/issues/847)
         var family = net_1.default.isIPv4(localAddress) ? "IPv4" : "IPv6";
         try {
-            for (var _h = tslib_1.__values(Object.entries(interfaces)), _j = _h.next(); !_j.done; _j = _h.next()) {
-                var _k = tslib_1.__read(_j.value, 2), name = _k[0], infos = _k[1];
+            for (var _h = (0, tslib_1.__values)(Object.entries(interfaces)), _j = _h.next(); !_j.done; _j = _h.next()) {
+                var _k = (0, tslib_1.__read)(_j.value, 2), name = _k[0], infos = _k[1];
                 try {
-                    for (var infos_4 = (e_13 = void 0, tslib_1.__values(infos)), infos_4_1 = infos_4.next(); !infos_4_1.done; infos_4_1 = infos_4.next()) {
+                    for (var infos_4 = (e_13 = void 0, (0, tslib_1.__values)(infos)), infos_4_1 = infos_4.next(); !infos_4_1.done; infos_4_1 = infos_4.next()) {
                         var info = infos_4_1.value;
                         if (info.family !== family) {
                             continue;
                         }
                         // check if the localAddress is in the same subnet
-                        if (domain_formatter_1.getNetAddress(localAddress, info.netmask) === domain_formatter_1.getNetAddress(info.address, info.netmask)) {
+                        if ((0, domain_formatter_1.getNetAddress)(localAddress, info.netmask) === (0, domain_formatter_1.getNetAddress)(info.address, info.netmask)) {
                             return name;
                         }
                     }
@@ -732,7 +750,7 @@ var HAPConnection = /** @class */ (function (_super) {
             }
             finally { if (e_12) throw e_12.error; }
         }
-        console.log("WARNING couldn't map socket coming from remote address " + socket.remoteAddress + ":" + socket.remotePort + " at local address " + socket.localAddress + " to a interface!");
+        console.log("WARNING couldn't map socket coming from remote address ".concat(socket.remoteAddress, ":").concat(socket.remotePort, "     at local address ").concat(socket.localAddress, " to a interface!"));
         return Object.keys(interfaces)[1]; // just use the first interface after the loopback interface as fallback
     };
     return HAPConnection;

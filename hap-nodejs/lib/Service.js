@@ -2,12 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Service = exports.ServiceEventTypes = void 0;
 var tslib_1 = require("tslib");
-var assert_1 = tslib_1.__importDefault(require("assert"));
-var debug_1 = tslib_1.__importDefault(require("debug"));
+var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
+var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
 var events_1 = require("events");
 var Characteristic_1 = require("./Characteristic");
 var uuid_1 = require("./util/uuid");
-var debug = debug_1.default("HAP-NodeJS:Service");
+var debug = (0, debug_1.default)("HAP-NodeJS:Service");
 /**
  * HAP spec allows a maximum of 100 characteristics per service!
  */
@@ -39,7 +39,7 @@ var ServiceEventTypes;
  * work with these.
  */
 var Service = /** @class */ (function (_super) {
-    tslib_1.__extends(Service, _super);
+    (0, tslib_1.__extends)(Service, _super);
     function Service(displayName, UUID, subtype) {
         if (displayName === void 0) { displayName = ""; }
         var _this = _super.call(this) || this;
@@ -59,7 +59,7 @@ var Service = /** @class */ (function (_super) {
          * @private
          */
         _this.linkedServices = [];
-        assert_1.default(UUID, "Services must be created with a valid UUID.");
+        (0, assert_1.default)(UUID, "Services must be created with a valid UUID.");
         _this.displayName = displayName;
         _this.UUID = UUID;
         _this.subtype = subtype;
@@ -84,6 +84,7 @@ var Service = /** @class */ (function (_super) {
     Service.prototype.getServiceId = function () {
         return this.UUID + (this.subtype || "");
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Service.prototype.addCharacteristic = function (input) {
         // characteristic might be a constructor like `Characteristic.Brightness` instead of an instance of Characteristic. Coerce if necessary.
         var e_1, _a;
@@ -91,13 +92,13 @@ var Service = /** @class */ (function (_super) {
         for (var _i = 1; _i < arguments.length; _i++) {
             constructorArgs[_i - 1] = arguments[_i];
         }
-        var characteristic = typeof input === "function" ? new (input.bind.apply(input, tslib_1.__spread([void 0], constructorArgs)))() : input;
+        var characteristic = typeof input === "function" ? new (input.bind.apply(input, (0, tslib_1.__spreadArray)([void 0], (0, tslib_1.__read)(constructorArgs), false)))() : input;
         try {
             // check for UUID conflict
-            for (var _b = tslib_1.__values(this.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var existing = _c.value;
                 if (existing.UUID === characteristic.UUID) {
-                    if (characteristic.UUID === '00000052-0000-1000-8000-0026BB765291') {
+                    if (characteristic.UUID === "00000052-0000-1000-8000-0026BB765291") {
                         //This is a special workaround for the Firmware Revision characteristic.
                         return existing;
                     }
@@ -182,15 +183,15 @@ var Service = /** @class */ (function (_super) {
         // If  Service.prototype.getCharacteristic(Characteristic.Type)  does not find the characteristic,
         // but the type is in optionalCharacteristics, it adds the characteristic.type to the service and returns it.
         var e_2, _a, e_3, _b;
-        var index, characteristic;
         try {
-            for (var _c = tslib_1.__values(this.characteristics), _d = _c.next(); !_d.done; _d = _c.next()) {
-                var characteristic_1 = _d.value;
-                if (typeof name === 'string' && characteristic_1.displayName === name) {
-                    return characteristic_1;
+            for (var _c = (0, tslib_1.__values)(this.characteristics), _d = _c.next(); !_d.done; _d = _c.next()) {
+                var characteristic = _d.value;
+                if (typeof name === "string" && characteristic.displayName === name) {
+                    return characteristic;
+                    // @ts-expect-error: UUID field
                 }
-                else if (typeof name === 'function' && ((characteristic_1 instanceof name) || (name.UUID === characteristic_1.UUID))) {
-                    return characteristic_1;
+                else if (typeof name === "function" && ((characteristic instanceof name) || (name.UUID === characteristic.UUID))) {
+                    return characteristic;
                 }
             }
         }
@@ -201,11 +202,12 @@ var Service = /** @class */ (function (_super) {
             }
             finally { if (e_2) throw e_2.error; }
         }
-        if (typeof name === 'function') {
+        if (typeof name === "function") {
             try {
-                for (var _e = tslib_1.__values(this.optionalCharacteristics), _f = _e.next(); !_f.done; _f = _e.next()) {
-                    var characteristic_2 = _f.value;
-                    if ((characteristic_2 instanceof name) || (name.UUID === characteristic_2.UUID)) {
+                for (var _e = (0, tslib_1.__values)(this.optionalCharacteristics), _f = _e.next(); !_f.done; _f = _e.next()) {
+                    var characteristic = _f.value;
+                    // @ts-expect-error: UUID field
+                    if ((characteristic instanceof name) || (name.UUID === characteristic.UUID)) {
                         return this.addCharacteristic(name);
                     }
                 }
@@ -219,6 +221,7 @@ var Service = /** @class */ (function (_super) {
             }
             var instance = this.addCharacteristic(name);
             // Not found in optional Characteristics. Adding anyway, but warning about it if it isn't the Name.
+            // @ts-expect-error: UUID field
             if (name.UUID !== Characteristic_1.Characteristic.Name.UUID) {
                 this.emitCharacteristicWarningEvent(instance, "warn-message" /* WARN_MESSAGE */, "Characteristic not in required or optional characteristic section for service " + this.constructor.name + ". Adding anyway.");
             }
@@ -229,12 +232,13 @@ var Service = /** @class */ (function (_super) {
         var e_4, _a;
         try {
             // checks for the existence of a characteristic object in the service
-            for (var _b = tslib_1.__values(this.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var characteristic = _c.value;
-                if (typeof name === 'string' && characteristic.displayName === name) {
+                if (typeof name === "string" && characteristic.displayName === name) {
                     return true;
+                    // @ts-expect-error: UUID field
                 }
-                else if (typeof name === 'function' && ((characteristic instanceof name) || (name.UUID === characteristic.UUID))) {
+                else if (typeof name === "function" && ((characteristic instanceof name) || (name.UUID === characteristic.UUID))) {
                     return true;
                 }
             }
@@ -260,8 +264,7 @@ var Service = /** @class */ (function (_super) {
     Service.prototype.addOptionalCharacteristic = function (characteristic) {
         // characteristic might be a constructor like `Characteristic.Brightness` instead of an instance
         // of Characteristic. Coerce if necessary.
-        if (typeof characteristic === 'function') {
-            // @ts-ignore we are dealing with predefined characteristics here
+        if (typeof characteristic === "function") {
             characteristic = new characteristic();
         }
         this.optionalCharacteristics.push(characteristic);
@@ -280,7 +283,7 @@ var Service = /** @class */ (function (_super) {
     Service.prototype.replaceCharacteristicsFromService = function (service) {
         var _this = this;
         if (this.UUID !== service.UUID) {
-            throw new Error("Incompatible services. Tried replacing characteristics of " + this.UUID + " with characteristics from " + service.UUID);
+            throw new Error("Incompatible services. Tried replacing characteristics of ".concat(this.UUID, " with characteristics from ").concat(service.UUID));
         }
         var foreignCharacteristics = {}; // index foreign characteristics by UUID
         service.characteristics.forEach(function (characteristic) { return foreignCharacteristics[characteristic.UUID] = characteristic; });
@@ -303,10 +306,11 @@ var Service = /** @class */ (function (_super) {
     Service.prototype.getCharacteristicByIID = function (iid) {
         var e_5, _a;
         try {
-            for (var _b = tslib_1.__values(this.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var characteristic = _c.value;
-                if (characteristic.iid === iid)
+                if (characteristic.iid === iid) {
                     return characteristic;
+                }
             }
         }
         catch (e_5_1) { e_5 = { error: e_5_1 }; }
@@ -324,7 +328,7 @@ var Service = /** @class */ (function (_super) {
         var e_6, _a;
         if (baseIID === void 0) { baseIID = 0; }
         // the Accessory Information service must have a (reserved by IdentifierCache) ID of 1
-        if (this.UUID === '0000003E-0000-1000-8000-0026BB765291') {
+        if (this.UUID === "0000003E-0000-1000-8000-0026BB765291") {
             this.iid = 1;
         }
         else {
@@ -333,7 +337,7 @@ var Service = /** @class */ (function (_super) {
         }
         try {
             // assign IIDs to our Characteristics
-            for (var _b = tslib_1.__values(this.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
+            for (var _b = (0, tslib_1.__values)(this.characteristics), _c = _b.next(); !_c.done; _c = _b.next()) {
                 var characteristic = _c.value;
                 characteristic._assignID(identifierCache, accessoryName, this.UUID, this.subtype);
             }
@@ -355,10 +359,10 @@ var Service = /** @class */ (function (_super) {
         if (contactGetHandlers === void 0) { contactGetHandlers = true; }
         return new Promise(function (resolve) {
             var e_7, _a, e_8, _b;
-            assert_1.default(_this.iid, "iid cannot be undefined for service '" + _this.displayName + "'");
-            assert_1.default(_this.characteristics.length, "service '" + _this.displayName + "' does not have any characteristics!");
+            (0, assert_1.default)(_this.iid, "iid cannot be undefined for service '" + _this.displayName + "'");
+            (0, assert_1.default)(_this.characteristics.length, "service '" + _this.displayName + "' does not have any characteristics!");
             var service = {
-                type: uuid_1.toShortForm(_this.UUID),
+                type: (0, uuid_1.toShortForm)(_this.UUID),
                 iid: _this.iid,
                 characteristics: [],
                 hidden: _this.isHiddenService ? true : undefined,
@@ -367,15 +371,15 @@ var Service = /** @class */ (function (_super) {
             if (_this.linkedServices.length) {
                 service.linked = [];
                 try {
-                    for (var _c = tslib_1.__values(_this.linkedServices), _d = _c.next(); !_d.done; _d = _c.next()) {
+                    for (var _c = (0, tslib_1.__values)(_this.linkedServices), _d = _c.next(); !_d.done; _d = _c.next()) {
                         var linked = _d.value;
                         if (!linked.iid) {
                             // we got a linked service which is not added to the accessory
                             // as it doesn't "exists" we just ignore it.
                             // we have some (at least one) plugins on homebridge which link to the AccessoryInformation service.
-                            // homebridge always creates it's own AccessoryInformation service and ignores the user supplied one
+                            // homebridge always creates its own AccessoryInformation service and ignores the user supplied one
                             // thus the link is automatically broken.
-                            debug("iid of linked service '" + linked.displayName + "' " + linked.UUID + " is undefined on service '" + _this.displayName + "'");
+                            debug("iid of linked service '".concat(linked.displayName, "' ").concat(linked.UUID, " is undefined on service '").concat(_this.displayName, "'"));
                             continue;
                         }
                         service.linked.push(linked.iid);
@@ -393,9 +397,9 @@ var Service = /** @class */ (function (_super) {
             var timeout = setTimeout(function () {
                 var e_9, _a;
                 try {
-                    for (var missingCharacteristics_1 = tslib_1.__values(missingCharacteristics), missingCharacteristics_1_1 = missingCharacteristics_1.next(); !missingCharacteristics_1_1.done; missingCharacteristics_1_1 = missingCharacteristics_1.next()) {
+                    for (var missingCharacteristics_1 = (0, tslib_1.__values)(missingCharacteristics), missingCharacteristics_1_1 = missingCharacteristics_1.next(); !missingCharacteristics_1_1.done; missingCharacteristics_1_1 = missingCharacteristics_1.next()) {
                         var characteristic = missingCharacteristics_1_1.value;
-                        _this.emitCharacteristicWarningEvent(characteristic, "slow-read" /* SLOW_READ */, "The read handler for the characteristic '" + characteristic.displayName + "' was slow to respond!");
+                        _this.emitCharacteristicWarningEvent(characteristic, "slow-read" /* SLOW_READ */, "The read handler for the characteristic '".concat(characteristic.displayName, "' was slow to respond!"));
                     }
                 }
                 catch (e_9_1) { e_9 = { error: e_9_1 }; }
@@ -409,7 +413,7 @@ var Service = /** @class */ (function (_super) {
                     var e_10, _a;
                     timeout = undefined;
                     try {
-                        for (var missingCharacteristics_2 = tslib_1.__values(missingCharacteristics), missingCharacteristics_2_1 = missingCharacteristics_2.next(); !missingCharacteristics_2_1.done; missingCharacteristics_2_1 = missingCharacteristics_2.next()) {
+                        for (var missingCharacteristics_2 = (0, tslib_1.__values)(missingCharacteristics), missingCharacteristics_2_1 = missingCharacteristics_2.next(); !missingCharacteristics_2_1.done; missingCharacteristics_2_1 = missingCharacteristics_2.next()) {
                             var characteristic = missingCharacteristics_2_1.value;
                             _this.emitCharacteristicWarningEvent(characteristic, "timeout-read" /* TIMEOUT_READ */, "The read handler for the characteristic '" + (characteristic === null || characteristic === void 0 ? void 0 : characteristic.displayName) +
                                 "' didn't respond at all!. Please check that you properly call the callback!");
@@ -445,7 +449,7 @@ var Service = /** @class */ (function (_super) {
                 });
             };
             try {
-                for (var _e = tslib_1.__values(_this.characteristics), _f = _e.next(); !_f.done; _f = _e.next()) {
+                for (var _e = (0, tslib_1.__values)(_this.characteristics), _f = _e.next(); !_f.done; _f = _e.next()) {
                     var characteristic = _f.value;
                     _loop_1(characteristic);
                 }
@@ -465,10 +469,10 @@ var Service = /** @class */ (function (_super) {
      */
     Service.prototype.internalHAPRepresentation = function () {
         var e_11, _a;
-        assert_1.default(this.iid, "iid cannot be undefined for service '" + this.displayName + "'");
-        assert_1.default(this.characteristics.length, "service '" + this.displayName + "' does not have any characteristics!");
+        (0, assert_1.default)(this.iid, "iid cannot be undefined for service '" + this.displayName + "'");
+        (0, assert_1.default)(this.characteristics.length, "service '" + this.displayName + "' does not have any characteristics!");
         var service = {
-            type: uuid_1.toShortForm(this.UUID),
+            type: (0, uuid_1.toShortForm)(this.UUID),
             iid: this.iid,
             characteristics: this.characteristics.map(function (characteristic) { return characteristic.internalHAPRepresentation(); }),
             hidden: this.isHiddenService ? true : undefined,
@@ -477,15 +481,15 @@ var Service = /** @class */ (function (_super) {
         if (this.linkedServices.length) {
             service.linked = [];
             try {
-                for (var _b = tslib_1.__values(this.linkedServices), _c = _b.next(); !_c.done; _c = _b.next()) {
+                for (var _b = (0, tslib_1.__values)(this.linkedServices), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var linked = _c.value;
                     if (!linked.iid) {
                         // we got a linked service which is not added to the accessory
                         // as it doesn't "exists" we just ignore it.
                         // we have some (at least one) plugins on homebridge which link to the AccessoryInformation service.
-                        // homebridge always creates it's own AccessoryInformation service and ignores the user supplied one
+                        // homebridge always creates its own AccessoryInformation service and ignores the user supplied one
                         // thus the link is automatically broken.
-                        debug("iid of linked service '" + linked.displayName + "' " + linked.UUID + " is undefined on service '" + this.displayName + "'");
+                        debug("iid of linked service '".concat(linked.displayName, "' ").concat(linked.UUID, " is undefined on service '").concat(this.displayName, "'"));
                         continue;
                     }
                     service.linked.push(linked.iid);
@@ -508,7 +512,7 @@ var Service = /** @class */ (function (_super) {
         var _this = this;
         // listen for changes in characteristics and bubble them up
         characteristic.on("change" /* CHANGE */, function (change) {
-            _this.emit("characteristic-change" /* CHARACTERISTIC_CHANGE */, tslib_1.__assign(tslib_1.__assign({}, change), { characteristic: characteristic }));
+            _this.emit("characteristic-change" /* CHARACTERISTIC_CHANGE */, (0, tslib_1.__assign)((0, tslib_1.__assign)({}, change), { characteristic: characteristic }));
         });
         characteristic.on("characteristic-warning" /* CHARACTERISTIC_WARNING */, this.emitCharacteristicWarningEvent.bind(this, characteristic));
     };
@@ -530,7 +534,7 @@ var Service = /** @class */ (function (_super) {
     Service.prototype._sideloadCharacteristics = function (targetCharacteristics) {
         var e_12, _a;
         try {
-            for (var targetCharacteristics_1 = tslib_1.__values(targetCharacteristics), targetCharacteristics_1_1 = targetCharacteristics_1.next(); !targetCharacteristics_1_1.done; targetCharacteristics_1_1 = targetCharacteristics_1.next()) {
+            for (var targetCharacteristics_1 = (0, tslib_1.__values)(targetCharacteristics), targetCharacteristics_1_1 = targetCharacteristics_1.next(); !targetCharacteristics_1_1.done; targetCharacteristics_1_1 = targetCharacteristics_1.next()) {
                 var target = targetCharacteristics_1_1.value;
                 this.setupCharacteristicEventHandlers(target);
             }

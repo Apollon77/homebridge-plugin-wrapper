@@ -5,7 +5,7 @@ var tslib_1 = require("tslib");
 var events_1 = require("events");
 var Characteristic_1 = require("../Characteristic");
 var Service_1 = require("../Service");
-var tlv = tslib_1.__importStar(require("../util/tlv"));
+var tlv = (0, tslib_1.__importStar)(require("../util/tlv"));
 var AccessControlTypes;
 (function (AccessControlTypes) {
     AccessControlTypes[AccessControlTypes["PASSWORD"] = 1] = "PASSWORD";
@@ -40,7 +40,7 @@ var AccessControlEvent;
     AccessControlEvent["PASSWORD_SETTING_UPDATED"] = "update-password";
 })(AccessControlEvent = exports.AccessControlEvent || (exports.AccessControlEvent = {}));
 var AccessControlManagement = /** @class */ (function (_super) {
-    tslib_1.__extends(AccessControlManagement, _super);
+    (0, tslib_1.__extends)(AccessControlManagement, _super);
     function AccessControlManagement(password, service) {
         var _this = _super.call(this) || this;
         /**

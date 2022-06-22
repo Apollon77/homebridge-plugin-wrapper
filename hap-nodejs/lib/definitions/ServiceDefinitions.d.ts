@@ -1,5 +1,13 @@
 import { Service } from "../Service";
 /**
+ * Service "Access Code"
+ * @since iOS 15
+ */
+export declare class AccessCode extends Service {
+    static readonly UUID: string;
+    constructor(displayName?: string, subtype?: string);
+}
+/**
  * Service "Access Control"
  */
 export declare class AccessControl extends Service {
@@ -10,6 +18,13 @@ export declare class AccessControl extends Service {
  * Service "Accessory Information"
  */
 export declare class AccessoryInformation extends Service {
+    static readonly UUID: string;
+    constructor(displayName?: string, subtype?: string);
+}
+/**
+ * Service "Accessory Metrics"
+ */
+export declare class AccessoryMetrics extends Service {
     static readonly UUID: string;
     constructor(displayName?: string, subtype?: string);
 }
@@ -31,6 +46,20 @@ export declare class AirPurifier extends Service {
  * Service "Air Quality Sensor"
  */
 export declare class AirQualitySensor extends Service {
+    static readonly UUID: string;
+    constructor(displayName?: string, subtype?: string);
+}
+/**
+ * Service "Asset Update"
+ */
+export declare class AssetUpdate extends Service {
+    static readonly UUID: string;
+    constructor(displayName?: string, subtype?: string);
+}
+/**
+ * Service "Assistant"
+ */
+export declare class Assistant extends Service {
     static readonly UUID: string;
     constructor(displayName?: string, subtype?: string);
 }
@@ -269,6 +298,14 @@ export declare class MotionSensor extends Service {
     constructor(displayName?: string, subtype?: string);
 }
 /**
+ * Service "NFC Access"
+ * @since iOS 15
+ */
+export declare class NFCAccess extends Service {
+    static readonly UUID: string;
+    constructor(displayName?: string, subtype?: string);
+}
+/**
  * Service "Occupancy Sensor"
  */
 export declare class OccupancySensor extends Service {
@@ -322,6 +359,13 @@ export declare class ServiceLabel extends Service {
  * Service "Siri"
  */
 export declare class Siri extends Service {
+    static readonly UUID: string;
+    constructor(displayName?: string, subtype?: string);
+}
+/**
+ * Service "Siri Endpoint"
+ */
+export declare class SiriEndpoint extends Service {
     static readonly UUID: string;
     constructor(displayName?: string, subtype?: string);
 }

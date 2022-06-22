@@ -6,3 +6,5 @@ coverage
 package-lock.json
 .idea
 config.json
+persist
+accessories

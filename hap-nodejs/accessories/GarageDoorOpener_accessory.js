@@ -21,16 +21,15 @@ var FAKE_GARAGE = {
         //use this section to get sensor values. set the boolean FAKE_GARAGE.opened with a sensor value.
         console.log("Sensor queried!");
         //FAKE_GARAGE.opened = true/false;
-    }
+    },
 };
-var garageUUID = __1.uuid.generate('hap-nodejs:accessories:' + 'GarageDoor');
-var garage = exports.accessory = new __1.Accessory('Garage Door', garageUUID);
+var garageUUID = __1.uuid.generate("hap-nodejs:accessories:" + "GarageDoor");
+var garage = exports.accessory = new __1.Accessory("Garage Door", garageUUID);
 // Add properties for publishing (in case we're using Core.js and not BridgedCore.js)
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 garage.username = "C1:5D:3F:EE:5E:FA"; //edit this if you use Core.js
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 garage.pincode = "031-45-154";
-// @ts-ignore
 garage.category = 4 /* GARAGE_DOOR_OPENER */;
 garage
     .getService(__1.Service.AccessoryInformation)
@@ -46,14 +45,14 @@ garage
     .setCharacteristic(__1.Characteristic.TargetDoorState, __1.Characteristic.TargetDoorState.CLOSED) // force initial state to CLOSED
     .getCharacteristic(__1.Characteristic.TargetDoorState)
     .on("set" /* SET */, function (value, callback) {
-    if (value == __1.Characteristic.TargetDoorState.CLOSED) {
+    if (value === __1.Characteristic.TargetDoorState.CLOSED) {
         FAKE_GARAGE.close();
         callback();
         garage
             .getService(__1.Service.GarageDoorOpener)
             .setCharacteristic(__1.Characteristic.CurrentDoorState, __1.Characteristic.CurrentDoorState.CLOSED);
     }
-    else if (value == __1.Characteristic.TargetDoorState.OPEN) {
+    else if (value === __1.Characteristic.TargetDoorState.OPEN) {
         FAKE_GARAGE.open();
         callback();
         garage

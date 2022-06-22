@@ -1,11 +1,11 @@
 /// <reference types="node" />
 import { EventEmitter } from "events";
 import { ServiceJsonObject } from "../internal-types";
-import { CharacteristicValue, Nullable, WithUUID } from '../types';
+import { CharacteristicValue, Nullable, WithUUID } from "../types";
 import { CharacteristicWarning } from "./Accessory";
-import { Characteristic, CharacteristicChange, SerializedCharacteristic } from './Characteristic';
-import { AccessControl, AccessoryInformation, AccessoryRuntimeInformation, AirPurifier, AirQualitySensor, AudioStreamManagement, Battery, BridgeConfiguration, BridgingState, CameraControl, CameraOperatingMode, CameraRecordingManagement, CameraRTPStreamManagement, CarbonDioxideSensor, CarbonMonoxideSensor, CloudRelay, ContactSensor, DataStreamTransportManagement, Diagnostics, Door, Doorbell, Fan, Fanv2, Faucet, FilterMaintenance, GarageDoorOpener, HeaterCooler, HumidifierDehumidifier, HumiditySensor, InputSource, IrrigationSystem, LeakSensor, Lightbulb, LightSensor, LockManagement, LockMechanism, Microphone, MotionSensor, OccupancySensor, Outlet, Pairing, PowerManagement, ProtocolInformation, SecuritySystem, ServiceLabel, Siri, Slats, SmartSpeaker, SmokeSensor, Speaker, StatefulProgrammableSwitch, StatelessProgrammableSwitch, Switch, TargetControl, TargetControlManagement, Television, TelevisionSpeaker, TemperatureSensor, Thermostat, ThreadTransport, TimeInformation, TransferTransportManagement, Tunnel, Valve, WiFiRouter, WiFiSatellite, WiFiTransport, Window, WindowCovering } from "./definitions";
-import { IdentifierCache } from './model/IdentifierCache';
+import { Characteristic, CharacteristicChange, SerializedCharacteristic } from "./Characteristic";
+import { AccessCode, AccessControl, AccessoryInformation, AccessoryMetrics, AccessoryRuntimeInformation, AirPurifier, AirQualitySensor, AssetUpdate, Assistant, AudioStreamManagement, Battery, BridgeConfiguration, BridgingState, CameraControl, CameraOperatingMode, CameraRecordingManagement, CameraRTPStreamManagement, CarbonDioxideSensor, CarbonMonoxideSensor, CloudRelay, ContactSensor, DataStreamTransportManagement, Diagnostics, Door, Doorbell, Fan, Fanv2, Faucet, FilterMaintenance, GarageDoorOpener, HeaterCooler, HumidifierDehumidifier, HumiditySensor, InputSource, IrrigationSystem, LeakSensor, Lightbulb, LightSensor, LockManagement, LockMechanism, Microphone, MotionSensor, NFCAccess, OccupancySensor, Outlet, Pairing, PowerManagement, ProtocolInformation, SecuritySystem, ServiceLabel, Siri, SiriEndpoint, Slats, SmartSpeaker, SmokeSensor, Speaker, StatefulProgrammableSwitch, StatelessProgrammableSwitch, Switch, TargetControl, TargetControlManagement, Television, TelevisionSpeaker, TemperatureSensor, Thermostat, ThreadTransport, TimeInformation, TransferTransportManagement, Tunnel, Valve, WiFiRouter, WiFiSatellite, WiFiTransport, Window, WindowCovering } from "./definitions";
+import { IdentifierCache } from "./model/IdentifierCache";
 import { HAPConnection } from "./util/eventedhttp";
 /**
  * @private
@@ -62,11 +62,15 @@ export declare interface Service {
  * work with these.
  */
 export declare class Service extends EventEmitter {
+    static AccessCode: typeof AccessCode;
     static AccessControl: typeof AccessControl;
     static AccessoryInformation: typeof AccessoryInformation;
+    static AccessoryMetrics: typeof AccessoryMetrics;
     static AccessoryRuntimeInformation: typeof AccessoryRuntimeInformation;
     static AirPurifier: typeof AirPurifier;
     static AirQualitySensor: typeof AirQualitySensor;
+    static AssetUpdate: typeof AssetUpdate;
+    static Assistant: typeof Assistant;
     static AudioStreamManagement: typeof AudioStreamManagement;
     static Battery: typeof Battery;
     /**
@@ -117,6 +121,7 @@ export declare class Service extends EventEmitter {
     static LockMechanism: typeof LockMechanism;
     static Microphone: typeof Microphone;
     static MotionSensor: typeof MotionSensor;
+    static NFCAccess: typeof NFCAccess;
     static OccupancySensor: typeof OccupancySensor;
     static Outlet: typeof Outlet;
     static Pairing: typeof Pairing;
@@ -129,6 +134,7 @@ export declare class Service extends EventEmitter {
     static SecuritySystem: typeof SecuritySystem;
     static ServiceLabel: typeof ServiceLabel;
     static Siri: typeof Siri;
+    static SiriEndpoint: typeof SiriEndpoint;
     /**
      * @deprecated Please use {@link Service.Slats}.
      */

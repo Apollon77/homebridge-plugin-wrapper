@@ -14,20 +14,19 @@ var FAKE_LOCK = {
     },
     identify: function () {
         console.log("Identify the lock!");
-    }
+    },
 };
 // Generate a consistent UUID for our Lock Accessory that will remain the same even when
 // restarting our server. We use the `uuid.generate` helper function to create a deterministic
 // UUID based on an arbitrary "namespace" and the word "lock".
-var lockUUID = __1.uuid.generate('hap-nodejs:accessories:lock');
+var lockUUID = __1.uuid.generate("hap-nodejs:accessories:lock");
 // This is the Accessory that we'll return to HAP-NodeJS that represents our fake lock.
-var lock = exports.accessory = new __1.Accessory('Lock', lockUUID);
+var lock = exports.accessory = new __1.Accessory("Lock", lockUUID);
 // Add properties for publishing (in case we're using Core.js and not BridgedCore.js)
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 lock.username = "C1:5D:3A:EE:5E:FA";
-// @ts-ignore
+// @ts-expect-error: Core/BridgeCore API
 lock.pincode = "031-45-154";
-// @ts-ignore
 lock.category = 6 /* DOOR_LOCK */;
 // set some basic properties (these values are arbitrary and setting them is optional)
 lock
@@ -44,13 +43,13 @@ var service = new __1.Service.LockMechanism("Fake Lock");
 // Add the actual Door Lock Service and listen for change events from iOS.
 service.getCharacteristic(__1.Characteristic.LockTargetState)
     .on("set" /* SET */, function (value, callback) {
-    if (value == __1.Characteristic.LockTargetState.UNSECURED) {
+    if (value === __1.Characteristic.LockTargetState.UNSECURED) {
         FAKE_LOCK.unlock();
         callback(); // Our fake Lock is synchronous - this value has been successfully set
         // now we want to set our lock's "actual state" to be unsecured so it shows as unlocked in iOS apps
         service.updateCharacteristic(__1.Characteristic.LockCurrentState, __1.Characteristic.LockCurrentState.UNSECURED);
     }
-    else if (value == __1.Characteristic.LockTargetState.SECURED) {
+    else if (value === __1.Characteristic.LockTargetState.SECURED) {
         FAKE_LOCK.lock();
         callback(); // Our fake Lock is synchronous - this value has been successfully set
         // now we want to set our lock's "actual state" to be locked so it shows as open in iOS apps

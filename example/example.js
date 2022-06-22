@@ -34,12 +34,7 @@ homebridgeWrapper.on('characteristic-value-change', function(data) {
     console.log('Characteristic change event: ' + (data.accessory.displayName?data.accessory.displayName:data.accessory.UUID) + '/' + (data.service.displayName?data.service.displayName:data.service.UUID) + '/' + (data.characteristic.displayName?data.characteristic.displayName:data.characteristic.UUID) + ' : ' + data.oldValue + ' --> ' + data.newValue);
 });
 
-// Register event handler to get info of an added accessory
-// Best is to get all the UUIDs and Names from the accessories,
-// services and characteristics you want for later usage
-homebridgeWrapper.on('addAccessory', function(accessory) {
-    console.log('Bridge addBridgedAccessory ' + accessory.displayName);
-
+function printAccessory(accessory) {
     for (var index in accessory.services) {
         var service = accessory.services[index];
 
@@ -55,6 +50,23 @@ homebridgeWrapper.on('addAccessory', function(accessory) {
             iterateCharArray(service.optionalCharacteristics);
         }
     }
+
+}
+
+// Register event handler to get info of an added accessory
+// Best is to get all the UUIDs and Names from the accessories,
+// services and characteristics you want for later usage
+homebridgeWrapper.on('addAccessory', function(accessory) {
+    console.log('Bridge addBridgedAccessory ' + accessory.displayName);
+
+    printAccessory(accessory)
+});
+
+// Register event handler to get info of an added external accessory
+homebridgeWrapper.on('addExternalAccessory', function(accessory) {
+    console.log('Bridge addExternalBridgedAccessory ' + accessory.displayName);
+
+    printAccessory(accessory)
 });
 
 // Really start the Wrapper logic

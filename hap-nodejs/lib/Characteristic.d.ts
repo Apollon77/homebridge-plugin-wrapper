@@ -1,13 +1,13 @@
 /// <reference types="node" />
 import { EventEmitter } from "events";
 import { CharacteristicJsonObject } from "../internal-types";
-import { CharacteristicValue, Nullable, VoidCallback } from '../types';
+import { CharacteristicValue, Nullable, VoidCallback } from "../types";
 import { CharacteristicWarningType } from "./Accessory";
-import { AccessControlLevel, AccessoryFlags, AccessoryIdentifier, Active, ActiveIdentifier, ActivityInterval, AdministratorOnlyAccess, AirParticulateDensity, AirParticulateSize, AirQuality, AppMatchingIdentifier, AudioFeedback, BatteryLevel, Brightness, ButtonEvent, CameraOperatingModeIndicator, CarbonDioxideDetected, CarbonDioxideLevel, CarbonDioxidePeakLevel, CarbonMonoxideDetected, CarbonMonoxideLevel, CarbonMonoxidePeakLevel, Category, CCAEnergyDetectThreshold, CCASignalDetectThreshold, CharacteristicValueActiveTransitionCount, CharacteristicValueTransitionControl, ChargingState, ClosedCaptions, ColorTemperature, ConfigureBridgedAccessory, ConfigureBridgedAccessoryStatus, ConfiguredName, ContactSensorState, CoolingThresholdTemperature, CurrentAirPurifierState, CurrentAmbientLightLevel, CurrentDoorState, CurrentFanState, CurrentHeaterCoolerState, CurrentHeatingCoolingState, CurrentHorizontalTiltAngle, CurrentHumidifierDehumidifierState, CurrentMediaState, CurrentPosition, CurrentRelativeHumidity, CurrentSlatState, CurrentTemperature, CurrentTiltAngle, CurrentTime, CurrentTransport, CurrentVerticalTiltAngle, CurrentVisibilityState, DataStreamHAPTransport, DataStreamHAPTransportInterrupt, DayoftheWeek, DiagonalFieldOfView, DigitalZoom, DiscoverBridgedAccessories, DiscoveredBridgedAccessories, DisplayOrder, EventRetransmissionMaximum, EventSnapshotsActive, EventTransmissionCounters, FilterChangeIndication, FilterLifeLevel, FirmwareRevision, FirmwareUpdateReadiness, FirmwareUpdateStatus, HardwareRevision, HeartBeat, HeatingThresholdTemperature, HoldPosition, HomeKitCameraActive, Hue, Identifier, Identify, ImageMirroring, ImageRotation, InputDeviceType, InputSourceType, InUse, IsConfigured, LeakDetected, LinkQuality, ListPairings, LockControlPoint, LockCurrentState, LockLastKnownAction, LockManagementAutoSecurityTimeout, LockPhysicalControls, LockTargetState, Logs, MACRetransmissionMaximum, MACTransmissionCounters, ManagedNetworkEnable, ManuallyDisabled, Manufacturer, MaximumTransmitPower, Model, MotionDetected, Mute, Name, NetworkAccessViolationControl, NetworkClientProfileControl, NetworkClientStatusControl, NightVision, NitrogenDioxideDensity, ObstructionDetected, OccupancyDetected, On, OperatingStateResponse, OpticalZoom, OutletInUse, OzoneDensity, PairingFeatures, PairSetup, PairVerify, PasswordSetting, PeriodicSnapshotsActive, PictureMode, Ping, PM10Density, PM2_5Density, PositionState, PowerModeSelection, ProductData, ProgrammableSwitchEvent, ProgrammableSwitchOutputState, ProgramMode, Reachable, ReceivedSignalStrengthIndication, ReceiverSensitivity, RecordingAudioActive, RelativeHumidityDehumidifierThreshold, RelativeHumidityHumidifierThreshold, RelayControlPoint, RelayEnabled, RelayState, RemainingDuration, RemoteKey, ResetFilterIndication, RotationDirection, RotationSpeed, RouterStatus, Saturation, SecuritySystemAlarmType, SecuritySystemCurrentState, SecuritySystemTargetState, SelectedAudioStreamConfiguration, SelectedCameraRecordingConfiguration, SelectedRTPStreamConfiguration, SerialNumber, ServiceLabelIndex, ServiceLabelNamespace, SetDuration, SetupDataStreamTransport, SetupEndpoints, SetupTransferTransport, SignalToNoiseRatio, SiriInputType, SlatType, SleepDiscoveryMode, SleepInterval, SmokeDetected, SoftwareRevision, StagedFirmwareVersion, StatusActive, StatusFault, StatusJammed, StatusLowBattery, StatusTampered, StreamingStatus, SulphurDioxideDensity, SupportedAudioRecordingConfiguration, SupportedAudioStreamConfiguration, SupportedCameraRecordingConfiguration, SupportedCharacteristicValueTransitionConfiguration, SupportedDataStreamTransportConfiguration, SupportedDiagnosticsSnapshot, SupportedFirmwareUpdateConfiguration, SupportedRouterConfiguration, SupportedRTPConfiguration, SupportedTransferTransportConfiguration, SupportedVideoRecordingConfiguration, SupportedVideoStreamConfiguration, SwingMode, TargetAirPurifierState, TargetAirQuality, TargetControlList, TargetControlSupportedConfiguration, TargetDoorState, TargetFanState, TargetHeaterCoolerState, TargetHeatingCoolingState, TargetHorizontalTiltAngle, TargetHumidifierDehumidifierState, TargetMediaState, TargetPosition, TargetRelativeHumidity, TargetSlatState, TargetTemperature, TargetTiltAngle, TargetVerticalTiltAngle, TargetVisibilityState, TemperatureDisplayUnits, ThirdPartyCameraActive, ThreadControlPoint, ThreadNodeCapabilities, ThreadOpenThreadVersion, ThreadStatus, TimeUpdate, TransmitPower, TunnelConnectionTimeout, TunneledAccessoryAdvertising, TunneledAccessoryConnected, TunneledAccessoryStateNumber, ValveType, Version, VideoAnalysisActive, VOCDensity, Volume, VolumeControlType, VolumeSelector, WakeConfiguration, WANConfigurationList, WANStatusList, WaterLevel, WiFiCapabilities, WiFiConfigurationControl, WiFiSatelliteStatus } from "./definitions";
+import { AccessCodeControlPoint, AccessCodeSupportedConfiguration, AccessControlLevel, AccessoryFlags, AccessoryIdentifier, Active, ActiveIdentifier, ActivityInterval, AdministratorOnlyAccess, AirParticulateDensity, AirParticulateSize, AirPlayEnable, AirQuality, AppMatchingIdentifier, AssetUpdateReadiness, AudioFeedback, BatteryLevel, Brightness, ButtonEvent, CameraOperatingModeIndicator, CarbonDioxideDetected, CarbonDioxideLevel, CarbonDioxidePeakLevel, CarbonMonoxideDetected, CarbonMonoxideLevel, CarbonMonoxidePeakLevel, Category, CCAEnergyDetectThreshold, CCASignalDetectThreshold, CharacteristicValueActiveTransitionCount, CharacteristicValueTransitionControl, ChargingState, ClosedCaptions, ColorTemperature, ConfigurationState, ConfigureBridgedAccessory, ConfigureBridgedAccessoryStatus, ConfiguredName, ContactSensorState, CoolingThresholdTemperature, CurrentAirPurifierState, CurrentAmbientLightLevel, CurrentDoorState, CurrentFanState, CurrentHeaterCoolerState, CurrentHeatingCoolingState, CurrentHorizontalTiltAngle, CurrentHumidifierDehumidifierState, CurrentMediaState, CurrentPosition, CurrentRelativeHumidity, CurrentSlatState, CurrentTemperature, CurrentTiltAngle, CurrentTime, CurrentTransport, CurrentVerticalTiltAngle, CurrentVisibilityState, DataStreamHAPTransport, DataStreamHAPTransportInterrupt, DayoftheWeek, DiagonalFieldOfView, DigitalZoom, DiscoverBridgedAccessories, DiscoveredBridgedAccessories, DisplayOrder, EventRetransmissionMaximum, EventSnapshotsActive, EventTransmissionCounters, FilterChangeIndication, FilterLifeLevel, FirmwareRevision, FirmwareUpdateReadiness, FirmwareUpdateStatus, HardwareFinish, HardwareRevision, HeartBeat, HeatingThresholdTemperature, HoldPosition, HomeKitCameraActive, Hue, Identifier, Identify, ImageMirroring, ImageRotation, InputDeviceType, InputSourceType, InUse, IsConfigured, LeakDetected, LinkQuality, ListPairings, LockControlPoint, LockCurrentState, LockLastKnownAction, LockManagementAutoSecurityTimeout, LockPhysicalControls, LockTargetState, Logs, MACRetransmissionMaximum, MACTransmissionCounters, ManagedNetworkEnable, ManuallyDisabled, Manufacturer, MaximumTransmitPower, Model, MotionDetected, MultifunctionButton, Mute, Name, NetworkAccessViolationControl, NetworkClientProfileControl, NetworkClientStatusControl, NFCAccessControlPoint, NFCAccessSupportedConfiguration, NightVision, NitrogenDioxideDensity, ObstructionDetected, OccupancyDetected, On, OperatingStateResponse, OpticalZoom, OutletInUse, OzoneDensity, PairingFeatures, PairSetup, PairVerify, PasswordSetting, PeriodicSnapshotsActive, PictureMode, Ping, PM10Density, PM2_5Density, PositionState, PowerModeSelection, ProductData, ProgrammableSwitchEvent, ProgrammableSwitchOutputState, ProgramMode, Reachable, ReceivedSignalStrengthIndication, ReceiverSensitivity, RecordingAudioActive, RelativeHumidityDehumidifierThreshold, RelativeHumidityHumidifierThreshold, RelayControlPoint, RelayEnabled, RelayState, RemainingDuration, RemoteKey, ResetFilterIndication, RotationDirection, RotationSpeed, RouterStatus, Saturation, SecuritySystemAlarmType, SecuritySystemCurrentState, SecuritySystemTargetState, SelectedAudioStreamConfiguration, SelectedCameraRecordingConfiguration, SelectedDiagnosticsModes, SelectedRTPStreamConfiguration, SerialNumber, ServiceLabelIndex, ServiceLabelNamespace, SetDuration, SetupDataStreamTransport, SetupEndpoints, SetupTransferTransport, SignalToNoiseRatio, SiriEnable, SiriEndpointSessionStatus, SiriEngineVersion, SiriInputType, SiriLightOnUse, SiriListening, SiriTouchToUse, SlatType, SleepDiscoveryMode, SleepInterval, SmokeDetected, SoftwareRevision, StagedFirmwareVersion, StatusActive, StatusFault, StatusJammed, StatusLowBattery, StatusTampered, StreamingStatus, SulphurDioxideDensity, SupportedAssetTypes, SupportedAudioRecordingConfiguration, SupportedAudioStreamConfiguration, SupportedCameraRecordingConfiguration, SupportedCharacteristicValueTransitionConfiguration, SupportedDataStreamTransportConfiguration, SupportedDiagnosticsModes, SupportedDiagnosticsSnapshot, SupportedFirmwareUpdateConfiguration, SupportedRouterConfiguration, SupportedRTPConfiguration, SupportedTransferTransportConfiguration, SupportedVideoRecordingConfiguration, SupportedVideoStreamConfiguration, SwingMode, TargetAirPurifierState, TargetAirQuality, TargetControlList, TargetControlSupportedConfiguration, TargetDoorState, TargetFanState, TargetHeaterCoolerState, TargetHeatingCoolingState, TargetHorizontalTiltAngle, TargetHumidifierDehumidifierState, TargetMediaState, TargetPosition, TargetRelativeHumidity, TargetSlatState, TargetTemperature, TargetTiltAngle, TargetVerticalTiltAngle, TargetVisibilityState, TemperatureDisplayUnits, ThirdPartyCameraActive, ThreadControlPoint, ThreadNodeCapabilities, ThreadOpenThreadVersion, ThreadStatus, TimeUpdate, TransmitPower, TunnelConnectionTimeout, TunneledAccessoryAdvertising, TunneledAccessoryConnected, TunneledAccessoryStateNumber, ValveType, Version, VideoAnalysisActive, VOCDensity, Volume, VolumeControlType, VolumeSelector, WakeConfiguration, WANConfigurationList, WANStatusList, WaterLevel, WiFiCapabilities, WiFiConfigurationControl, WiFiSatelliteStatus } from "./definitions";
 import { HAPStatus } from "./HAPServer";
-import { IdentifierCache } from './model/IdentifierCache';
+import { IdentifierCache } from "./model/IdentifierCache";
 import { HAPConnection } from "./util/eventedhttp";
-import { HapStatusError } from './util/hapStatusError';
+import { HapStatusError } from "./util/hapStatusError";
 export declare const enum Formats {
     BOOL = "bool",
     /**
@@ -130,7 +130,7 @@ export declare type CharacteristicChange = {
     newValue: Nullable<CharacteristicValue>;
     oldValue: Nullable<CharacteristicValue>;
     reason: ChangeReason;
-    context?: any;
+    context?: CharacteristicContext;
 };
 export declare const enum ChangeReason {
     /**
@@ -207,14 +207,15 @@ export declare const enum CharacteristicEventTypes {
      */
     CHARACTERISTIC_WARNING = "characteristic-warning"
 }
+export declare type CharacteristicContext = any;
 export declare type CharacteristicGetCallback = (status?: HAPStatus | null | Error, value?: Nullable<CharacteristicValue>) => void;
 export declare type CharacteristicSetCallback = (error?: HAPStatus | null | Error, writeResponse?: Nullable<CharacteristicValue>) => void;
-export declare type CharacteristicGetHandler = (context: any, connection?: HAPConnection) => Promise<Nullable<CharacteristicValue>> | Nullable<CharacteristicValue>;
-export declare type CharacteristicSetHandler = (value: CharacteristicValue, context: any, connection?: HAPConnection) => Promise<Nullable<CharacteristicValue> | void> | Nullable<CharacteristicValue> | void;
+export declare type CharacteristicGetHandler = (context: CharacteristicContext, connection?: HAPConnection) => Promise<Nullable<CharacteristicValue>> | Nullable<CharacteristicValue>;
+export declare type CharacteristicSetHandler = (value: CharacteristicValue, context: CharacteristicContext, connection?: HAPConnection) => Promise<Nullable<CharacteristicValue> | void> | Nullable<CharacteristicValue> | void;
 export declare type AdditionalAuthorizationHandler = (additionalAuthorizationData: string | undefined) => boolean;
 export declare interface Characteristic {
-    on(event: "get", listener: (callback: CharacteristicGetCallback, context: any, connection?: HAPConnection) => void): this;
-    on(event: "set", listener: (value: CharacteristicValue, callback: CharacteristicSetCallback, context: any, connection?: HAPConnection) => void): this;
+    on(event: "get", listener: (callback: CharacteristicGetCallback, context: CharacteristicContext, connection?: HAPConnection) => void): this;
+    on(event: "set", listener: (value: CharacteristicValue, callback: CharacteristicSetCallback, context: CharacteristicContext, connection?: HAPConnection) => void): this;
     on(event: "change", listener: (change: CharacteristicChange) => void): this;
     /**
      * @private
@@ -231,11 +232,11 @@ export declare interface Characteristic {
     /**
      * @private
      */
-    emit(event: "get", callback: CharacteristicGetCallback, context: any, connection?: HAPConnection): boolean;
+    emit(event: "get", callback: CharacteristicGetCallback, context: CharacteristicContext, connection?: HAPConnection): boolean;
     /**
      * @private
      */
-    emit(event: "set", value: CharacteristicValue, callback: CharacteristicSetCallback, context: any, connection?: HAPConnection): boolean;
+    emit(event: "set", value: CharacteristicValue, callback: CharacteristicSetCallback, context: CharacteristicContext, connection?: HAPConnection): boolean;
     /**
      * @private
      */
@@ -265,17 +266,19 @@ export declare interface Characteristic {
  */
 export declare class Characteristic extends EventEmitter {
     /**
-     * @deprecated Please use the Formats const enum above. Scheduled to be removed in 2021-06.
+     * @deprecated Please use the Formats const enum above.
      */
     static Formats: typeof Formats;
     /**
-     * @deprecated Please use the Units const enum above. Scheduled to be removed in 2021-06.
+     * @deprecated Please use the Units const enum above.
      */
     static Units: typeof Units;
     /**
-     * @deprecated Please use the Perms const enum above. Scheduled to be removed in 2021-06.
+     * @deprecated Please use the Perms const enum above.
      */
     static Perms: typeof Perms;
+    static AccessCodeControlPoint: typeof AccessCodeControlPoint;
+    static AccessCodeSupportedConfiguration: typeof AccessCodeSupportedConfiguration;
     static AccessControlLevel: typeof AccessControlLevel;
     static AccessoryFlags: typeof AccessoryFlags;
     static AccessoryIdentifier: typeof AccessoryIdentifier;
@@ -285,8 +288,10 @@ export declare class Characteristic extends EventEmitter {
     static AdministratorOnlyAccess: typeof AdministratorOnlyAccess;
     static AirParticulateDensity: typeof AirParticulateDensity;
     static AirParticulateSize: typeof AirParticulateSize;
+    static AirPlayEnable: typeof AirPlayEnable;
     static AirQuality: typeof AirQuality;
     static AppMatchingIdentifier: typeof AppMatchingIdentifier;
+    static AssetUpdateReadiness: typeof AssetUpdateReadiness;
     static AudioFeedback: typeof AudioFeedback;
     static BatteryLevel: typeof BatteryLevel;
     static Brightness: typeof Brightness;
@@ -309,6 +314,7 @@ export declare class Characteristic extends EventEmitter {
     static ChargingState: typeof ChargingState;
     static ClosedCaptions: typeof ClosedCaptions;
     static ColorTemperature: typeof ColorTemperature;
+    static ConfigurationState: typeof ConfigurationState;
     /**
      * @deprecated Removed and not used anymore
      */
@@ -366,6 +372,7 @@ export declare class Characteristic extends EventEmitter {
     static FirmwareRevision: typeof FirmwareRevision;
     static FirmwareUpdateReadiness: typeof FirmwareUpdateReadiness;
     static FirmwareUpdateStatus: typeof FirmwareUpdateStatus;
+    static HardwareFinish: typeof HardwareFinish;
     static HardwareRevision: typeof HardwareRevision;
     static HeartBeat: typeof HeartBeat;
     static HeatingThresholdTemperature: typeof HeatingThresholdTemperature;
@@ -401,11 +408,14 @@ export declare class Characteristic extends EventEmitter {
     static MaximumTransmitPower: typeof MaximumTransmitPower;
     static Model: typeof Model;
     static MotionDetected: typeof MotionDetected;
+    static MultifunctionButton: typeof MultifunctionButton;
     static Mute: typeof Mute;
     static Name: typeof Name;
     static NetworkAccessViolationControl: typeof NetworkAccessViolationControl;
     static NetworkClientProfileControl: typeof NetworkClientProfileControl;
     static NetworkClientStatusControl: typeof NetworkClientStatusControl;
+    static NFCAccessControlPoint: typeof NFCAccessControlPoint;
+    static NFCAccessSupportedConfiguration: typeof NFCAccessSupportedConfiguration;
     static NightVision: typeof NightVision;
     static NitrogenDioxideDensity: typeof NitrogenDioxideDensity;
     static ObstructionDetected: typeof ObstructionDetected;
@@ -454,6 +464,7 @@ export declare class Characteristic extends EventEmitter {
     static SecuritySystemTargetState: typeof SecuritySystemTargetState;
     static SelectedAudioStreamConfiguration: typeof SelectedAudioStreamConfiguration;
     static SelectedCameraRecordingConfiguration: typeof SelectedCameraRecordingConfiguration;
+    static SelectedDiagnosticsModes: typeof SelectedDiagnosticsModes;
     static SelectedRTPStreamConfiguration: typeof SelectedRTPStreamConfiguration;
     static SerialNumber: typeof SerialNumber;
     static ServiceLabelIndex: typeof ServiceLabelIndex;
@@ -463,7 +474,13 @@ export declare class Characteristic extends EventEmitter {
     static SetupEndpoints: typeof SetupEndpoints;
     static SetupTransferTransport: typeof SetupTransferTransport;
     static SignalToNoiseRatio: typeof SignalToNoiseRatio;
+    static SiriEnable: typeof SiriEnable;
+    static SiriEndpointSessionStatus: typeof SiriEndpointSessionStatus;
+    static SiriEngineVersion: typeof SiriEngineVersion;
     static SiriInputType: typeof SiriInputType;
+    static SiriLightOnUse: typeof SiriLightOnUse;
+    static SiriListening: typeof SiriListening;
+    static SiriTouchToUse: typeof SiriTouchToUse;
     static SlatType: typeof SlatType;
     static SleepDiscoveryMode: typeof SleepDiscoveryMode;
     static SleepInterval: typeof SleepInterval;
@@ -477,11 +494,13 @@ export declare class Characteristic extends EventEmitter {
     static StatusTampered: typeof StatusTampered;
     static StreamingStatus: typeof StreamingStatus;
     static SulphurDioxideDensity: typeof SulphurDioxideDensity;
+    static SupportedAssetTypes: typeof SupportedAssetTypes;
     static SupportedAudioRecordingConfiguration: typeof SupportedAudioRecordingConfiguration;
     static SupportedAudioStreamConfiguration: typeof SupportedAudioStreamConfiguration;
     static SupportedCameraRecordingConfiguration: typeof SupportedCameraRecordingConfiguration;
     static SupportedCharacteristicValueTransitionConfiguration: typeof SupportedCharacteristicValueTransitionConfiguration;
     static SupportedDataStreamTransportConfiguration: typeof SupportedDataStreamTransportConfiguration;
+    static SupportedDiagnosticsModes: typeof SupportedDiagnosticsModes;
     static SupportedDiagnosticsSnapshot: typeof SupportedDiagnosticsSnapshot;
     static SupportedFirmwareUpdateConfiguration: typeof SupportedFirmwareUpdateConfiguration;
     static SupportedRouterConfiguration: typeof SupportedRouterConfiguration;
@@ -671,7 +690,7 @@ export declare class Characteristic extends EventEmitter {
      *
      * @deprecated
      */
-    getValue(callback?: CharacteristicGetCallback, context?: any): void;
+    getValue(callback?: CharacteristicGetCallback, context?: CharacteristicContext): void;
     /**
      * This updates the value by calling the {@link CharacteristicEventTypes.SET} event handler associated with the characteristic.
      * This acts the same way as when a HomeKit controller sends a /characteristics request to update the characteristic.
@@ -711,7 +730,7 @@ export declare class Characteristic extends EventEmitter {
      * @param context - Passed to the {@link CharacteristicEventTypes.SET} and {@link CharacteristicEventTypes.CHANGE} event handler.
      * @deprecated Parameter callback is deprecated.
      */
-    setValue(value: CharacteristicValue, callback?: CharacteristicSetCallback, context?: any): Characteristic;
+    setValue(value: CharacteristicValue, callback?: CharacteristicSetCallback, context?: CharacteristicContext): Characteristic;
     /**
      * This updates the value by calling the {@link CharacteristicEventTypes.SET} event handler associated with the characteristic.
      * This acts the same way as when a HomeKit controller sends a /characteristics request to update the characteristic.
@@ -724,7 +743,7 @@ export declare class Characteristic extends EventEmitter {
      * @param value - The new value.
      * @param context - Passed to the {@link CharacteristicEventTypes.SET} and {@link CharacteristicEventTypes.CHANGE} event handler.
      */
-    setValue(value: CharacteristicValue, context?: any): Characteristic;
+    setValue(value: CharacteristicValue, context?: CharacteristicContext): Characteristic;
     /**
      * This updates the value of the characteristic. If the value changed, a event notification will be sent to all connected
      * HomeKit controllers which are registered to receive event notifications for this characteristic.
@@ -753,7 +772,7 @@ export declare class Characteristic extends EventEmitter {
      * @param context - Passed to the {@link CharacteristicEventTypes.CHANGE} event handler.
      * @deprecated Parameter callback is deprecated.
      */
-    updateValue(value: Nullable<CharacteristicValue>, callback?: () => void, context?: any): Characteristic;
+    updateValue(value: Nullable<CharacteristicValue>, callback?: () => void, context?: CharacteristicContext): Characteristic;
     /**
      * This updates the value of the characteristic. If the value changed, a event notification will be sent to all connected
      * HomeKit controllers which are registered to receive event notifications for this characteristic.
@@ -761,17 +780,17 @@ export declare class Characteristic extends EventEmitter {
      * @param value - The new value.
      * @param context - Passed to the {@link CharacteristicEventTypes.CHANGE} event handler.
      */
-    updateValue(value: Nullable<CharacteristicValue>, context?: any): Characteristic;
+    updateValue(value: Nullable<CharacteristicValue>, context?: CharacteristicContext): Characteristic;
     /**
      * This method acts similarly to {@link updateValue} by setting the current value of the characteristic
      * without calling any {@link CharacteristicEventTypes.SET} or {@link onSet} handlers.
-     * The difference is that this method forces a event notification sent (updateValue only sends one if the value changed).
+     * The difference is that this method forces an event notification sent (updateValue only sends one if the value changed).
      * This is especially useful for characteristics like {@link Characteristic.ButtonEvent} or {@link Characteristic.ProgrammableSwitchEvent}.
      *
      * @param value - The new value.
      * @param context - Passed to the {@link CharacteristicEventTypes.CHANGE} event handler.
      */
-    sendEventNotification(value: CharacteristicValue, context?: any): Characteristic;
+    sendEventNotification(value: CharacteristicValue, context?: CharacteristicContext): Characteristic;
     /**
      * Called when a HAP requests wants to know the current value of the characteristic.
      *
@@ -779,7 +798,7 @@ export declare class Characteristic extends EventEmitter {
      * @param context - Deprecated parameter. There for backwards compatibility.
      * @private Used by the Accessory to load the characteristic value
      */
-    handleGetRequest(connection?: HAPConnection, context?: any): Promise<Nullable<CharacteristicValue>>;
+    handleGetRequest(connection?: HAPConnection, context?: CharacteristicContext): Promise<Nullable<CharacteristicValue>>;
     /**
      * Called when a HAP requests update the current value of the characteristic.
      *
@@ -791,7 +810,7 @@ export declare class Characteristic extends EventEmitter {
      *  write response value is resolved.
      * @private
      */
-    handleSetRequest(value: CharacteristicValue, connection?: HAPConnection, context?: any): Promise<CharacteristicValue | void>;
+    handleSetRequest(value: CharacteristicValue, connection?: HAPConnection, context?: CharacteristicContext): Promise<CharacteristicValue | void>;
     /**
      * Called once a HomeKit controller subscribes to events of this characteristics.
      * @private
