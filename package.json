@@ -1,6 +1,6 @@
 {
   "name": "homebridge-plugin-wrapper",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Wrapper for Homebridge and NodeJS-HAP with reduced dependencies that allows to intercept plugin values and also send to them",
   "author": {
     "name": "Ingo Fischer",

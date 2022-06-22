@@ -65,8 +65,7 @@ The example contains code how to get and set values.
 * More/Better Documentation :-) (open Issue if you need it)
 
 ## Changelog
-
-### __WORK IN PROGRESS__
+### 2.2.1 (2022-06-22)
 * Fix missing include files
 
 ### 2.2.0 (2022-06-22)
@@ -83,7 +82,7 @@ The example contains code how to get and set values.
 * upgrade to homebridge 1.1.6 (and hap-nodejs 0.7.9)
 
 ### 2.0.1 (2020-08-08)
-* set a very high limit (again) on allowed accessories and services because irrelevant 
+* set a very high limit (again) on allowed accessories and services because irrelevant
 
 ### 2.0.0 (2020-08-03)
 * Update to homebridge 1.1.1 with HAP-NodeJS 0.7.7
@@ -91,7 +90,7 @@ The example contains code how to get and set values.
 * event characteristic-value-update: notify even when value does not change. Useful for downstream APIs that timeout without regular updates.
 
 ### 1.1.1 (2019-07-08)
-* set a very high limit on allowed accessories because irrelevant 
+* set a very high limit on allowed accessories because irrelevant
 
 ### 1.1.0 (2019-06-30)
 * sync to homebridge 0.4.50 (Github version from 2019-06-03)
