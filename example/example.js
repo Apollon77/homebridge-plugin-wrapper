@@ -42,6 +42,7 @@ function printAccessory(accessory) {
             for (var chindex in chars) {
                 var char = chars[chindex];
                 console.log('Characteristic added: ' + (accessory.displayName?accessory.displayName:accessory.UUID) + '/' + (service.displayName?service.displayName:service.UUID) + '/' + (char.displayName?char.displayName:char.UUID));
+                // register to characteristic-warning event to get infos on issues on characteristic
             }
         }
 
