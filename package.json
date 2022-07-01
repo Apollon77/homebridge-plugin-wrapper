@@ -41,7 +41,7 @@
     "chai": "^4.3.6",
     "istanbul": "^0.4.5",
     "sinon": "^14.0.0",
-    "nock": "^13.2.7",
+    "nock": "^13.2.8",
     "homebridge-sun-position": "^0.2.2",
     "homebridge-http-webhooks": "^0.1.16",
     "homebridge-plugin-name": "git+https://git@github.com/Apollon77/homebridge-plugin-template"
