@@ -66,8 +66,7 @@ The example contains code how to get and set values.
 * More/Better Documentation :-) (open Issue if you need it)
 
 ## Changelog
-
-### __WORK IN PROGRESS__
+### 2.3.0 (2022-08-17)
 * Upgrade to homebridge 1.5.0 (and hap-nodejs 0.10.2)
 
 ### 2.2.1 (2022-06-22)
