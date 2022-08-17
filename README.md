@@ -55,6 +55,7 @@ The example contains code how to get and set values.
 ## What will NOT work?
 * Since homebridge 1.3.x it is possible to define child bridges for the devices. This idea basically makes no sense when using this library. This means that a configuration with child bridges will fork separate processes, but in fact the library can not access those data, so please do not configure it that way.
 * The homebridge UI/config plugins are not working.
+* Since homebridge 1.5.0 there might work plugins that run as ESM modules. Not sure if such modules will work with this library.
 
 ## What's changed on Homebridge/HAP-NodeJS?
 * Homebridge: version.js to return the version of the files "static" instead of a dynamic lookup
@@ -65,6 +66,10 @@ The example contains code how to get and set values.
 * More/Better Documentation :-) (open Issue if you need it)
 
 ## Changelog
+
+### __WORK IN PROGRESS__
+* Upgrade to homebridge 1.5.0 (and hap-nodejs 0.10.2)
+
 ### 2.2.1 (2022-06-22)
 * Fix missing include files
 
