@@ -66,6 +66,15 @@ The example contains code how to get and set values.
 * More/Better Documentation :-) (open Issue if you need it)
 
 ## Changelog
+
+### __WORK IN PROGRESS__
+* Change process and lookup services and characteristics by their UUID anew when polling or such to make sure to get the most current objects (makes it compatible to more plugins)
+* Do not handle optionalCharacteristics anymore, because they are just for reference - a normal characteristic is added as soon as an option characteristic is used
+* offer methods to poll an Accessory (all services and characteristics) or a Service (with all Characteristics) or a characteristic.
+* Also check updatePlatformAccessories calls and emit updateAccessory event
+* Also check removePlatformAccessories calls and emit removeAccessory event
+* convert to ES6 code style
+
 ### 2.3.0 (2022-08-17)
 * Upgrade to homebridge 1.5.0 (and hap-nodejs 0.10.2)
 

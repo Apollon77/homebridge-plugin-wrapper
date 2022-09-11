@@ -3,21 +3,21 @@
 /*jslint node: true */
 /*jslint esversion: 6 */
 
-var mock = require('mock-require');
+const mock = require('mock-require');
 
-var inherits = require('util').inherits;
-var EventEmitter = require('events').EventEmitter;
-var fs = require('fs');
-var path = require('path');
+const inherits = require('util').inherits;
+const EventEmitter = require('events').EventEmitter;
+const fs = require('fs');
+const path = require('path');
 
-var hapTypes = require(__dirname + '/hap-nodejs/accessories/types');
-var User;
-var hap;
-var hapStorage;
-var Server;
-var ServerReq;
-var Service;
-var Accessory;
+const hapTypes = require(`${__dirname}/hap-nodejs/accessories/types`);
+let User;
+let hap;
+let hapStorage;
+let Server;
+let ServerReq;
+let Service;
+let Accessory;
 
 function customStringify(v, func, intent) {
     const cache = new Map();
@@ -36,7 +36,7 @@ function customStringify(v, func, intent) {
 
 
 function HomebridgeWrapper(config) {
-    var that = this;
+    const that = this;
 
     mock('hap-nodejs', './hap-nodejs');
     mock('hap-nodejs/accessories/types.js', './hap-nodejs/accessories/types.js');
@@ -71,7 +71,6 @@ function HomebridgeWrapper(config) {
                     updateTxt: function() {},
                     stop: function() {},
                     destroy: function() {},
-                    updateTxt: function() {},
                 }
             },
             destroy: function() {}
@@ -98,6 +97,7 @@ function HomebridgeWrapper(config) {
     this.characteristicPollingTimeouts = {};
     this.characteristicValues = {};
     this.insecureAccess = config.insecureAccess;
+    this.knownAccessories = {};
 
     if (!this.wrapperConfig.bridge) {
         this.wrapperConfig.bridge = {
@@ -117,109 +117,217 @@ function HomebridgeWrapper(config) {
         fs.writeFileSync(path.join(config.homebridgeConfigPath, 'config.json'), JSON.stringify(this.wrapperConfig));
     }
     catch (e) {
-        that.logger.warn(' Error writing ' + path.join(config.homebridgeConfigPath, 'config.json') + ' - Some Plugins may need that.');
+        that.logger.warn(` Error writing ${path.join(config.homebridgeConfigPath, 'config.json')} - Some Plugins may need that.`);
     }
     User.setStoragePath(config.homebridgeConfigPath);
 
     function WrapperBridge(displayName, serialNumber) {
-        that.logger.debug('Homebridge Wrapper Bridge constructor displayName=' + displayName + ', UUID=' + serialNumber);
+        that.logger.debug(`Homebridge Wrapper Bridge constructor displayName=${displayName}, UUID=${serialNumber}`);
         WrapperBridge.super_.call(this, displayName, serialNumber);
 
         this._origPublish = this.publish;
         this._origAddBridgedAccessory = this.addBridgedAccessory;
 
         this.publish = function(info, allowInsecureRequest) {
-            that.logger.info('Homebridge Wrapper Bridge publish ' + customStringify(info));
+            that.logger.info(`Homebridge Wrapper Bridge publish ${customStringify(info)}`);
             // Вызов метода родительского класса
             // Calling the method of the parent class
             this._origPublish.call(this, info, allowInsecureRequest);
         };
 
-        this.__wrapperAccessoryLogic = function(accessory, external) {
-            function handleCharacteristicPolling(accessory, service, characteristic) {
-                var pollingInterval;
-                if (that.characteristicPollingList && (characteristic.displayName in that.characteristicPollingList)) {
-                    pollingInterval = that.characteristicPollingList[characteristic.displayName];
-                } else {
-                    pollingInterval = that.characteristicPollingInterval;
-                }
-                //that.logger.debug('Interval: char=' + characteristic.displayName + ' ; interval= ' + customStringify(pollingInterval));
-                if (pollingInterval) {
-                    //that.logger.debug('POLLING: char=' + characteristic.displayName + ' ; interval= ' + customStringify(pollingInterval));
-                    if (that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]) {
-                        clearTimeout(that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]);
-                    }
-                    that.characteristicPollingTimeouts[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = setTimeout(function() {
-                        characteristic.getValue(function(err, value) {
-                            if (value !== that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID]) {
-                                that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
-                                that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
-                            }
-                            that.emit('characteristic-value-update', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
-                            handleCharacteristicPolling(accessory, service, characteristic);
-                        });
-                    }, pollingInterval);
-                }
+        this.___handleCharacteristicPolling = function(accessory, serviceOrUUID, characteristicOrUUID) {
+            const service = typeof serviceOrUUID === 'string' ? accessory.services.find(s => s.UUID === serviceOrUUID) : serviceOrUUID;
+            const characteristic = typeof characteristicOrUUID === 'string' ? service.characteristics.find(c => c.UUID === characteristicOrUUID) : characteristicOrUUID;
+            let pollingInterval;
+            if (that.characteristicPollingList && (characteristic.displayName in that.characteristicPollingList)) {
+                pollingInterval = that.characteristicPollingList[characteristic.displayName];
+            } else {
+                pollingInterval = that.characteristicPollingInterval;
             }
+            //that.logger.debug('Interval: char=' + characteristic.displayName + ' ; interval= ' + customStringify(pollingInterval));
+            if (pollingInterval) {
+                const serviceUUID = service.UUID;
+                const characteristicUUID = characteristic.UUID;
+                const key = `${accessory.UUID}.${serviceUUID}.${characteristicUUID}`;
+                //that.logger.debug('POLLING: char=' + characteristic.displayName + ' ; interval= ' + customStringify(pollingInterval));
+                if (that.characteristicPollingTimeouts[key]) {
+                    clearTimeout(that.characteristicPollingTimeouts[key]);
+                }
+                that.characteristicPollingTimeouts[key] = setTimeout(() => {
+                    delete that.characteristicPollingTimeouts[key];
+                    const service = accessory.services.find(s => s.UUID === serviceUUID);
+                    const characteristic = service.characteristics.find(c => c.UUID === characteristicUUID);
+                    if (!characteristic) {
+                        //console.log(`Characteristic not found: ${serviceUUID}/${characteristicUUID} in ${accessory.displayName}`);
+                        return;
+                    }
+                    this.___getAndPollCharacteristic(accessory, service, characteristic, false);
+                }, pollingInterval);
+            }
+        }
 
-            function registerEventsForCharacteristic(accessory, service, characteristic) {
-                characteristic.on('change', function(data) {
-                    that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = data.newValue;
-                    that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
-                    that.emit('characteristic-value-update', {accessory: accessory, service: service, characteristic: characteristic, oldValue: data.oldValue, newValue: data.newValue});
-                    handleCharacteristicPolling(accessory, service, characteristic);
-                });
-                characteristic.getValue(function(err, value) {
-                    that.characteristicValues[accessory.UUID + '.' + service.UUID + '.' + characteristic.UUID] = value;
-                    that.emit('characteristic-value-change', {accessory: accessory, service: service, characteristic: characteristic, newValue: value});
-                });
-                handleCharacteristicPolling(accessory, service, characteristic);
+        this.___getAndPollCharacteristic = async function(accessory, service, characteristic, isUpdate) {
+            return new Promise(resolve => characteristic.getValue((err, value) => {
+                if (!err) {
+                    const key = `${accessory.UUID}.${service.UUID}.${characteristic.UUID}`;
+                    if (!that.characteristicValues[key] || that.characteristicValues[key].val !== value || isUpdate) {
+                        // for accessory updates we should check if we need to repost the value
+                        that.characteristicValues[key] = {
+                            val: value,
+                            ts: Date.now()
+                        };
+                        that.emit('characteristic-value-change', {
+                            accessory,
+                            service,
+                            characteristic,
+                            newValue: value
+                        });
+                        that.emit('characteristic-value-update', {
+                            accessory,
+                            service,
+                            characteristic,
+                            newValue: value
+                        });
+                    }
+                } else {
+                    value = undefined;
+                }
+                this.___handleCharacteristicPolling(accessory, service, characteristic);
+                resolve(value);
+            }));
+        }
+
+        this.___wrapperAccessoryLogic = async function(accessory, external, isUpdate) {
+            if (that.knownAccessories[accessory.UUID]) {
+                that.logger.debug(`Accessory ${accessory.displayName} with ID ${accessory.UUID} already known`);
+                for (const key of Object.keys(that.characteristicPollingTimeouts)) {
+                    // Check if we already know the accessory, if yes remove all polling timeouts because will be re-registered
+                    if (key.startsWith(accessory.UUID)) {
+                        clearTimeout(that.characteristicPollingTimeouts[key]);
+                        delete that.characteristicPollingTimeouts[key];
+                    }
+                }
+                isUpdate = true;
             }
 
             if (external) {
                 that.emit('addExternalAccessory', accessory);
             } else {
-                that.emit('addAccessory', accessory);
+                if (isUpdate) {
+                    that.emit('updateAccessory', accessory);
+                } else {
+                    that.emit('addAccessory', accessory);
+                }
             }
 
-            for (var index in accessory.services) {
-                var service = accessory.services[index];
-                for (var chindex in service.characteristics) {
-                    registerEventsForCharacteristic(accessory, service, service.characteristics[chindex]);
+            const changeEventHandler = (accessory, data) => {
+                const key = `${accessory.UUID}.${data.service.UUID}.${data.characteristic.UUID}`;
+                const now = Date.now();
+                if (that.characteristicValues[key] && that.characteristicValues[key].val === data.newValue && that.characteristicValues[key].ts > now - 2000) {
+                    // Sometimes events are submitted twice, so we ignore them if they are submitted within 2 seconds with same value
+                    return;
                 }
-                for (chindex in service.optionalCharacteristics) {
-                    registerEventsForCharacteristic(accessory, service, service.optionalCharacteristics[chindex]);
+                that.characteristicValues[key] = {
+                    val: data.newValue,
+                    ts: now
+                };
+                that.emit('characteristic-value-change', {
+                    accessory: accessory,
+                    service: data.service,
+                    characteristic: data.characteristic,
+                    oldValue: data.oldValue,
+                    newValue: data.newValue
+                });
+                that.emit('characteristic-value-update', {
+                    accessory: accessory,
+                    service: data.service,
+                    characteristic: data.characteristic,
+                    oldValue: data.oldValue,
+                    newValue: data.newValue
+                });
+                this.___handleCharacteristicPolling(accessory, data.service, data.characteristic);
+            };
+
+            accessory.on('service-characteristic-change', (data) => {
+                changeEventHandler(accessory, data);
+            });
+
+            that.knownAccessories[accessory.UUID] = accessory;
+
+            await this.___pollAccessory(accessory, isUpdate);
+        }
+
+        this.___wrapperAccessoryRemoveLogic = function(accessory) {
+            if (that.knownAccessories[accessory.UUID] && !that.knownAccessories[accessory.UUID] === accessory) {
+                that.logger.debug(`Accessory ${accessory.displayName} with ID ${accessory.UUID} to remove but not the same object as we know`);
+                return;
+            }
+            if (that.knownAccessories[accessory.UUID]) {
+                that.logger.debug(`Delete Accessory ${accessory.displayName} with ID ${accessory.UUID}`);
+                for (const key of Object.keys(that.characteristicPollingTimeouts)) {
+                    // Check if we already know the accessory, if yes remove all polling timeouts because will be re-registered
+                    if (key.startsWith(accessory.UUID)) {
+                        clearTimeout(that.characteristicPollingTimeouts[key]);
+                        delete that.characteristicPollingTimeouts[key];
+                    }
                 }
             }
+            delete that.knownAccessories[accessory.UUID];
+
+            that.emit('removeAccessory', accessory);
         }
 
         this.addBridgedAccessory = function(accessory, deferUpdate) {
             // Вызов метода родительского класса
             // Calling the method of the parent class
             accessory = this._origAddBridgedAccessory.call(this, accessory, deferUpdate);
-            that.logger.debug('Homebridge Wrapper Bridge addBridgedAccessory ' + customStringify(accessory)); //OK
+            that.logger.debug(`Homebridge Wrapper Bridge addBridgedAccessory ${customStringify(accessory)}`); //OK
 
-            this.__wrapperAccessoryLogic(accessory);
+            this.___wrapperAccessoryLogic(accessory);
             return accessory;
+        };
+
+        this.___pollAccessory = async function ___pollAccessory(accessory, isUpdate) {
+            for (const service of accessory.services) {
+                await this.___pollAccessoryService(accessory, service, isUpdate);
+            }
+        };
+
+        this.___pollAccessoryService = async function ___pollAccessoryService(accessory, serviceOrUUID, isUpdate) {
+            if (typeof serviceOrUUID === 'string') {
+                serviceOrUUID = accessory.getServiceByUUID(serviceOrUUID);
+            }
+            if (!serviceOrUUID) {
+                return;
+            }
+            for (const characteristic of serviceOrUUID.characteristics) {
+                await this.___getAndPollCharacteristic(accessory, serviceOrUUID, characteristic, isUpdate);
+            }
+        };
+
+        this.___pollAccessoryServiceCharacteristic = async function ___pollAccessoryServiceCharacteristic(accessory, serviceOrUUID, characteristicOrUUID, isUpdate) {
+            if (typeof serviceOrUUID === 'string') {
+                serviceOrUUID = accessory.getServiceByUUID(serviceOrUUID);
+            }
+            if (serviceOrUUID && typeof characteristicOrUUID === 'string') {
+                characteristicOrUUID = serviceOrUUID.characteristics.find(c => c.UUID === characteristicOrUUID);
+            }
+
+            if (!serviceOrUUID || !characteristicOrUUID) {
+                return;
+            }
+            return this.___getAndPollCharacteristic(accessory, serviceOrUUID, characteristicOrUUID, isUpdate);
         };
     }
 
     inherits(WrapperBridge, hap.Bridge);
 
     WrapperBridge.prototype.getBridgedAccessoryByUUID = function (uuid) {
-      for (var index in this.bridgedAccessories) {
-        var accessory = this.bridgedAccessories[index];
-        if (accessory.UUID === uuid)
-          return accessory;
-      }
+      return this.bridgedAccessories.find(accessory => accessory.UUID === uuid);
     };
 
     WrapperBridge.prototype.getBridgedAccessoryByName = function (name) {
-      for (var index in this.bridgedAccessories) {
-        var accessory = this.bridgedAccessories[index];
-        if (accessory.displayName === name)
-          return accessory;
-      }
+      return this.bridgedAccessories.find(accessory => accessory.displayName === name);
     };
 
     this.WrapperBridge = WrapperBridge;
@@ -228,19 +336,11 @@ function HomebridgeWrapper(config) {
     };
 
     Service.prototype.getCharacteristicByUUID = function (uuid) {
-        for (var index in this.characteristics) {
-            var characteristic = this.characteristics[index];
-            if (characteristic.uuid === uuid)
-                return characteristic;
-        }
+        return this.characteristics.find(characteristic => characteristic.UUID === uuid);
     };
 
     Accessory.prototype.getServiceByUUID = function (uuid) {
-        for (var index in this.services) {
-            var service = this.services[index];
-            if (services.uuid === uuid)
-                return service;
-        }
+        return this.services.find(service => service.UUID === uuid);
     };
 
     Accessory.prototype.getCharacteristicByUUID = function (serviceUUID, characteristicUUID) {
@@ -254,19 +354,55 @@ HomebridgeWrapper.prototype.init = function init() {
     // Initialize HAP-NodeJS with a custom persist directory
     hapStorage.setCustomStoragePath(User.persistPath());
 
-    var serverOpts = {
+    const serverOpts = {
         config: this.wrapperConfig,
         hideQRCode: true,
         insecureAccess: this.insecureAccess
     };
     this.server = new Server(serverOpts);
     this.server.bridgeService.bridge = new this.WrapperBridge(this.server.config.bridge.name, hap.uuid.generate("HomeBridge"));
-    this.server.bridgeService.bridge.on("characteristic-warning" /* CHARACTERISTIC_WARNING */, () => {
+    this.server.bridgeService.bridge.on("characteristic-warning" /* CHARACTERISTIC_WARNING */, function() {
+        //TODO
+    }.bind(this.server.bridgeService));
+    this.server.bridgeService.bridge.on('advertised', () => {
+        this.server.setServerStatus('ok');
     });
+
+    // watch for the paired event to update the server status
+    this.server.bridgeService.bridge.on('paired', () => {
+        this.server.setServerStatus(this.server.serverStatus);
+    });
+
+    // watch for the unpaired event to update the server status
+    this.server.bridgeService.bridge.on('unpaired', () => {
+        this.server.setServerStatus(this.server.serverStatus);
+    });
+
+    this.server.bridgeService.api.on('updatePlatformAccessories', (accessories) => {
+        if (!Array.isArray(accessories)) {
+            return;
+        }
+        accessories.forEach(accessory => {
+            if (!accessory._associatedHAPAccessory) return;
+
+            this.server.bridgeService.bridge.___wrapperAccessoryLogic(accessory._associatedHAPAccessory, false, true)
+        });
+    });
+
+    this.server.bridgeService.api.on('unregisterPlatformAccessories', (accessories) => {
+        if (!Array.isArray(accessories)) {
+            return;
+        }
+        accessories.forEach(accessory => {
+            if (!accessory._associatedHAPAccessory) return;
+            this.server.bridgeService.bridge.___wrapperAccessoryRemoveLogic(accessory._associatedHAPAccessory)
+        });
+    });
+
     const origHandlePublishExternalAccessories = this.server.bridgeService.handlePublishExternalAccessories;
     this.server.bridgeService.handlePublishExternalAccessories = async accessories => {
         for (const accessory of accessories) {
-            this.server.bridgeService.bridge.__wrapperAccessoryLogic(accessory, true);
+            this.server.bridgeService.bridge.___wrapperAccessoryLogic(accessory, true);
         }
         return origHandlePublishExternalAccessories.call(this.server.bridgeService, accessories);
     }
@@ -283,7 +419,7 @@ HomebridgeWrapper.prototype.finish = function finish() {
     this.removeAllListeners();
     this.server = null;
     if (this.characteristicPollingInterval || this.characteristicPollingList) {
-        for (var id in this.characteristicPollingTimeouts) {
+        for (const id of Object.keys(this.characteristicPollingTimeouts)) {
             clearTimeout(this.characteristicPollingTimeouts[id]);
         }
     }
@@ -312,6 +448,18 @@ HomebridgeWrapper.prototype.getServiceByUUID = function getServiceByUUID(accesso
 
 HomebridgeWrapper.prototype.getCharacteristicByUUID = function getCharacteristicByUUID(accessoryUUID, serviceUUID, characteristicUUID) {
     return this.getAccessoryByUUID(accessoryUUID).getCharacteristicByUUID(serviceUUID, characteristicUUID);
+};
+
+HomebridgeWrapper.prototype.pollAccessory = async function pollAccessory(accessory, isUpdate) {
+    return this.server.bridgeService.bridge.___pollAccessory(accessory, isUpdate);
+};
+
+HomebridgeWrapper.prototype.pollAccessoryService = async function pollAccessoryService(accessory, serviceOrUUID, isUpdate) {
+    return this.server.bridgeService.bridge.___pollAccessoryService(accessory, serviceOrUUID, isUpdate);
+};
+
+HomebridgeWrapper.prototype.pollAccessoryServiceCharacteristic = async function pollAccessoryServiceCharacteristic(accessory, serviceOrUUID, characteristicOrUUID, isUpdate) {
+    return this.server.bridgeService.bridge.___pollAccessoryServiceCharacteristic(accessory, serviceOrUUID, characteristicOrUUID, isUpdate);
 };
 
 module.exports = {
