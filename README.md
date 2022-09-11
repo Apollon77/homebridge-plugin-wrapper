@@ -66,8 +66,7 @@ The example contains code how to get and set values.
 * More/Better Documentation :-) (open Issue if you need it)
 
 ## Changelog
-
-### __WORK IN PROGRESS__
+### 3.0.0 (2022-09-11)
 * Change process and lookup services and characteristics by their UUID anew when polling or such to make sure to get the most current objects (makes it compatible to more plugins)
 * Do not handle optionalCharacteristics anymore, because they are just for reference - a normal characteristic is added as soon as an option characteristic is used
 * offer methods to poll an Accessory (all services and characteristics) or a Service (with all Characteristics) or a characteristic.
