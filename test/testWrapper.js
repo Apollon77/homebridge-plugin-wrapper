@@ -210,7 +210,7 @@ describe('Homebridge Wrapper tests ...', function() {
     it('Tests Homebridge Wrapper: Verify Init', function (done) {
         this.timeout(10000); // because of first install from npm
 
-        expect(Object.keys(allValues).length).to.be.equal(151);
+        expect(Object.keys(allValues).length).to.be.equal(149);
         expect(Object.keys(allChars).length).to.be.equal(170);
         expect(allValues['Switch name 1/Switch name 1/On']).to.be.false;
         expect(allValues['Sun/0000003E-0000-1000-8000-0026BB765291/Model']).to.be.equal('Sun Position');
