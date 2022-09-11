@@ -248,9 +248,11 @@ function HomebridgeWrapper(config) {
                 this.___handleCharacteristicPolling(accessory, data.service, data.characteristic);
             };
 
-            accessory.on('service-characteristic-change', (data) => {
-                changeEventHandler(accessory, data);
-            });
+            if (!isUpdate) {
+                accessory.on('service-characteristic-change', (data) => {
+                    changeEventHandler(accessory, data);
+                });
+            }
 
             that.knownAccessories[accessory.UUID] = accessory;
 
