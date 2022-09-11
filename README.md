@@ -66,8 +66,7 @@ The example contains code how to get and set values.
 * More/Better Documentation :-) (open Issue if you need it)
 
 ## Changelog
-
-### __WORK IN PROGRESS__
+### 3.0.1 (2022-09-11)
 * Prevent multiple subscribes on accessory change events
 
 ### 3.0.0 (2022-09-11)
