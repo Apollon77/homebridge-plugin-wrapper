@@ -66,9 +66,8 @@ The example contains code how to get and set values.
 * More/Better Documentation :-) (open Issue if you need it)
 
 ## Changelog
-
-### __WORK IN PROGRESS__
-* Another adjustment to the management of services and characteristics to make sure always the current objects are used 
+### 3.1.0 (2022-09-14)
+* Another adjustment to the management of services and characteristics to make sure always the current objects are used
 
 ### 3.0.1 (2022-09-11)
 * Prevent multiple subscribes on accessory change events
