@@ -310,7 +310,7 @@ function HomebridgeWrapper(config) {
                 serviceOrNameOrUUID = accessory.services.find(s => s.displayName === serviceOrNameOrUUID || s.UUID === serviceOrNameOrUUID);
             }
             if (serviceOrNameOrUUID && typeof characteristicOrNameOrUUID === 'string') {
-                characteristicOrNameOrUUID = serviceOrNameOrUUID.characteristics.find(c => c.displayName === characteristicOrNameOrUUID || c.UUID === characteristicOrUUID);
+                characteristicOrNameOrUUID = serviceOrNameOrUUID.characteristics.find(c => c.displayName === characteristicOrNameOrUUID || c.UUID === characteristicOrNameOrUUID);
             }
 
             if (!serviceOrNameOrUUID || !characteristicOrNameOrUUID) {
