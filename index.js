@@ -42,19 +42,25 @@ function HomebridgeWrapper(config) {
     mock('hap-nodejs/accessories/types.js', './hap-nodejs/accessories/types.js');
     mock('hap-nodejs/lib/util/once', './hap-nodejs/lib/util/once');
     mock(path.join(__dirname, '/hap-nodejs/lib/util/eventedhttp.js'), {
-        EventedHTTPServer: function() {
-            this.listen = function () {};
-            this.stop = function () {};
-            this.sendEvent = function () {};
-            this.on = function () {};
-            this.broadcastEvent = function () {};
+        EventedHTTPServer: function () {
+            this.listen = function () {
+            };
+            this.stop = function () {
+            };
+            this.sendEvent = function () {
+            };
+            this.on = function () {
+            };
+            this.broadcastEvent = function () {
+            };
 
             that.logger.debug('Fake EventedHTTPServer initialized');
             return this;
         }
     });
     mock('qrcode-terminal', {
-        generate: function() {}
+        generate: function () {
+        }
     });
     mock('tweetnacl', {
         sign: {
@@ -64,20 +70,26 @@ function HomebridgeWrapper(config) {
         }
     });
     mock('fast-srp-hap', {});
-    mock('bonjour-hap', function() {
+    mock('bonjour-hap', function () {
         return {
-            publish: function() {
+            publish: function () {
                 return {
-                    updateTxt: function() {},
-                    stop: function() {},
-                    destroy: function() {},
+                    updateTxt: function () {
+                    },
+                    stop: function () {
+                    },
+                    destroy: function () {
+                    },
                 }
             },
-            destroy: function() {}
+            destroy: function () {
+            }
         }
     });
-    mock('@homebridge/ciao', function() {});
-    mock('@homebridge/dbus-native', function() {});
+    mock('@homebridge/ciao', function () {
+    });
+    mock('@homebridge/dbus-native', function () {
+    });
     mock(path.join(__dirname, '/homebridge/version.js'), path.join(__dirname, '/homebridge-version.js'));
 
 
@@ -89,6 +101,10 @@ function HomebridgeWrapper(config) {
     Server = ServerReq.Server;
     Service = hap.Service;
     Accessory = hap.Accessory;
+    const homebridgeLogger = require(path.join(__dirname, 'homebridge/logger'));
+    if (config.debugModeEnabled) {
+        homebridgeLogger.setDebugEnabled(true);
+    }
 
     this.logger = config.logger;
     this.wrapperConfig = config.wrapperConfig;
