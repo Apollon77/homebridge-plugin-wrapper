@@ -66,8 +66,7 @@ The example contains code how to get and set values.
 * More/Better Documentation :-) (open Issue if you need it)
 
 ## Changelog
-
-### __WORK IN PROGRESS__
+### 3.2.0 (2022-09-15)
 * Add option to set debugModeEnabled property in the init options to enable the homebridge debug mode
 
 ### 3.1.0 (2022-09-14)
