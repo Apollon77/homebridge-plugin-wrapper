@@ -43,7 +43,7 @@
     "sinon": "^14.0.0",
     "nock": "^13.2.9",
     "homebridge-sun-position": "^0.2.2",
-    "homebridge-http-webhooks": "^0.1.16",
+    "homebridge-http-webhooks": "^0.2.0",
     "homebridge-plugin-name": "git+https://git@github.com/Apollon77/homebridge-plugin-template"
   },
   "bugs": {
