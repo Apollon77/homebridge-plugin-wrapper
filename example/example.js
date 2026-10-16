@@ -1,24 +1,22 @@
 /* jshint -W097 */// jshint strict:false
 /*jslint node: true */
 /*jshint expr: true*/
+const path = require('path');
 
 // get the object
-var HomebridgeWrapper = require('../index.js').Wrapper;
-var homebridgeWrapper;
+const HomebridgeWrapper = require('../index.js').Wrapper;
 
 // prepare configuration like normally
-var config = {
-    logger: {info: console.log, debug: console.log},
+const config = {
+    logger: {info: console.log, debug: console.log, warn: console.warn},
     homebridgeConfigPath: "./",
+    // the plugin used here is the one of the tests (Homebridge 2 API); installed plugins are found without this option
+    customPluginPath: path.join(__dirname, '..', 'test', 'plugins'),
     wrapperConfig: {
         "accessories": [
-    		{
-                "accessory" : "SunPosition",
-                "name" : "Sun",
-                "location" : {
-                	"lat" : 51.035924,
-                	"long" : 9.345736
-                }
+            {
+                "accessory": "WrapperTest",
+                "name": "Example"
             }
         ],
         "platforms": [
@@ -27,7 +25,7 @@ var config = {
 };
 
 // Initialize
-homebridgeWrapper = new HomebridgeWrapper(config);
+const homebridgeWrapper = new HomebridgeWrapper(config);
 
 // Register event handler to get changes of object values (including initial values)
 homebridgeWrapper.on('characteristic-value-change', function(data) {
@@ -35,23 +33,11 @@ homebridgeWrapper.on('characteristic-value-change', function(data) {
 });
 
 function printAccessory(accessory) {
-    for (var index in accessory.services) {
-        var service = accessory.services[index];
-
-        function iterateCharArray(chars) {
-            for (var chindex in chars) {
-                var char = chars[chindex];
-                console.log('Characteristic added: ' + (accessory.displayName?accessory.displayName:accessory.UUID) + '/' + (service.displayName?service.displayName:service.UUID) + '/' + (char.displayName?char.displayName:char.UUID));
-                // register to characteristic-warning event to get infos on issues on characteristic
-            }
-        }
-
-        iterateCharArray(service.characteristics);
-        if (service.optionalCharacteristics) {
-            iterateCharArray(service.optionalCharacteristics);
+    for (const service of accessory.services) {
+        for (const char of service.characteristics) {
+            console.log('Characteristic added: ' + (accessory.displayName?accessory.displayName:accessory.UUID) + '/' + (service.displayName?service.displayName:service.UUID) + '/' + (char.displayName?char.displayName:char.UUID));
         }
     }
-
 }
 
 // Register event handler to get info of an added accessory
@@ -60,31 +46,31 @@ function printAccessory(accessory) {
 homebridgeWrapper.on('addAccessory', function(accessory) {
     console.log('Bridge addBridgedAccessory ' + accessory.displayName);
 
-    printAccessory(accessory)
+    printAccessory(accessory);
 });
 
 // Register event handler to get info of an added external accessory
 homebridgeWrapper.on('addExternalAccessory', function(accessory) {
     console.log('Bridge addExternalBridgedAccessory ' + accessory.displayName);
 
-    printAccessory(accessory)
+    printAccessory(accessory);
 });
 
 // Really start the Wrapper logic
 homebridgeWrapper.init();
 
-// So you can get a value
-homebridgeWrapper.getCharacteristicByName('Sun', 'Sun', 'Altitude').getValue(function(err, value) {
-    if (err) {
-        console.log('ERROR: ' + err);
-    }
-    console.log('Current Sun-Altitude is ' + value);
-});
+// the plugins are loaded asynchronously
+setTimeout(async () => {
+    // So you can get a value (calls the get handler of the plugin)
+    const temperature = homebridgeWrapper.getCharacteristicByName('Example', 'Example Temperature', 'Current Temperature');
+    console.log('Current temperature is ' + await temperature.handleGetRequest());
 
-// so you can set a value
-homebridgeWrapper.getCharacteristicByName('Sun', 'Sun', 'Altitude').setValue(88);
+    // so you can set a value (calls the set handler of the plugin)
+    homebridgeWrapper.getCharacteristicByName('Example', 'Example Switch', 'On').setValue(true, err => {
+        console.log('Switched on' + (err ? ': ' + err : ''));
 
-// clean up and let Homebridge persist last values
-homebridgeWrapper.finish();
-
-process.exit();
+        // clean up and let Homebridge persist last values
+        homebridgeWrapper.finish();
+        process.exit();
+    });
+}, 3000);

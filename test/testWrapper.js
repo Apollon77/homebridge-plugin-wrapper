@@ -2,7 +2,7 @@
 /*jslint node: true */
 /*jshint expr: true*/
 var expect = require('chai').expect;
-var request = require('request');
+var path = require('path');
 var http = require('http');
 var fs = require('fs');
 
@@ -13,6 +13,16 @@ var allValues = {};
 var allChars = {};
 var httpServer;
 var lastHTTPRequest = null;
+
+/** GET request, callback(error, response) like the former request module */
+function request(url, callback) {
+    fetch(url).then(response => callback(null, { statusCode: response.status }), error => callback(error));
+}
+
+function findValue(accessory, characteristic) {
+    var key = Object.keys(allValues).find(k => k.startsWith(accessory + '/') && k.endsWith('/' + characteristic));
+    return key ? allValues[key] : undefined;
+}
 
 function setupHTTPServer(port, callback) {
     httpServer = http.createServer(function (req, res) {
@@ -35,16 +45,14 @@ describe('Homebridge Wrapper tests ...', function() {
         var config = {
             logger: {info: console.log, debug: console.log},
             homebridgeConfigPath: "./",
+            customPluginPath: path.join(__dirname, 'plugins'),
             characteristicPollingInterval: 30000,
             wrapperConfig: {
                 "accessories": [
-            		{
-                        "accessory" : "SunPosition",
-                        "name" : "Sun",
-                        "location" : {
-                        	"lat" : 49.035924,
-                        	"long" : 8.345736
-                        }
+                    {
+                        // test plugin with the Homebridge 2 API, see test/plugins
+                        "accessory": "WrapperTest",
+                        "name": "Test"
                     }
                 ],
 
@@ -210,11 +218,13 @@ describe('Homebridge Wrapper tests ...', function() {
     it('Tests Homebridge Wrapper: Verify Init', function (done) {
         this.timeout(10000); // because of first install from npm
 
-        expect(Object.keys(allValues).length).to.be.equal(151);
-        expect(Object.keys(allChars).length).to.be.equal(170);
+        // the exact numbers depend on the versions of the plugins
+        expect(Object.keys(allValues).length).to.be.above(100);
+        expect(Object.keys(allChars).length).to.be.above(100);
         expect(allValues['Switch name 1/Switch name 1/On']).to.be.false;
-        expect(allValues['Sun/0000003E-0000-1000-8000-0026BB765291/Model']).to.be.equal('Sun Position');
-        expect(allValues['Sun/Sun/Altitude']).to.exist;
+        expect(findValue('Test', 'Model')).to.be.equal('Wrapper Test');
+        expect(findValue('Test', 'Current Temperature')).to.be.at.least(20);
+        expect(findValue('Test', 'On')).to.be.false;
         expect(allValues['Bedroom/0000003E-0000-1000-8000-0026BB765291/Manufacturer']).to.be.equal('Default-Manufacturer');
 
         expect(fs.existsSync('./config.json')).to.be.true;
@@ -277,6 +287,27 @@ describe('Homebridge Wrapper tests ...', function() {
             }, 40000);
         });
 
+    });
+
+    it('Tests Homebridge Wrapper: values are polled with the get handler of the plugin', function (done) {
+        this.timeout(10000);
+        var before = findValue('Test', 'Current Temperature');
+        homebridgeWrapper.pollAccessoryService(homebridgeWrapper.getAccessoryByName('Test'), 'Test Temperature').then(function () {
+            expect(findValue('Test', 'Current Temperature')).to.be.above(before);
+            done();
+        }).catch(done);
+    });
+
+    it('Tests Homebridge Wrapper: setValue calls the set handler of the plugin', function (done) {
+        this.timeout(10000);
+        var key = Object.keys(allChars).find(k => k.startsWith('Test/') && k.endsWith('/On'));
+        allChars[key].setValue(true, function (err) {
+            expect(err).to.not.exist;
+            homebridgeWrapper.pollAccessoryService(homebridgeWrapper.getAccessoryByName('Test'), 'Test Switch').then(function () {
+                expect(findValue('Test', 'On')).to.be.true;
+                done();
+            }).catch(done);
+        });
     });
 
     it('End Homebridge Wrapper', function (done) {

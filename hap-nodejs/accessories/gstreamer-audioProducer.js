@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GStreamerAudioProducer = void 0;
-var tslib_1 = require("tslib");
-var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
-var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
-var child_process_1 = require("child_process");
-var debug = (0, debug_1.default)("HAP-NodeJS:Remote:GStreamer");
+const tslib_1 = require("tslib");
+const assert_1 = tslib_1.__importDefault(require("assert"));
+const child_process_1 = require("child_process");
+const debug_1 = tslib_1.__importDefault(require("debug"));
+const debug = (0, debug_1.default)("HAP-NodeJS:Remote:GStreamer");
 var AudioType;
 (function (AudioType) {
     AudioType[AudioType["GENERIC"] = 2049] = "GENERIC";
@@ -35,86 +35,77 @@ var BitrateType;
  * gstreamer1.0-plugins-good, gstreamer1.0-plugins- ugly, gstreamer1.0-plugins-bad, gstreamer1.0-alsa
  *
  */
-var GStreamerAudioProducer = /** @class */ (function () {
-    function GStreamerAudioProducer(frameHandler, errorHandler, options) {
-        var e_1, _a;
-        this.options = {
-            alsaSrc: "plughw:1",
-        };
-        this.running = false;
+class GStreamerAudioProducer {
+    options = {
+        alsaSrc: "plughw:1",
+    };
+    frameHandler;
+    errorHandler;
+    process;
+    running = false;
+    constructor(frameHandler, errorHandler, options) {
         this.frameHandler = frameHandler;
         this.errorHandler = errorHandler;
         if (options) {
-            try {
-                for (var _b = (0, tslib_1.__values)(Object.entries(options)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var _d = (0, tslib_1.__read)(_c.value, 2), key = _d[0], value = _d[1];
-                    // @ts-expect-error: type mismatch
-                    GStreamerAudioProducer.options[key] = value;
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-                }
-                finally { if (e_1) throw e_1.error; }
+            for (const [key, value] of Object.entries(options)) {
+                // @ts-expect-error: type mismatch
+                GStreamerAudioProducer.options[key] = value;
             }
         }
     }
-    GStreamerAudioProducer.prototype.startAudioProduction = function (selectedAudioConfiguration) {
-        var _this = this;
+    startAudioProduction(selectedAudioConfiguration) {
         if (this.running) {
             throw new Error("Gstreamer already running");
         }
-        var codecParameters = selectedAudioConfiguration.parameters;
-        (0, assert_1.default)(selectedAudioConfiguration.codecType === 3 /* OPUS */);
-        var bitrateType = 1 /* VARIABLE */;
+        const codecParameters = selectedAudioConfiguration.parameters;
+        (0, assert_1.default)(selectedAudioConfiguration.codecType === 3 /* AudioCodecTypes.OPUS */);
+        let bitrateType = 1 /* BitrateType.VARIABLE */;
         switch (codecParameters.bitrate) {
-            case 1 /* CONSTANT */:
-                bitrateType = 0 /* CONSTANT */;
+            case 1 /* AudioBitrate.CONSTANT */:
+                bitrateType = 0 /* BitrateType.CONSTANT */;
                 break;
-            case 0 /* VARIABLE */:
-                bitrateType = 1 /* VARIABLE */;
+            case 0 /* AudioBitrate.VARIABLE */:
+                bitrateType = 1 /* BitrateType.VARIABLE */;
                 break;
         }
-        var bandwidth = 1104 /* SUPER_WIDE_BAND */;
+        let bandwidth = 1104 /* Bandwidth.SUPER_WIDE_BAND */;
         switch (codecParameters.samplerate) {
-            case 0 /* KHZ_8 */:
-                bandwidth = 1101 /* NARROW_BAND */;
+            case 0 /* AudioSamplerate.KHZ_8 */:
+                bandwidth = 1101 /* Bandwidth.NARROW_BAND */;
                 break;
-            case 1 /* KHZ_16 */:
-                bandwidth = 1103 /* WIDE_BAND */;
+            case 1 /* AudioSamplerate.KHZ_16 */:
+                bandwidth = 1103 /* Bandwidth.WIDE_BAND */;
                 break;
-            case 2 /* KHZ_24 */:
-                bandwidth = 1104 /* SUPER_WIDE_BAND */;
+            case 2 /* AudioSamplerate.KHZ_24 */:
+                bandwidth = 1104 /* Bandwidth.SUPER_WIDE_BAND */;
                 break;
         }
-        var packetTime = codecParameters.rtpTime;
+        const packetTime = codecParameters.rtpTime;
         debug("Launching gstreamer...");
         this.running = true;
-        var args = "-q " +
+        const args = "-q " +
             "alsasrc device=" + this.options.alsaSrc + " ! " +
             "capsfilter caps=audio/x-raw,format=S16LE,rate=24000 ! " +
             // "level post-messages=true interval=" + packetTime + "000000 ! " + // used to capture rms
             "opusenc " +
             "bitrate-type=" + bitrateType + " " +
             "bitrate=24000 " +
-            "audio-type=" + 2048 /* VOICE */ + " " +
+            "audio-type=" + 2048 /* AudioType.VOICE */ + " " +
             "bandwidth=" + bandwidth + " " +
             "frame-size=" + packetTime + " ! " +
             "fdsink fd=1";
         this.process = (0, child_process_1.spawn)("gst-launch-1.0", args.split(" "), { env: process.env });
-        this.process.on("error", function (error) {
-            if (_this.running) {
+        this.process.on("error", error => {
+            if (this.running) {
                 debug("Failed to spawn gstreamer process: " + error.message);
-                _this.errorHandler(3 /* CANCELLED */);
+                this.errorHandler(3 /* HDSProtocolSpecificErrorReason.CANCELLED */);
             }
             else {
                 debug("Failed to kill gstreamer process: " + error.message);
             }
         });
-        this.process.stdout.on("data", function (data) {
-            if (!_this.running) { // received data after it was closed
+        this.process.stdout?.on("data", (data) => {
+            if (!this.running) { // received data after it was closed
                 return;
             }
             /*
@@ -127,29 +118,28 @@ var GStreamerAudioProducer = /** @class */ (function () {
                       If we would want to make this perfect we would need to write a nodejs c++ submodule or something
                       to interface directly with gstreamer api.
                    */
-            _this.frameHandler({
+            this.frameHandler({
                 data: data,
                 rms: 0.25, // only way currently to extract rms from gstreamer is by interfacing with the api directly (nodejs c++ submodule could be a solution)
             });
         });
-        this.process.stderr.on("data", function (data) {
+        this.process.stderr?.on("data", data => {
             debug("GStreamer process reports the following error: " + String(data));
         });
-        this.process.on("exit", function (code, signal) {
+        this.process.on("exit", (code, signal) => {
             if (signal !== "SIGTERM") { // if we receive SIGTERM, process exited gracefully (we stopped it)
                 debug("GStreamer process unexpectedly exited with code %d (signal: %s)", code, signal);
-                _this.errorHandler(5 /* UNEXPECTED_FAILURE */);
+                this.errorHandler(5 /* HDSProtocolSpecificErrorReason.UNEXPECTED_FAILURE */);
             }
         });
-    };
-    GStreamerAudioProducer.prototype.stopAudioProduction = function () {
+    }
+    stopAudioProduction() {
         if (this.running) {
             this.process.kill("SIGTERM");
             this.running = false;
         }
         this.process = undefined;
-    };
-    return GStreamerAudioProducer;
-}());
+    }
+}
 exports.GStreamerAudioProducer = GStreamerAudioProducer;
 //# sourceMappingURL=gstreamer-audioProducer.js.map

@@ -1,0 +1,13 @@
+{
+  "name": "homebridge-wrapper-test",
+  "version": "1.0.0",
+  "description": "Plugin for the tests of homebridge-plugin-wrapper (Homebridge 2 API)",
+  "main": "index.js",
+  "private": true,
+  "keywords": [
+    "homebridge-plugin"
+  ],
+  "engines": {
+    "homebridge": "^2.0.0"
+  }
+}

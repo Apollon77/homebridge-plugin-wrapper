@@ -1,97 +1,85 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DataStreamWriter = exports.DataStreamReader = exports.DataStreamParser = exports.DataFormatTags = exports.UUID = exports.SecondsSince2001 = exports.Float64 = exports.Float32 = exports.Int64 = exports.Int32 = exports.Int16 = exports.Int8 = exports.ValueWrapper = void 0;
-var tslib_1 = require("tslib");
-var uuid = (0, tslib_1.__importStar)(require("../util/uuid"));
-var hapCrypto = (0, tslib_1.__importStar)(require("../util/hapCrypto"));
-var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
-var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
+const tslib_1 = require("tslib");
+const uuid = tslib_1.__importStar(require("../util/uuid"));
+const hapCrypto = tslib_1.__importStar(require("../util/hapCrypto"));
+const assert_1 = tslib_1.__importDefault(require("assert"));
+const debug_1 = tslib_1.__importDefault(require("debug"));
 // welcome to hell :)
 // in this file lies madness and frustration. and It's not only about HDS. Also, JavaScript is hell
-var debug = (0, debug_1.default)("HAP-NodeJS:DataStream:Parser");
-var Magics = /** @class */ (function () {
-    function Magics() {
-    }
-    Magics.TERMINATOR = { type: "terminator" };
-    return Magics;
-}());
-var ValueWrapper = /** @class */ (function () {
-    function ValueWrapper(value) {
+const debug = (0, debug_1.default)("HAP-NodeJS:DataStream:Parser");
+class Magics {
+    static TERMINATOR = { type: "terminator" };
+}
+/**
+ * @group HomeKit Data Streams (HDS)
+ */
+class ValueWrapper {
+    value;
+    constructor(value) {
         this.value = value;
     }
-    ValueWrapper.prototype.equals = function (obj) {
+    equals(obj) {
         return this.constructor.name === obj.constructor.name && obj.value === this.value;
-    };
-    return ValueWrapper;
-}());
+    }
+}
 exports.ValueWrapper = ValueWrapper;
-var Int8 = /** @class */ (function (_super) {
-    (0, tslib_1.__extends)(Int8, _super);
-    function Int8() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return Int8;
-}(ValueWrapper));
+/**
+ * @group HomeKit Data Streams (HDS)
+ */
+class Int8 extends ValueWrapper {
+}
 exports.Int8 = Int8;
-var Int16 = /** @class */ (function (_super) {
-    (0, tslib_1.__extends)(Int16, _super);
-    function Int16() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return Int16;
-}(ValueWrapper));
+/**
+ * @group HomeKit Data Streams (HDS)
+ */
+class Int16 extends ValueWrapper {
+}
 exports.Int16 = Int16;
-var Int32 = /** @class */ (function (_super) {
-    (0, tslib_1.__extends)(Int32, _super);
-    function Int32() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return Int32;
-}(ValueWrapper));
+/**
+ * @group HomeKit Data Streams (HDS)
+ */
+class Int32 extends ValueWrapper {
+}
 exports.Int32 = Int32;
-var Int64 = /** @class */ (function (_super) {
-    (0, tslib_1.__extends)(Int64, _super);
-    function Int64() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return Int64;
-}(ValueWrapper));
+/**
+ * @group HomeKit Data Streams (HDS)
+ */
+class Int64 extends ValueWrapper {
+}
 exports.Int64 = Int64;
-var Float32 = /** @class */ (function (_super) {
-    (0, tslib_1.__extends)(Float32, _super);
-    function Float32() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return Float32;
-}(ValueWrapper));
+/**
+ * @group HomeKit Data Streams (HDS)
+ */
+class Float32 extends ValueWrapper {
+}
 exports.Float32 = Float32;
-var Float64 = /** @class */ (function (_super) {
-    (0, tslib_1.__extends)(Float64, _super);
-    function Float64() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return Float64;
-}(ValueWrapper));
+/**
+ * @group HomeKit Data Streams (HDS)
+ */
+class Float64 extends ValueWrapper {
+}
 exports.Float64 = Float64;
-var SecondsSince2001 = /** @class */ (function (_super) {
-    (0, tslib_1.__extends)(SecondsSince2001, _super);
-    function SecondsSince2001() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return SecondsSince2001;
-}(ValueWrapper));
+/**
+ * @group HomeKit Data Streams (HDS)
+ */
+class SecondsSince2001 extends ValueWrapper {
+}
 exports.SecondsSince2001 = SecondsSince2001;
-var UUID = /** @class */ (function (_super) {
-    (0, tslib_1.__extends)(UUID, _super);
-    function UUID(value) {
-        var _this = this;
+/**
+ * @group HomeKit Data Streams (HDS)
+ */
+class UUID extends ValueWrapper {
+    constructor(value) {
         (0, assert_1.default)(uuid.isValid(value), "invalid uuid format");
-        _this = _super.call(this, value) || this;
-        return _this;
+        super(value);
     }
-    return UUID;
-}(ValueWrapper));
+}
 exports.UUID = UUID;
+/**
+ * @group HomeKit Data Streams (HDS)
+ */
 var DataFormatTags;
 (function (DataFormatTags) {
     DataFormatTags[DataFormatTags["INVALID"] = 0] = "INVALID";
@@ -132,130 +120,131 @@ var DataFormatTags;
     DataFormatTags[DataFormatTags["DICTIONARY_LENGTH_START"] = 224] = "DICTIONARY_LENGTH_START";
     DataFormatTags[DataFormatTags["DICTIONARY_LENGTH_STOP"] = 238] = "DICTIONARY_LENGTH_STOP";
     DataFormatTags[DataFormatTags["DICTIONARY_TERMINATED"] = 239] = "DICTIONARY_TERMINATED";
-})(DataFormatTags = exports.DataFormatTags || (exports.DataFormatTags = {}));
-var DataStreamParser = /** @class */ (function () {
-    function DataStreamParser() {
-    }
+})(DataFormatTags || (exports.DataFormatTags = DataFormatTags = {}));
+/**
+ * @group HomeKit Data Streams (HDS)
+ */
+class DataStreamParser {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    DataStreamParser.decode = function (buffer) {
-        var tag = buffer.readTag();
-        if (tag === 0 /* INVALID */) {
+    static decode(buffer) {
+        const tag = buffer.readTag();
+        if (tag === 0 /* DataFormatTags.INVALID */) {
             throw new Error("HDSDecoder: zero tag detected on index " + buffer.readerIndex);
         }
-        else if (tag === 1 /* TRUE */) {
+        else if (tag === 1 /* DataFormatTags.TRUE */) {
             return buffer.readTrue();
         }
-        else if (tag === 2 /* FALSE */) {
+        else if (tag === 2 /* DataFormatTags.FALSE */) {
             return buffer.readFalse();
         }
-        else if (tag === 3 /* TERMINATOR */) {
+        else if (tag === 3 /* DataFormatTags.TERMINATOR */) {
             return Magics.TERMINATOR;
         }
-        else if (tag === 4 /* NULL */) {
+        else if (tag === 4 /* DataFormatTags.NULL */) {
             return null;
         }
-        else if (tag === 5 /* UUID */) {
+        else if (tag === 5 /* DataFormatTags.UUID */) {
             return buffer.readUUID();
         }
-        else if (tag === 6 /* DATE */) {
+        else if (tag === 6 /* DataFormatTags.DATE */) {
             return buffer.readSecondsSince2001_01_01();
         }
-        else if (tag === 7 /* INTEGER_MINUS_ONE */) {
+        else if (tag === 7 /* DataFormatTags.INTEGER_MINUS_ONE */) {
             return buffer.readNegOne();
         }
-        else if (tag >= 8 /* INTEGER_RANGE_START_0 */ && tag <= 46 /* INTEGER_RANGE_STOP_39 */) {
+        else if (tag >= 8 /* DataFormatTags.INTEGER_RANGE_START_0 */ && tag <= 46 /* DataFormatTags.INTEGER_RANGE_STOP_39 */) {
             return buffer.readIntRange(tag); // integer values from 0-39
         }
-        else if (tag === 48 /* INT8 */) {
+        else if (tag === 48 /* DataFormatTags.INT8 */) {
             return buffer.readInt8();
         }
-        else if (tag === 49 /* INT16LE */) {
+        else if (tag === 49 /* DataFormatTags.INT16LE */) {
             return buffer.readInt16LE();
         }
-        else if (tag === 50 /* INT32LE */) {
+        else if (tag === 50 /* DataFormatTags.INT32LE */) {
             return buffer.readInt32LE();
         }
-        else if (tag === 51 /* INT64LE */) {
+        else if (tag === 51 /* DataFormatTags.INT64LE */) {
             return buffer.readInt64LE();
         }
-        else if (tag === 53 /* FLOAT32LE */) {
+        else if (tag === 53 /* DataFormatTags.FLOAT32LE */) {
             return buffer.readFloat32LE();
         }
-        else if (tag === 54 /* FLOAT64LE */) {
+        else if (tag === 54 /* DataFormatTags.FLOAT64LE */) {
             return buffer.readFloat64LE();
         }
-        else if (tag >= 64 /* UTF8_LENGTH_START */ && tag <= 96 /* UTF8_LENGTH_STOP */) {
-            var length = tag - 64 /* UTF8_LENGTH_START */;
+        else if (tag >= 64 /* DataFormatTags.UTF8_LENGTH_START */ && tag <= 96 /* DataFormatTags.UTF8_LENGTH_STOP */) {
+            const length = tag - 64 /* DataFormatTags.UTF8_LENGTH_START */;
             return buffer.readUTF8(length);
         }
-        else if (tag === 97 /* UTF8_LENGTH8 */) {
+        else if (tag === 97 /* DataFormatTags.UTF8_LENGTH8 */) {
             return buffer.readUTF8_Length8();
         }
-        else if (tag === 98 /* UTF8_LENGTH16LE */) {
+        else if (tag === 98 /* DataFormatTags.UTF8_LENGTH16LE */) {
             return buffer.readUTF8_Length16LE();
         }
-        else if (tag === 99 /* UTF8_LENGTH32LE */) {
+        else if (tag === 99 /* DataFormatTags.UTF8_LENGTH32LE */) {
             return buffer.readUTF8_Length32LE();
         }
-        else if (tag === 100 /* UTF8_LENGTH64LE */) {
+        else if (tag === 100 /* DataFormatTags.UTF8_LENGTH64LE */) {
             return buffer.readUTF8_Length64LE();
         }
-        else if (tag === 111 /* UTF8_NULL_TERMINATED */) {
+        else if (tag === 111 /* DataFormatTags.UTF8_NULL_TERMINATED */) {
             return buffer.readUTF8_NULL_terminated();
         }
-        else if (tag >= 112 /* DATA_LENGTH_START */ && tag <= 144 /* DATA_LENGTH_STOP */) {
-            var length = tag - 112 /* DATA_LENGTH_START */;
+        else if (tag >= 112 /* DataFormatTags.DATA_LENGTH_START */ && tag <= 144 /* DataFormatTags.DATA_LENGTH_STOP */) {
+            const length = tag - 112 /* DataFormatTags.DATA_LENGTH_START */;
             buffer.readData(length);
         }
-        else if (tag === 145 /* DATA_LENGTH8 */) {
+        else if (tag === 145 /* DataFormatTags.DATA_LENGTH8 */) {
             return buffer.readData_Length8();
         }
-        else if (tag === 146 /* DATA_LENGTH16LE */) {
+        else if (tag === 146 /* DataFormatTags.DATA_LENGTH16LE */) {
             return buffer.readData_Length16LE();
         }
-        else if (tag === 147 /* DATA_LENGTH32LE */) {
+        else if (tag === 147 /* DataFormatTags.DATA_LENGTH32LE */) {
             return buffer.readData_Length32LE();
         }
-        else if (tag === 148 /* DATA_LENGTH64LE */) {
+        else if (tag === 148 /* DataFormatTags.DATA_LENGTH64LE */) {
             return buffer.readData_Length64LE();
         }
-        else if (tag === 159 /* DATA_TERMINATED */) {
+        else if (tag === 159 /* DataFormatTags.DATA_TERMINATED */) {
             return buffer.readData_terminated();
         }
-        else if (tag >= 160 /* COMPRESSION_START */ && tag <= 207 /* COMPRESSION_STOP */) {
-            var index = tag - 160 /* COMPRESSION_START */;
+        else if (tag >= 160 /* DataFormatTags.COMPRESSION_START */ && tag <= 207 /* DataFormatTags.COMPRESSION_STOP */) {
+            const index = tag - 160 /* DataFormatTags.COMPRESSION_START */;
             return buffer.decompressData(index);
         }
-        else if (tag >= 208 /* ARRAY_LENGTH_START */ && tag <= 222 /* ARRAY_LENGTH_STOP */) {
-            var length = tag - 208 /* ARRAY_LENGTH_START */;
-            var array = [];
-            for (var i = 0; i < length; i++) {
+        else if (tag >= 208 /* DataFormatTags.ARRAY_LENGTH_START */ && tag <= 222 /* DataFormatTags.ARRAY_LENGTH_STOP */) {
+            const length = tag - 208 /* DataFormatTags.ARRAY_LENGTH_START */;
+            const array = [];
+            for (let i = 0; i < length; i++) {
                 array.push(this.decode(buffer));
             }
             return array;
         }
-        else if (tag === 223 /* ARRAY_TERMINATED */) {
-            var array = [];
-            var element = void 0;
+        else if (tag === 223 /* DataFormatTags.ARRAY_TERMINATED */) {
+            const array = [];
+            let element;
             while ((element = this.decode(buffer)) !== Magics.TERMINATOR) {
                 array.push(element);
             }
             return array;
         }
-        else if (tag >= 224 /* DICTIONARY_LENGTH_START */ && tag <= 238 /* DICTIONARY_LENGTH_STOP */) {
-            var length = tag - 224 /* DICTIONARY_LENGTH_START */;
+        else if (tag >= 224 /* DataFormatTags.DICTIONARY_LENGTH_START */ && tag <= 238 /* DataFormatTags.DICTIONARY_LENGTH_STOP */) {
+            const length = tag - 224 /* DataFormatTags.DICTIONARY_LENGTH_START */;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            var dictionary = {};
-            for (var i = 0; i < length; i++) {
-                var key = this.decode(buffer);
+            const dictionary = {};
+            for (let i = 0; i < length; i++) {
+                const key = this.decode(buffer);
                 dictionary[key] = this.decode(buffer);
             }
             return dictionary;
         }
-        else if (tag === 239 /* DICTIONARY_TERMINATED */) {
+        else if (tag === 239 /* DataFormatTags.DICTIONARY_TERMINATED */) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            var dictionary = {};
-            var key = void 0;
+            const dictionary = {};
+            let key;
             while ((key = this.decode(buffer)) !== Magics.TERMINATOR) {
                 dictionary[key] = this.decode(buffer); // decode value
             }
@@ -264,15 +253,14 @@ var DataStreamParser = /** @class */ (function () {
         else {
             throw new Error("HDSDecoder: encountered unknown tag on index " + buffer.readerIndex + ": " + tag.toString(16));
         }
-    };
+    }
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types,@typescript-eslint/no-explicit-any
-    DataStreamParser.encode = function (data, buffer) {
-        var _this = this;
+    static encode(data, buffer) {
         if (data === undefined) {
             throw new Error("HDSEncoder: cannot encode undefined");
         }
         if (data === null) {
-            buffer.writeTag(4 /* NULL */);
+            buffer.writeTag(4 /* DataFormatTags.NULL */);
             return;
         }
         switch (typeof data) {
@@ -297,18 +285,18 @@ var DataStreamParser = /** @class */ (function () {
                 break;
             case "object":
                 if (Array.isArray(data)) {
-                    var length = data.length;
+                    const length = data.length;
                     if (length <= 12) {
-                        buffer.writeTag(208 /* ARRAY_LENGTH_START */ + length);
+                        buffer.writeTag(208 /* DataFormatTags.ARRAY_LENGTH_START */ + length);
                     }
                     else {
-                        buffer.writeTag(223 /* ARRAY_TERMINATED */);
+                        buffer.writeTag(223 /* DataFormatTags.ARRAY_TERMINATED */);
                     }
-                    data.forEach(function (element) {
-                        _this.encode(element, buffer);
+                    data.forEach(element => {
+                        this.encode(element, buffer);
                     });
                     if (length > 12) {
-                        buffer.writeTag(3 /* TERMINATOR */);
+                        buffer.writeTag(3 /* DataFormatTags.TERMINATOR */);
                     }
                 }
                 else if (data instanceof ValueWrapper) {
@@ -344,162 +332,167 @@ var DataStreamParser = /** @class */ (function () {
                     buffer.writeData(data);
                 }
                 else { // object is treated as dictionary
-                    var entries = Object.entries(data)
-                        .filter(function (entry) { return entry[1] !== undefined; }); // explicitly setting undefined will result in an entry here
+                    const entries = Object.entries(data)
+                        .filter(entry => entry[1] !== undefined); // explicitly setting undefined will result in an entry here
                     if (entries.length <= 14) {
-                        buffer.writeTag(224 /* DICTIONARY_LENGTH_START */ + entries.length);
+                        buffer.writeTag(224 /* DataFormatTags.DICTIONARY_LENGTH_START */ + entries.length);
                     }
                     else {
-                        buffer.writeTag(239 /* DICTIONARY_TERMINATED */);
+                        buffer.writeTag(239 /* DataFormatTags.DICTIONARY_TERMINATED */);
                     }
-                    entries.forEach(function (entry) {
-                        _this.encode(entry[0], buffer); // encode key
-                        _this.encode(entry[1], buffer); // encode value
+                    entries.forEach(entry => {
+                        this.encode(entry[0], buffer); // encode key
+                        this.encode(entry[1], buffer); // encode value
                     });
                     if (entries.length > 14) {
-                        buffer.writeTag(3 /* TERMINATOR */);
+                        buffer.writeTag(3 /* DataFormatTags.TERMINATOR */);
                     }
                 }
                 break;
             default:
                 throw new Error("HDSEncoder: no idea how to encode value of type '" + (typeof data) + "': " + data);
         }
-    };
-    return DataStreamParser;
-}());
+    }
+}
 exports.DataStreamParser = DataStreamParser;
-var DataStreamReader = /** @class */ (function () {
-    function DataStreamReader(data) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.trackedCompressedData = [];
+/**
+ * @group HomeKit Data Streams (HDS)
+ */
+class DataStreamReader {
+    data;
+    readerIndex;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    trackedCompressedData = [];
+    constructor(data) {
         this.data = data;
         this.readerIndex = 0;
     }
-    DataStreamReader.prototype.finished = function () {
+    finished() {
         if (this.readerIndex < this.data.length) {
-            var remainingHex = this.data.slice(this.readerIndex, this.data.length).toString("hex");
+            const remainingHex = this.data.subarray(this.readerIndex, this.data.length).toString("hex");
             debug("WARNING Finished reading HDS stream, but there are still %d bytes remaining () %s", this.data.length - this.readerIndex, remainingHex);
         }
-    };
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    DataStreamReader.prototype.decompressData = function (index) {
+    decompressData(index) {
         if (index >= this.trackedCompressedData.length) {
             throw new Error("HDSDecoder: Tried decompression of data for an index out of range (index " + index +
                 " and got " + this.trackedCompressedData.length + " elements)");
         }
         return this.trackedCompressedData[index];
-    };
-    DataStreamReader.prototype.trackData = function (data) {
+    }
+    trackData(data) {
         this.trackedCompressedData.push(data);
         return data;
-    };
-    DataStreamReader.prototype.ensureLength = function (bytes) {
+    }
+    ensureLength(bytes) {
         if (this.readerIndex + bytes > this.data.length) {
-            var remaining = this.data.length - this.readerIndex;
+            const remaining = this.data.length - this.readerIndex;
             throw new Error("HDSDecoder: End of data stream. Tried reading " + bytes + " bytes however got only " + remaining + " remaining!");
         }
-    };
-    DataStreamReader.prototype.readTag = function () {
+    }
+    readTag() {
         this.ensureLength(1);
         return this.data.readUInt8(this.readerIndex++);
-    };
-    DataStreamReader.prototype.readTrue = function () {
+    }
+    readTrue() {
         return this.trackData(true); // do those tag encoded values get cached?
-    };
-    DataStreamReader.prototype.readFalse = function () {
+    }
+    readFalse() {
         return this.trackData(false);
-    };
-    DataStreamReader.prototype.readNegOne = function () {
+    }
+    readNegOne() {
         return this.trackData(-1);
-    };
-    DataStreamReader.prototype.readIntRange = function (tag) {
-        return this.trackData(tag - 8 /* INTEGER_RANGE_START_0 */); // integer values from 0-39
-    };
-    DataStreamReader.prototype.readInt8 = function () {
+    }
+    readIntRange(tag) {
+        return this.trackData(tag - 8 /* DataFormatTags.INTEGER_RANGE_START_0 */); // integer values from 0-39
+    }
+    readInt8() {
         this.ensureLength(1);
         return this.trackData(this.data.readInt8(this.readerIndex++));
-    };
-    DataStreamReader.prototype.readInt16LE = function () {
+    }
+    readInt16LE() {
         this.ensureLength(2);
-        var value = this.data.readInt16LE(this.readerIndex);
+        const value = this.data.readInt16LE(this.readerIndex);
         this.readerIndex += 2;
         return this.trackData(value);
-    };
-    DataStreamReader.prototype.readInt32LE = function () {
+    }
+    readInt32LE() {
         this.ensureLength(4);
-        var value = this.data.readInt32LE(this.readerIndex);
+        const value = this.data.readInt32LE(this.readerIndex);
         this.readerIndex += 4;
         return this.trackData(value);
-    };
-    DataStreamReader.prototype.readInt64LE = function () {
+    }
+    readInt64LE() {
         this.ensureLength(8);
-        var low = this.data.readInt32LE(this.readerIndex);
-        var value = this.data.readInt32LE(this.readerIndex + 4) * 0x100000000 + low;
+        const low = this.data.readInt32LE(this.readerIndex);
+        let value = this.data.readInt32LE(this.readerIndex + 4) * 0x100000000 + low;
         if (low < 0) {
             value += 0x100000000;
         }
         this.readerIndex += 8;
         return this.trackData(value);
-    };
-    DataStreamReader.prototype.readFloat32LE = function () {
+    }
+    readFloat32LE() {
         this.ensureLength(4);
-        var value = this.data.readFloatLE(this.readerIndex);
+        const value = this.data.readFloatLE(this.readerIndex);
         this.readerIndex += 4;
         return this.trackData(value);
-    };
-    DataStreamReader.prototype.readFloat64LE = function () {
+    }
+    readFloat64LE() {
         this.ensureLength(8);
-        var value = this.data.readDoubleLE(this.readerIndex);
+        const value = this.data.readDoubleLE(this.readerIndex);
+        this.readerIndex += 8;
         return this.trackData(value);
-    };
-    DataStreamReader.prototype.readLength8 = function () {
+    }
+    readLength8() {
         this.ensureLength(1);
         return this.data.readUInt8(this.readerIndex++);
-    };
-    DataStreamReader.prototype.readLength16LE = function () {
+    }
+    readLength16LE() {
         this.ensureLength(2);
-        var value = this.data.readUInt16LE(this.readerIndex);
+        const value = this.data.readUInt16LE(this.readerIndex);
         this.readerIndex += 2;
         return value;
-    };
-    DataStreamReader.prototype.readLength32LE = function () {
+    }
+    readLength32LE() {
         this.ensureLength(4);
-        var value = this.data.readUInt32LE(this.readerIndex);
+        const value = this.data.readUInt32LE(this.readerIndex);
         this.readerIndex += 4;
         return value;
-    };
-    DataStreamReader.prototype.readLength64LE = function () {
+    }
+    readLength64LE() {
         this.ensureLength(8);
-        var low = this.data.readUInt32LE(this.readerIndex);
-        var value = this.data.readUInt32LE(this.readerIndex + 4) * 0x100000000 + low;
+        const low = this.data.readUInt32LE(this.readerIndex);
+        const value = this.data.readUInt32LE(this.readerIndex + 4) * 0x100000000 + low;
         this.readerIndex += 8;
         return value;
-    };
-    DataStreamReader.prototype.readUTF8 = function (length) {
+    }
+    readUTF8(length) {
         this.ensureLength(length);
-        var value = this.data.toString("utf8", this.readerIndex, this.readerIndex + length);
+        const value = this.data.toString("utf8", this.readerIndex, this.readerIndex + length);
         this.readerIndex += length;
         return this.trackData(value);
-    };
-    DataStreamReader.prototype.readUTF8_Length8 = function () {
-        var length = this.readLength8();
+    }
+    readUTF8_Length8() {
+        const length = this.readLength8();
         return this.readUTF8(length);
-    };
-    DataStreamReader.prototype.readUTF8_Length16LE = function () {
-        var length = this.readLength16LE();
+    }
+    readUTF8_Length16LE() {
+        const length = this.readLength16LE();
         return this.readUTF8(length);
-    };
-    DataStreamReader.prototype.readUTF8_Length32LE = function () {
-        var length = this.readLength32LE();
+    }
+    readUTF8_Length32LE() {
+        const length = this.readLength32LE();
         return this.readUTF8(length);
-    };
-    DataStreamReader.prototype.readUTF8_Length64LE = function () {
-        var length = this.readLength64LE();
+    }
+    readUTF8_Length64LE() {
+        const length = this.readLength64LE();
         return this.readUTF8(length);
-    };
-    DataStreamReader.prototype.readUTF8_NULL_terminated = function () {
-        var offset = this.readerIndex;
-        var nextByte;
+    }
+    readUTF8_NULL_terminated() {
+        let offset = this.readerIndex;
+        let nextByte;
         for (;;) {
             nextByte = this.data[offset];
             if (nextByte === undefined) {
@@ -512,75 +505,72 @@ var DataStreamReader = /** @class */ (function () {
                 offset++;
             }
         }
-        var value = this.data.toString("utf8", this.readerIndex, offset);
+        const value = this.data.toString("utf8", this.readerIndex, offset);
         this.readerIndex = offset + 1;
         return this.trackData(value);
-    };
-    DataStreamReader.prototype.readData = function (length) {
+    }
+    readData(length) {
         this.ensureLength(length);
-        var value = this.data.slice(this.readerIndex, this.readerIndex + length);
+        const value = this.data.subarray(this.readerIndex, this.readerIndex + length);
         this.readerIndex += length;
         return this.trackData(value);
-    };
-    DataStreamReader.prototype.readData_Length8 = function () {
-        var length = this.readLength8();
+    }
+    readData_Length8() {
+        const length = this.readLength8();
         return this.readData(length);
-    };
-    DataStreamReader.prototype.readData_Length16LE = function () {
-        var length = this.readLength16LE();
+    }
+    readData_Length16LE() {
+        const length = this.readLength16LE();
         return this.readData(length);
-    };
-    DataStreamReader.prototype.readData_Length32LE = function () {
-        var length = this.readLength32LE();
+    }
+    readData_Length32LE() {
+        const length = this.readLength32LE();
         return this.readData(length);
-    };
-    DataStreamReader.prototype.readData_Length64LE = function () {
-        var length = this.readLength64LE();
+    }
+    readData_Length64LE() {
+        const length = this.readLength64LE();
         return this.readData(length);
-    };
-    DataStreamReader.prototype.readData_terminated = function () {
-        var offset = this.readerIndex;
-        var nextByte;
+    }
+    readData_terminated() {
+        let offset = this.readerIndex;
+        let nextByte;
         for (;;) {
             nextByte = this.data[offset];
             if (nextByte === undefined) {
                 throw new Error("HDSDecoder: Reached end of data stream while reading terminated data!");
             }
-            else if (nextByte === 3 /* TERMINATOR */) {
+            else if (nextByte === 3 /* DataFormatTags.TERMINATOR */) {
                 break;
             }
             else {
                 offset++;
             }
         }
-        var value = this.data.slice(this.readerIndex, offset);
+        const value = this.data.subarray(this.readerIndex, offset);
         this.readerIndex = offset + 1;
         return this.trackData(value);
-    };
-    DataStreamReader.prototype.readSecondsSince2001_01_01 = function () {
+    }
+    readSecondsSince2001_01_01() {
         // second since 2001-01-01 00:00:00
         return this.readFloat64LE();
-    };
-    DataStreamReader.prototype.readUUID = function () {
+    }
+    readUUID() {
         this.ensureLength(16);
-        var value = uuid.unparse(this.data, this.readerIndex);
+        const value = uuid.unparse(this.data, this.readerIndex);
         this.readerIndex += 16;
         return this.trackData(value);
-    };
-    return DataStreamReader;
-}());
-exports.DataStreamReader = DataStreamReader;
-var WrittenDataList = /** @class */ (function () {
-    function WrittenDataList() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.writtenData = [];
     }
-    WrittenDataList.prototype.push = function (data) {
+}
+exports.DataStreamReader = DataStreamReader;
+class WrittenDataList {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    writtenData = [];
+    push(data) {
         this.writtenData.push(data);
-    };
-    WrittenDataList.prototype.indexOf = function (data) {
-        for (var i = 0; i < this.writtenData.length; i++) {
-            var data0 = this.writtenData[i];
+    }
+    indexOf(data) {
+        for (let i = 0; i < this.writtenData.length; i++) {
+            const data0 = this.writtenData[i];
             if (data === data0) {
                 return i;
             }
@@ -591,60 +581,65 @@ var WrittenDataList = /** @class */ (function () {
             }
         }
         return -1;
-    };
-    return WrittenDataList;
-}());
-var DataStreamWriter = /** @class */ (function () {
-    function DataStreamWriter() {
-        this.writtenData = new WrittenDataList();
+    }
+}
+/**
+ * @group HomeKit Data Streams (HDS)
+ */
+class DataStreamWriter {
+    static chunkSize = 128; // seems to be a good default
+    data;
+    writerIndex;
+    writtenData = new WrittenDataList();
+    constructor() {
         this.data = Buffer.alloc(DataStreamWriter.chunkSize);
         this.writerIndex = 0;
     }
-    DataStreamWriter.prototype.length = function () {
+    length() {
         return this.writerIndex; // since writerIndex points to the next FREE index it also represents the length
-    };
-    DataStreamWriter.prototype.getData = function () {
-        return this.data.slice(0, this.writerIndex);
-    };
-    DataStreamWriter.prototype.ensureLength = function (bytes) {
-        var neededBytes = (this.writerIndex + bytes) - this.data.length;
+    }
+    getData() {
+        return this.data.subarray(0, this.writerIndex);
+    }
+    ensureLength(bytes) {
+        const neededBytes = (this.writerIndex + bytes) - this.data.length;
         if (neededBytes > 0) {
-            var chunks = Math.ceil(neededBytes / DataStreamWriter.chunkSize);
+            const chunks = Math.ceil(neededBytes / DataStreamWriter.chunkSize);
             // don't know if it's best for performance to immediately concatenate the buffers. That way it's
             // the easiest way to handle writing though.
             this.data = Buffer.concat([this.data, Buffer.alloc(chunks * DataStreamWriter.chunkSize)]);
         }
-    };
-    DataStreamWriter.prototype.compressDataIfPossible = function (data) {
-        var index = this.writtenData.indexOf(data);
+    }
+    compressDataIfPossible(data) {
+        const index = this.writtenData.indexOf(data);
         if (index < 0) {
             // data is not present yet
             this.writtenData.push(data);
             return false;
         }
-        else if (index <= 207 /* COMPRESSION_STOP */ - 160 /* COMPRESSION_START */) {
+        else if (index <= 207 /* DataFormatTags.COMPRESSION_STOP */ - 160 /* DataFormatTags.COMPRESSION_START */) {
             // data was already written and the index is in the applicable range => shorten the payload
-            this.writeTag(160 /* COMPRESSION_START */ + index);
+            this.writeTag(160 /* DataFormatTags.COMPRESSION_START */ + index);
             return true;
         }
         return false;
-    };
-    DataStreamWriter.prototype.writeTag = function (tag) {
+    }
+    writeTag(tag) {
         this.ensureLength(1);
         this.data.writeUInt8(tag, this.writerIndex++);
-    };
-    DataStreamWriter.prototype.writeTrue = function () {
-        this.writeTag(1 /* TRUE */);
-    };
-    DataStreamWriter.prototype.writeFalse = function () {
-        this.writeTag(2 /* FALSE */);
-    };
-    DataStreamWriter.prototype.writeNumber = function (number) {
+    }
+    writeTrue() {
+        this.writeTag(1 /* DataFormatTags.TRUE */);
+    }
+    writeFalse() {
+        this.writeTag(2 /* DataFormatTags.FALSE */);
+    }
+    writeNumber(number) {
         if (number === -1) {
-            this.writeTag(7 /* INTEGER_MINUS_ONE */);
+            this.writeTag(7 /* DataFormatTags.INTEGER_MINUS_ONE */);
         }
         else if (number >= 0 && number <= 39) {
-            this.writeTag(8 /* INTEGER_RANGE_START_0 */ + number);
+            this.writeTag(8 /* DataFormatTags.INTEGER_RANGE_START_0 */ + number);
         }
         else if (number >= -128 && number <= 127) {
             this.writeInt8(new Int8(number));
@@ -652,7 +647,7 @@ var DataStreamWriter = /** @class */ (function () {
         else if (number >= -32768 && number <= 32767) {
             this.writeInt16LE(new Int16(number));
         }
-        else if (number >= -2147483648 && number <= -2147483648) {
+        else if (number >= -2147483648 && number <= 2147483647) {
             this.writeInt32LE(new Int32(number));
         }
         else if (number >= Number.MIN_SAFE_INTEGER && number <= Number.MAX_SAFE_INTEGER) { // use correct uin64 restriction when we convert to bigint
@@ -661,88 +656,88 @@ var DataStreamWriter = /** @class */ (function () {
         else {
             throw new Error("Tried writing unrepresentable number (" + number + ")");
         }
-    };
-    DataStreamWriter.prototype.writeInt8 = function (int8) {
+    }
+    writeInt8(int8) {
         if (this.compressDataIfPossible(int8)) {
             return;
         }
         this.ensureLength(2);
-        this.writeTag(48 /* INT8 */);
+        this.writeTag(48 /* DataFormatTags.INT8 */);
         this.data.writeInt8(int8.value, this.writerIndex++);
-    };
-    DataStreamWriter.prototype.writeInt16LE = function (int16) {
+    }
+    writeInt16LE(int16) {
         if (this.compressDataIfPossible(int16)) {
             return;
         }
         this.ensureLength(3);
-        this.writeTag(49 /* INT16LE */);
+        this.writeTag(49 /* DataFormatTags.INT16LE */);
         this.data.writeInt16LE(int16.value, this.writerIndex);
         this.writerIndex += 2;
-    };
-    DataStreamWriter.prototype.writeInt32LE = function (int32) {
+    }
+    writeInt32LE(int32) {
         if (this.compressDataIfPossible(int32)) {
             return;
         }
         this.ensureLength(5);
-        this.writeTag(50 /* INT32LE */);
+        this.writeTag(50 /* DataFormatTags.INT32LE */);
         this.data.writeInt32LE(int32.value, this.writerIndex);
         this.writerIndex += 4;
-    };
-    DataStreamWriter.prototype.writeInt64LE = function (int64) {
+    }
+    writeInt64LE(int64) {
         if (this.compressDataIfPossible(int64)) {
             return;
         }
         this.ensureLength(9);
-        this.writeTag(51 /* INT64LE */);
+        this.writeTag(51 /* DataFormatTags.INT64LE */);
         this.data.writeUInt32LE(int64.value, this.writerIndex); // TODO correctly implement int64; currently it's basically an int32
         this.data.writeUInt32LE(0, this.writerIndex + 4);
         this.writerIndex += 8;
-    };
-    DataStreamWriter.prototype.writeFloat32LE = function (float32) {
+    }
+    writeFloat32LE(float32) {
         if (this.compressDataIfPossible(float32)) {
             return;
         }
         this.ensureLength(5);
-        this.writeTag(53 /* FLOAT32LE */);
+        this.writeTag(53 /* DataFormatTags.FLOAT32LE */);
         this.data.writeFloatLE(float32.value, this.writerIndex);
         this.writerIndex += 4;
-    };
-    DataStreamWriter.prototype.writeFloat64LE = function (float64) {
+    }
+    writeFloat64LE(float64) {
         if (this.compressDataIfPossible(float64)) {
             return;
         }
         this.ensureLength(9);
-        this.writeTag(54 /* FLOAT64LE */);
+        this.writeTag(54 /* DataFormatTags.FLOAT64LE */);
         this.data.writeDoubleLE(float64.value, this.writerIndex);
         this.writerIndex += 8;
-    };
-    DataStreamWriter.prototype.writeLength8 = function (length) {
+    }
+    writeLength8(length) {
         this.ensureLength(1);
         this.data.writeUInt8(length, this.writerIndex++);
-    };
-    DataStreamWriter.prototype.writeLength16LE = function (length) {
+    }
+    writeLength16LE(length) {
         this.ensureLength(2);
         this.data.writeUInt16LE(length, this.writerIndex);
         this.writerIndex += 2;
-    };
-    DataStreamWriter.prototype.writeLength32LE = function (length) {
+    }
+    writeLength32LE(length) {
         this.ensureLength(4);
         this.data.writeUInt32LE(length, this.writerIndex);
         this.writerIndex += 4;
-    };
-    DataStreamWriter.prototype.writeLength64LE = function (length) {
+    }
+    writeLength64LE(length) {
         this.ensureLength(8);
         hapCrypto.writeUInt64LE(length, this.data, this.writerIndex);
         this.writerIndex += 8;
-    };
-    DataStreamWriter.prototype.writeUTF8 = function (utf8) {
+    }
+    writeUTF8(utf8) {
         if (this.compressDataIfPossible(utf8)) {
             return;
         }
-        var length = Buffer.byteLength(utf8);
+        const length = Buffer.byteLength(utf8);
         if (length <= 32) {
             this.ensureLength(1 + length);
-            this.writeTag(64 /* UTF8_LENGTH_START */ + utf8.length);
+            this.writeTag(64 /* DataFormatTags.UTF8_LENGTH_START */ + length);
             this._writeUTF8(utf8);
         }
         else if (length <= 255) {
@@ -760,53 +755,53 @@ var DataStreamWriter = /** @class */ (function () {
         else {
             this.writeUTF8_NULL_terminated(utf8);
         }
-    };
-    DataStreamWriter.prototype._writeUTF8 = function (utf8) {
-        var byteLength = Buffer.byteLength(utf8);
+    }
+    _writeUTF8(utf8) {
+        const byteLength = Buffer.byteLength(utf8);
         this.ensureLength(byteLength);
-        this.data.write(utf8, this.writerIndex, undefined, "utf8");
+        this.data.write(utf8, this.writerIndex, byteLength, "utf8");
         this.writerIndex += byteLength;
-    };
-    DataStreamWriter.prototype.writeUTF8_Length8 = function (utf8) {
-        var length = Buffer.byteLength(utf8);
+    }
+    writeUTF8_Length8(utf8) {
+        const length = Buffer.byteLength(utf8);
         this.ensureLength(2 + length);
-        this.writeTag(97 /* UTF8_LENGTH8 */);
+        this.writeTag(97 /* DataFormatTags.UTF8_LENGTH8 */);
         this.writeLength8(length);
         this._writeUTF8(utf8);
-    };
-    DataStreamWriter.prototype.writeUTF8_Length16LE = function (utf8) {
-        var length = Buffer.byteLength(utf8);
+    }
+    writeUTF8_Length16LE(utf8) {
+        const length = Buffer.byteLength(utf8);
         this.ensureLength(3 + length);
-        this.writeTag(98 /* UTF8_LENGTH16LE */);
+        this.writeTag(98 /* DataFormatTags.UTF8_LENGTH16LE */);
         this.writeLength16LE(length);
         this._writeUTF8(utf8);
-    };
-    DataStreamWriter.prototype.writeUTF8_Length32LE = function (utf8) {
-        var length = Buffer.byteLength(utf8);
+    }
+    writeUTF8_Length32LE(utf8) {
+        const length = Buffer.byteLength(utf8);
         this.ensureLength(5 + length);
-        this.writeTag(99 /* UTF8_LENGTH32LE */);
+        this.writeTag(99 /* DataFormatTags.UTF8_LENGTH32LE */);
         this.writeLength32LE(length);
         this._writeUTF8(utf8);
-    };
-    DataStreamWriter.prototype.writeUTF8_Length64LE = function (utf8) {
-        var length = Buffer.byteLength(utf8);
+    }
+    writeUTF8_Length64LE(utf8) {
+        const length = Buffer.byteLength(utf8);
         this.ensureLength(9 + length);
-        this.writeTag(100 /* UTF8_LENGTH64LE */);
+        this.writeTag(100 /* DataFormatTags.UTF8_LENGTH64LE */);
         this.writeLength64LE(length);
         this._writeUTF8(utf8);
-    };
-    DataStreamWriter.prototype.writeUTF8_NULL_terminated = function (utf8) {
+    }
+    writeUTF8_NULL_terminated(utf8) {
         this.ensureLength(1 + Buffer.byteLength(utf8) + 1);
-        this.writeTag(111 /* UTF8_NULL_TERMINATED */);
+        this.writeTag(111 /* DataFormatTags.UTF8_NULL_TERMINATED */);
         this._writeUTF8(utf8);
         this.data.writeUInt8(0, this.writerIndex++);
-    };
-    DataStreamWriter.prototype.writeData = function (data) {
+    }
+    writeData(data) {
         if (this.compressDataIfPossible(data)) {
             return;
         }
         if (data.length <= 32) {
-            this.writeTag(112 /* DATA_LENGTH_START */ + data.length);
+            this.writeTag(112 /* DataFormatTags.DATA_LENGTH_START */ + data.length);
             this._writeData(data);
         }
         else if (data.length <= 255) {
@@ -824,64 +819,62 @@ var DataStreamWriter = /** @class */ (function () {
         else {
             this.writeData_terminated(data);
         }
-    };
-    DataStreamWriter.prototype._writeData = function (data) {
+    }
+    _writeData(data) {
         this.ensureLength(data.length);
-        for (var i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i++) {
             this.data[this.writerIndex++] = data[i];
         }
-    };
-    DataStreamWriter.prototype.writeData_Length8 = function (data) {
+    }
+    writeData_Length8(data) {
         this.ensureLength(2 + data.length);
-        this.writeTag(145 /* DATA_LENGTH8 */);
+        this.writeTag(145 /* DataFormatTags.DATA_LENGTH8 */);
         this.writeLength8(data.length);
         this._writeData(data);
-    };
-    DataStreamWriter.prototype.writeData_Length16LE = function (data) {
+    }
+    writeData_Length16LE(data) {
         this.ensureLength(3 + data.length);
-        this.writeTag(146 /* DATA_LENGTH16LE */);
+        this.writeTag(146 /* DataFormatTags.DATA_LENGTH16LE */);
         this.writeLength16LE(data.length);
         this._writeData(data);
-    };
-    DataStreamWriter.prototype.writeData_Length32LE = function (data) {
+    }
+    writeData_Length32LE(data) {
         this.ensureLength(5 + data.length);
-        this.writeTag(147 /* DATA_LENGTH32LE */);
+        this.writeTag(147 /* DataFormatTags.DATA_LENGTH32LE */);
         this.writeLength32LE(data.length);
         this._writeData(data);
-    };
-    DataStreamWriter.prototype.writeData_Length64LE = function (data) {
+    }
+    writeData_Length64LE(data) {
         this.ensureLength(9 + data.length);
-        this.writeTag(148 /* DATA_LENGTH64LE */);
+        this.writeTag(148 /* DataFormatTags.DATA_LENGTH64LE */);
         this.writeLength64LE(data.length);
         this._writeData(data);
-    };
-    DataStreamWriter.prototype.writeData_terminated = function (data) {
+    }
+    writeData_terminated(data) {
         this.ensureLength(1 + data.length + 1);
-        this.writeTag(159 /* DATA_TERMINATED */);
+        this.writeTag(159 /* DataFormatTags.DATA_TERMINATED */);
         this._writeData(data);
-        this.writeTag(3 /* TERMINATOR */);
-    };
-    DataStreamWriter.prototype.writeSecondsSince2001_01_01 = function (seconds) {
+        this.writeTag(3 /* DataFormatTags.TERMINATOR */);
+    }
+    writeSecondsSince2001_01_01(seconds) {
         if (this.compressDataIfPossible(seconds)) {
             return;
         }
         this.ensureLength(9);
-        this.writeTag(6 /* DATE */);
+        this.writeTag(6 /* DataFormatTags.DATE */);
         this.data.writeDoubleLE(seconds.value, this.writerIndex);
         this.writerIndex += 8;
-    };
-    DataStreamWriter.prototype.writeUUID = function (uuid_string) {
+    }
+    writeUUID(uuid_string) {
         (0, assert_1.default)(uuid.isValid(uuid_string), "supplied uuid is invalid");
         if (this.compressDataIfPossible(new UUID(uuid_string))) {
             return;
         }
         this.ensureLength(17);
-        this.writeTag(5 /* UUID */);
+        this.writeTag(5 /* DataFormatTags.UUID */);
         uuid.write(uuid_string, this.data, this.writerIndex);
         this.writerIndex += 16;
-    };
-    DataStreamWriter.chunkSize = 128; // seems to be a good default
-    return DataStreamWriter;
-}());
+    }
+}
 exports.DataStreamWriter = DataStreamWriter;
 //# sourceMappingURL=DataStreamParser.js.map

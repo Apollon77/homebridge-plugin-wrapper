@@ -25,12 +25,12 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [24.x]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -47,13 +47,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x, 18.x]
+        node-version: [22.x, 24.x, 26.x]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
@@ -75,30 +75,31 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [24.x]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Extract the version and commit body from the tag
         id: extract_release
-        # The body may be multiline, therefore we need to escape some characters
+        # The body may be multiline, therefore it is written as heredoc
         run: |
           VERSION="${{ github.ref }}"
           VERSION=${VERSION##*/}
           VERSION=${VERSION##*v}
-          echo "::set-output name=VERSION::$VERSION"
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
           BODY=$(git show -s --format=%b)
-          BODY="${BODY//'%'/'%25'}"
-          BODY="${BODY//$'\n'/'%0A'}"
-          BODY="${BODY//$'\r'/'%0D'}"
-          echo "::set-output name=BODY::$BODY"
+          {
+            echo "BODY<<EOF"
+            echo "$BODY"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Install Dependencies
         run: npm ci

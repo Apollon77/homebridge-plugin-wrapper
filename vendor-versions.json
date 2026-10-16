@@ -1,0 +1,5 @@
+{
+    "homebridge": "2.4.0",
+    "hapNodejs": "2.2.2",
+    "requiredNode": "^22 || ^24 || ^26"
+}

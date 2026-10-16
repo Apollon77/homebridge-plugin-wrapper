@@ -1,41 +1,55 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AccessoryInfo = exports.PermissionTypes = void 0;
-var tslib_1 = require("tslib");
-var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
-var crypto_1 = (0, tslib_1.__importDefault)(require("crypto"));
-var tweetnacl_1 = (0, tslib_1.__importDefault)(require("tweetnacl"));
-var util_1 = (0, tslib_1.__importDefault)(require("util"));
-var eventedhttp_1 = require("../util/eventedhttp");
-var HAPStorage_1 = require("./HAPStorage");
+const tslib_1 = require("tslib");
+const assert_1 = tslib_1.__importDefault(require("assert"));
+const crypto_1 = tslib_1.__importDefault(require("crypto"));
+const debug_1 = tslib_1.__importDefault(require("debug"));
+const tweetnacl_1 = tslib_1.__importDefault(require("tweetnacl"));
+const util_1 = tslib_1.__importDefault(require("util"));
+const eventedhttp_1 = require("../util/eventedhttp");
+const HAPStorage_1 = require("./HAPStorage");
+const node_fs_1 = require("node:fs");
+const debug = (0, debug_1.default)("HAP-NodeJS:AccessoryInfo");
 function getVersion() {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    var packageJson = require("../../../package.json");
-    return packageJson.version;
+    const packageJson = JSON.parse((0, node_fs_1.readFileSync)(require.resolve("../../../package.json"), "utf-8"));
+    const { version } = packageJson;
+    return version;
 }
+/**
+ * @group Model
+ */
 var PermissionTypes;
 (function (PermissionTypes) {
     // noinspection JSUnusedGlobalSymbols
     PermissionTypes[PermissionTypes["USER"] = 0] = "USER";
     PermissionTypes[PermissionTypes["ADMIN"] = 1] = "ADMIN";
-})(PermissionTypes = exports.PermissionTypes || (exports.PermissionTypes = {}));
+})(PermissionTypes || (exports.PermissionTypes = PermissionTypes = {}));
 /**
  * AccessoryInfo is a model class containing a subset of Accessory data relevant to the internal HAP server,
  * such as encryption keys and username. It is persisted to disk.
+ * @group Model
  */
-var AccessoryInfo = /** @class */ (function () {
-    function AccessoryInfo(username) {
-        var _this = this;
-        this.configVersion = 1;
-        this.lastFirmwareVersion = "";
-        // Returns a boolean indicating whether this accessory has been paired with a client.
-        this.paired = function () {
-            return Object.keys(_this.pairedClients).length > 0; // if we have any paired clients, we're paired.
-        };
+class AccessoryInfo {
+    static deviceIdPattern = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+    username;
+    displayName;
+    model; // this property is currently not saved to disk
+    category;
+    pincode;
+    signSk;
+    signPk;
+    pairedClients;
+    pairedAdminClients;
+    configVersion = 1;
+    configHash;
+    setupID;
+    lastFirmwareVersion = "";
+    constructor(username) {
         this.username = username;
         this.displayName = "";
         this.model = "";
-        this.category = 1 /* OTHER */;
+        this.category = 1 /* Categories.OTHER */;
         this.pincode = "";
         this.signSk = Buffer.alloc(0);
         this.signPk = Buffer.alloc(0);
@@ -50,101 +64,83 @@ var AccessoryInfo = /** @class */ (function () {
      * @param {Buffer} publicKey
      * @param {PermissionTypes} permission
      */
-    AccessoryInfo.prototype.addPairedClient = function (username, publicKey, permission) {
+    addPairedClient(username, publicKey, permission) {
         this.pairedClients[username] = {
             username: username,
             publicKey: publicKey,
             permission: permission,
         };
-        if (permission === 1 /* ADMIN */) {
+        if (permission === 1 /* PermissionTypes.ADMIN */) {
             this.pairedAdminClients++;
         }
-    };
-    AccessoryInfo.prototype.updatePermission = function (username, permission) {
-        var pairingInformation = this.pairedClients[username];
+    }
+    updatePermission(username, permission) {
+        const pairingInformation = this.pairedClients[username];
         if (pairingInformation) {
-            var oldPermission = pairingInformation.permission;
+            const oldPermission = pairingInformation.permission;
             pairingInformation.permission = permission;
-            if (oldPermission === 1 /* ADMIN */ && permission !== 1 /* ADMIN */) {
+            if (oldPermission === 1 /* PermissionTypes.ADMIN */ && permission !== 1 /* PermissionTypes.ADMIN */) {
                 this.pairedAdminClients--;
             }
-            else if (oldPermission !== 1 /* ADMIN */ && permission === 1 /* ADMIN */) {
+            else if (oldPermission !== 1 /* PermissionTypes.ADMIN */ && permission === 1 /* PermissionTypes.ADMIN */) {
                 this.pairedAdminClients++;
             }
         }
-    };
-    AccessoryInfo.prototype.listPairings = function () {
-        var e_1, _a;
-        var array = [];
-        try {
-            for (var _b = (0, tslib_1.__values)(Object.values(this.pairedClients)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var pairingInformation = _c.value;
-                array.push(pairingInformation);
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_1) throw e_1.error; }
+    }
+    listPairings() {
+        const array = [];
+        for (const pairingInformation of Object.values(this.pairedClients)) {
+            array.push(pairingInformation);
         }
         return array;
-    };
+    }
     /**
      * Remove a paired client from memory.
      * @param connection - the session of the connection initiated the removal of the pairing
      * @param {string} username
      */
-    AccessoryInfo.prototype.removePairedClient = function (connection, username) {
-        var e_2, _a;
+    removePairedClient(connection, username) {
         this._removePairedClient0(connection, username);
         if (this.pairedAdminClients === 0) { // if we don't have any admin clients left paired it is required to kill all normal clients
-            try {
-                for (var _b = (0, tslib_1.__values)(Object.keys(this.pairedClients)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var username0 = _c.value;
-                    this._removePairedClient0(connection, username0);
-                }
-            }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-                }
-                finally { if (e_2) throw e_2.error; }
+            for (const username0 of Object.keys(this.pairedClients)) {
+                this._removePairedClient0(connection, username0);
             }
         }
-    };
-    AccessoryInfo.prototype._removePairedClient0 = function (connection, username) {
-        if (this.pairedClients[username] && this.pairedClients[username].permission === 1 /* ADMIN */) {
+    }
+    _removePairedClient0(connection, username) {
+        if (this.pairedClients[username] && this.pairedClients[username].permission === 1 /* PermissionTypes.ADMIN */) {
             this.pairedAdminClients--;
         }
         delete this.pairedClients[username];
         eventedhttp_1.EventedHTTPServer.destroyExistingConnectionsAfterUnpair(connection, username);
-    };
+    }
     /**
      * Check if username is paired
      * @param username
      */
-    AccessoryInfo.prototype.isPaired = function (username) {
+    isPaired(username) {
         return !!this.pairedClients[username];
-    };
-    AccessoryInfo.prototype.hasAdminPermissions = function (username) {
+    }
+    hasAdminPermissions(username) {
         if (!username) {
             return false;
         }
-        var pairingInformation = this.pairedClients[username];
-        return !!pairingInformation && pairingInformation.permission === 1 /* ADMIN */;
-    };
+        const pairingInformation = this.pairedClients[username];
+        return !!pairingInformation && pairingInformation.permission === 1 /* PermissionTypes.ADMIN */;
+    }
     // Gets the public key for a paired client as a Buffer, or falsy value if not paired.
-    AccessoryInfo.prototype.getClientPublicKey = function (username) {
-        var pairingInformation = this.pairedClients[username];
+    getClientPublicKey(username) {
+        const pairingInformation = this.pairedClients[username];
         if (pairingInformation) {
             return pairingInformation.publicKey;
         }
         else {
             return undefined;
         }
+    }
+    // Returns a boolean indicating whether this accessory has been paired with a client.
+    paired = () => {
+        return Object.keys(this.pairedClients).length > 0; // if we have any paired clients, we're paired.
     };
     /**
      * Checks based on the current accessory configuration if the current configuration number needs to be incremented.
@@ -154,19 +150,23 @@ var AccessoryInfo = /** @class */ (function () {
      * @param checkFirmwareIncrement
      * @returns True if the current configuration number was incremented and thus a new TXT must be advertised.
      */
-    AccessoryInfo.prototype.checkForCurrentConfigurationNumberIncrement = function (configuration, checkFirmwareIncrement) {
-        var shasum = crypto_1.default.createHash("sha1");
-        shasum.update(JSON.stringify(configuration));
-        var configHash = shasum.digest("hex");
-        var changed = false;
+    checkForCurrentConfigurationNumberIncrement(configuration, checkFirmwareIncrement) {
+        const shasum = crypto_1.default.createHash("sha1");
+        shasum.update(JSON.stringify(AccessoryInfo.canonicalizeConfiguration(configuration)));
+        const configHash = shasum.digest("hex");
+        let changed = false;
         if (configHash !== this.configHash) {
+            const previousHash = this.configHash;
             this.configVersion++;
             this.configHash = configHash;
             this.ensureConfigVersionBounds();
             changed = true;
+            // the increment is otherwise invisible: a bridge whose configuration churns bumps c# (and re-advertises)
+            // with no trace in any log, which is exactly what made homebridge/homebridge#3984 hard to diagnose
+            debug("[%s] Configuration number incremented to %d (configuration hash %s -> %s)", this.username, this.configVersion, previousHash || "<none>", configHash);
         }
         if (checkFirmwareIncrement) {
-            var version = getVersion();
+            const version = getVersion();
             if (this.lastFirmwareVersion !== version) {
                 // we only check if it is different and not only if it is incremented
                 // HomeKit spec prohibits firmware downgrades, but with hap-nodejs it's possible lol
@@ -178,20 +178,47 @@ var AccessoryInfo = /** @class */ (function () {
             this.save();
         }
         return changed;
-    };
-    AccessoryInfo.prototype.getConfigVersion = function () {
+    }
+    getConfigVersion() {
         return this.configVersion;
-    };
-    AccessoryInfo.prototype.ensureConfigVersionBounds = function () {
+    }
+    /**
+     * Returns a copy of the configuration with every order-independent array sorted, so that two representations
+     * of the same configuration always produce the same hash. Nothing guarantees plugins rebuild their accessories,
+     * services or characteristic properties in the same order on every start, and each reordering would otherwise
+     * increment the configuration number (and re-advertise) without any real change. Sorting is by aid/iid, which
+     * are persisted in the IdentifierCache and therefore stable across restarts. Only the hash input is
+     * canonicalized - the wire format of /accessories is untouched.
+     */
+    static canonicalizeConfiguration(configuration) {
+        return configuration
+            .map((accessory) => ({
+            ...accessory,
+            services: accessory.services
+                .map((service) => ({
+                ...service,
+                characteristics: service.characteristics
+                    .map((characteristic) => ({
+                    ...characteristic,
+                    perms: [...characteristic.perms].sort(),
+                    "valid-values": characteristic["valid-values"] && [...characteristic["valid-values"]].sort((a, b) => a - b),
+                }))
+                    .sort((a, b) => a.iid - b.iid),
+                linked: service.linked && [...service.linked].sort((a, b) => a - b),
+            }))
+                .sort((a, b) => a.iid - b.iid),
+        }))
+            .sort((a, b) => a.aid - b.aid);
+    }
+    ensureConfigVersionBounds() {
         // current configuration number must be in the range of 1-65535 and wrap to 1 when it overflows
         this.configVersion = this.configVersion % (0xFFFF + 1);
         if (this.configVersion === 0) {
             this.configVersion = 1;
         }
-    };
-    AccessoryInfo.prototype.save = function () {
-        var e_3, _a;
-        var saved = {
+    }
+    save() {
+        const saved = {
             displayName: this.displayName,
             category: this.category,
             pincode: this.pincode,
@@ -199,7 +226,7 @@ var AccessoryInfo = /** @class */ (function () {
             signPk: this.signPk.toString("hex"),
             pairedClients: {},
             // moving permissions into an extra object, so there is nothing to migrate from old files.
-            // if the legacy node-persist storage should be upgraded some time, it would be reasonable to combine the storage
+            // if the legacy storage format should be upgraded some time, it would be reasonable to combine the storage
             // of public keys (pairedClients object) and permissions.
             pairedClientsPermission: {},
             configVersion: this.configVersion,
@@ -207,76 +234,55 @@ var AccessoryInfo = /** @class */ (function () {
             setupID: this.setupID,
             lastFirmwareVersion: this.lastFirmwareVersion,
         };
-        try {
-            for (var _b = (0, tslib_1.__values)(Object.entries(this.pairedClients)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var _d = (0, tslib_1.__read)(_c.value, 2), username = _d[0], pairingInformation = _d[1];
-                // @ts-expect-error: missing typing, object instead of Record
-                saved.pairedClients[username] = pairingInformation.publicKey.toString("hex");
-                // @ts-expect-error: missing typing, object instead of Record
-                saved.pairedClientsPermission[username] = pairingInformation.permission;
-            }
+        for (const [username, pairingInformation] of Object.entries(this.pairedClients)) {
+            // @ts-expect-error: missing typing, object instead of Record
+            saved.pairedClients[username] = pairingInformation.publicKey.toString("hex");
+            // @ts-expect-error: missing typing, object instead of Record
+            saved.pairedClientsPermission[username] = pairingInformation.permission;
         }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_3) throw e_3.error; }
-        }
-        var key = AccessoryInfo.persistKey(this.username);
+        const key = AccessoryInfo.persistKey(this.username);
         HAPStorage_1.HAPStorage.storage().setItemSync(key, saved);
-    };
+    }
     // Gets a key for storing this AccessoryInfo in the filesystem, like "AccessoryInfo.CC223DE3CEF3.json"
-    AccessoryInfo.persistKey = function (username) {
+    static persistKey(username) {
         return util_1.default.format("AccessoryInfo.%s.json", username.replace(/:/g, "").toUpperCase());
-    };
-    AccessoryInfo.create = function (username) {
+    }
+    static create(username) {
         AccessoryInfo.assertValidUsername(username);
-        var accessoryInfo = new AccessoryInfo(username);
+        const accessoryInfo = new AccessoryInfo(username);
         accessoryInfo.lastFirmwareVersion = getVersion();
         // Create a new unique key pair for this accessory.
-        var keyPair = tweetnacl_1.default.sign.keyPair();
+        const keyPair = tweetnacl_1.default.sign.keyPair();
         accessoryInfo.signSk = Buffer.from(keyPair.secretKey);
         accessoryInfo.signPk = Buffer.from(keyPair.publicKey);
         return accessoryInfo;
-    };
-    AccessoryInfo.load = function (username) {
-        var e_4, _a;
+    }
+    static load(username) {
         AccessoryInfo.assertValidUsername(username);
-        var key = AccessoryInfo.persistKey(username);
-        var saved = HAPStorage_1.HAPStorage.storage().getItem(key);
+        const key = AccessoryInfo.persistKey(username);
+        const saved = HAPStorage_1.HAPStorage.storage().getItem(key);
         if (saved) {
-            var info = new AccessoryInfo(username);
+            const info = new AccessoryInfo(username);
             info.displayName = saved.displayName || "";
-            info.category = saved.category || "";
+            info.category = saved.category || 1 /* Categories.OTHER */;
             info.pincode = saved.pincode || "";
             info.signSk = Buffer.from(saved.signSk || "", "hex");
             info.signPk = Buffer.from(saved.signPk || "", "hex");
             info.pairedClients = {};
-            try {
-                for (var _b = (0, tslib_1.__values)(Object.keys(saved.pairedClients || {})), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var username_1 = _c.value;
-                    var publicKey = saved.pairedClients[username_1];
-                    var permission = saved.pairedClientsPermission ? saved.pairedClientsPermission[username_1] : undefined;
-                    if (permission === undefined) {
-                        permission = 1 /* ADMIN */;
-                    } // defaulting to admin permissions is the only suitable solution, there is no way to recover permissions
-                    info.pairedClients[username_1] = {
-                        username: username_1,
-                        publicKey: Buffer.from(publicKey, "hex"),
-                        permission: permission,
-                    };
-                    if (permission === 1 /* ADMIN */) {
-                        info.pairedAdminClients++;
-                    }
+            for (const username of Object.keys(saved.pairedClients || {})) {
+                const publicKey = saved.pairedClients[username];
+                let permission = saved.pairedClientsPermission ? saved.pairedClientsPermission[username] : undefined;
+                if (permission === undefined) {
+                    permission = 1 /* PermissionTypes.ADMIN */;
+                } // defaulting to admin permissions is the only suitable solution, there is no way to recover permissions
+                info.pairedClients[username] = {
+                    username: username,
+                    publicKey: Buffer.from(publicKey, "hex"),
+                    permission: permission,
+                };
+                if (permission === 1 /* PermissionTypes.ADMIN */) {
+                    info.pairedAdminClients++;
                 }
-            }
-            catch (e_4_1) { e_4 = { error: e_4_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-                }
-                finally { if (e_4) throw e_4.error; }
             }
             info.configVersion = saved.configVersion || 1;
             info.configHash = saved.configHash || "";
@@ -288,20 +294,18 @@ var AccessoryInfo = /** @class */ (function () {
         else {
             return null;
         }
-    };
-    AccessoryInfo.remove = function (username) {
-        var key = AccessoryInfo.persistKey(username);
+    }
+    static remove(username) {
+        const key = AccessoryInfo.persistKey(username);
         HAPStorage_1.HAPStorage.storage().removeItemSync(key);
-    };
-    AccessoryInfo.assertValidUsername = function (username) {
+    }
+    static assertValidUsername(username) {
         assert_1.default.ok(AccessoryInfo.deviceIdPattern.test(username), "The supplied username (" + username + ") is not valid " +
             "(expected a format like 'XX:XX:XX:XX:XX:XX' with XX being a valid hexadecimal string). " +
             "Note that, if you had this accessory already paired with the invalid username, you will need to repair " +
             "the accessory and reconfigure your services in the Home app. " +
             "Using an invalid username will lead to unexpected behaviour.");
-    };
-    AccessoryInfo.deviceIdPattern = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
-    return AccessoryInfo;
-}());
+    }
+}
 exports.AccessoryInfo = AccessoryInfo;
 //# sourceMappingURL=AccessoryInfo.js.map

@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // here's a fake temperature sensor device that we'll expose to HomeKit
-var __1 = require("..");
-var FAKE_SENSOR = {
+const __1 = require("..");
+const FAKE_SENSOR = {
     currentTemperature: 50,
     getTemperature: function () {
         console.log("Getting the current temperature!");
@@ -16,25 +16,25 @@ var FAKE_SENSOR = {
 // Generate a consistent UUID for our Temperature Sensor Accessory that will remain the same
 // even when restarting our server. We use the `uuid.generate` helper function to create
 // a deterministic UUID based on an arbitrary "namespace" and the string "temperature-sensor".
-var sensorUUID = __1.uuid.generate("hap-nodejs:accessories:temperature-sensor");
+const sensorUUID = __1.uuid.generate("hap-nodejs:accessories:temperature-sensor");
 // This is the Accessory that we'll return to HAP-NodeJS that represents our fake lock.
-var sensor = exports.accessory = new __1.Accessory("Temperature Sensor", sensorUUID);
+const sensor = exports.accessory = new __1.Accessory("Temperature Sensor", sensorUUID);
 // Add properties for publishing (in case we're using Core.js and not BridgedCore.js)
 // @ts-expect-error: Core/BridgeCore API
 sensor.username = "C1:5D:3A:AE:5E:FA";
 // @ts-expect-error: Core/BridgeCore API
 sensor.pincode = "031-45-154";
-sensor.category = 10 /* SENSOR */;
+sensor.category = 10 /* Categories.SENSOR */;
 // Add the actual TemperatureSensor Service.
 sensor
     .addService(__1.Service.TemperatureSensor)
     .getCharacteristic(__1.Characteristic.CurrentTemperature)
-    .on("get" /* GET */, function (callback) {
+    .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
     // return our current value
     callback(null, FAKE_SENSOR.getTemperature());
 });
 // randomize our temperature reading every 3 seconds
-setInterval(function () {
+setInterval(() => {
     FAKE_SENSOR.randomizeTemperature();
     // update the characteristic value so interested iOS devices can get notified
     sensor

@@ -1,22 +1,34 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
+const __importMetaUrl = require('node:url').pathToFileURL(__filename).href;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
 };
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRequiredNodeVersion = void 0;
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function loadPackageJson() {
-    const packageJSONPath = path_1.default.join(__dirname, "../package.json");
-    return JSON.parse(fs_1.default.readFileSync(packageJSONPath, { encoding: "utf8" }));
-}
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var version_exports = {};
+__export(version_exports, {
+  default: () => getVersion,
+  getRequiredNodeVersion: () => getRequiredNodeVersion
+});
+module.exports = __toCommonJS(version_exports);
 function getVersion() {
-    return loadPackageJson().version;
+  return "2.4.0";
 }
-exports.default = getVersion;
 function getRequiredNodeVersion() {
-    return loadPackageJson().engines.node;
+  return "^22 || ^24 || ^26";
 }
-exports.getRequiredNodeVersion = getRequiredNodeVersion;
-//# sourceMappingURL=version.js.map
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  getRequiredNodeVersion
+});

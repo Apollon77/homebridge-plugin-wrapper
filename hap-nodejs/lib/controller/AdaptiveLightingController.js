@@ -1,15 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdaptiveLightingController = exports.AdaptiveLightingControllerEvents = exports.AdaptiveLightingControllerMode = void 0;
-var tslib_1 = require("tslib");
-var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
-var uuid = (0, tslib_1.__importStar)(require("../util/uuid"));
-var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
-var events_1 = require("events");
-var __1 = require("../..");
-var Characteristic_1 = require("../Characteristic");
-var tlv = (0, tslib_1.__importStar)(require("../util/tlv"));
-var debug = (0, debug_1.default)("HAP-NodeJS:Controller:TransitionControl");
+const tslib_1 = require("tslib");
+const assert_1 = tslib_1.__importDefault(require("assert"));
+const color_utils_1 = require("../util/color-utils");
+const hapStatusError_1 = require("../util/hapStatusError");
+const time_1 = require("../util/time");
+const uuid = tslib_1.__importStar(require("../util/uuid"));
+const debug_1 = tslib_1.__importDefault(require("debug"));
+const events_1 = require("events");
+const Characteristic_1 = require("../Characteristic");
+const tlv = tslib_1.__importStar(require("../util/tlv"));
+const debug = (0, debug_1.default)("HAP-NodeJS:Controller:TransitionControl");
 var SupportedCharacteristicValueTransitionConfigurationsTypes;
 (function (SupportedCharacteristicValueTransitionConfigurationsTypes) {
     SupportedCharacteristicValueTransitionConfigurationsTypes[SupportedCharacteristicValueTransitionConfigurationsTypes["SUPPORTED_TRANSITION_CONFIGURATION"] = 1] = "SUPPORTED_TRANSITION_CONFIGURATION";
@@ -89,6 +91,7 @@ function isAdaptiveLightingContext(context) {
 }
 /**
  * Defines in which mode the {@link AdaptiveLightingController} will operate in.
+ * @group Adaptive Lighting
  */
 var AdaptiveLightingControllerMode;
 (function (AdaptiveLightingControllerMode) {
@@ -101,12 +104,15 @@ var AdaptiveLightingControllerMode;
      * This is useful for lights which natively support transitions.
      */
     AdaptiveLightingControllerMode[AdaptiveLightingControllerMode["MANUAL"] = 2] = "MANUAL";
-})(AdaptiveLightingControllerMode = exports.AdaptiveLightingControllerMode || (exports.AdaptiveLightingControllerMode = {}));
+})(AdaptiveLightingControllerMode || (exports.AdaptiveLightingControllerMode = AdaptiveLightingControllerMode = {}));
+/**
+ * @group Adaptive Lighting
+ */
 var AdaptiveLightingControllerEvents;
 (function (AdaptiveLightingControllerEvents) {
     /**
      * This event is called once a HomeKit controller enables Adaptive Lighting
-     * or a HomeHub sends a updated transition schedule for the next 24 hours.
+     * or a HomeHub sends an updated transition schedule for the next 24 hours.
      * This is also called on startup when AdaptiveLighting was previously enabled.
      */
     AdaptiveLightingControllerEvents["UPDATE"] = "update";
@@ -116,7 +122,7 @@ var AdaptiveLightingControllerEvents;
      * The current transition will still be associated with the controller object when this event is called.
      */
     AdaptiveLightingControllerEvents["DISABLED"] = "disable";
-})(AdaptiveLightingControllerEvents = exports.AdaptiveLightingControllerEvents || (exports.AdaptiveLightingControllerEvents = {}));
+})(AdaptiveLightingControllerEvents || (exports.AdaptiveLightingControllerEvents = AdaptiveLightingControllerEvents = {}));
 /**
  * This class allows adding Adaptive Lighting support to Lightbulb services.
  * The Lightbulb service MUST have the {@link Characteristic.ColorTemperature} characteristic AND
@@ -212,9 +218,32 @@ var AdaptiveLightingControllerEvents;
  *  Lastly you should set up a event handler for the {@link AdaptiveLightingControllerEvents.DISABLED} event.
  *  In yet unknown circumstances HomeKit may also send a dedicated disable command via the control point characteristic.
  *  Be prepared to handle that.
+ *
+ *  @group Adaptive Lighting
  */
-var AdaptiveLightingController = /** @class */ (function (_super) {
-    (0, tslib_1.__extends)(AdaptiveLightingController, _super);
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+class AdaptiveLightingController extends events_1.EventEmitter {
+    stateChangeDelegate;
+    lightbulb;
+    mode;
+    customTemperatureAdjustment;
+    adjustmentFactorChangedListener;
+    characteristicManualWrittenChangeListener;
+    supportedTransitionConfiguration;
+    transitionControl;
+    activeTransitionCount;
+    colorTemperatureCharacteristic;
+    brightnessCharacteristic;
+    saturationCharacteristic;
+    hueCharacteristic;
+    activeTransition;
+    didRunFirstInitializationStep = false;
+    updateTimeout;
+    lastTransitionPointInfo;
+    lastEventNotificationSent = 0;
+    lastNotifiedTemperatureValue = 0;
+    lastNotifiedSaturationValue = 0;
+    lastNotifiedHueValue = 0;
     /**
      * Creates a new instance of the AdaptiveLightingController.
      * Refer to the {@link AdaptiveLightingController} documentation on how to use it.
@@ -222,36 +251,29 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
      * @param service - The lightbulb to which Adaptive Lighting support should be added.
      * @param options - Optional options to define the operating mode (automatic vs manual).
      */
-    function AdaptiveLightingController(service, options) {
-        var _a, _b;
-        var _this = _super.call(this) || this;
-        _this.didRunFirstInitializationStep = false;
-        _this.lastEventNotificationSent = 0;
-        _this.lastNotifiedTemperatureValue = 0;
-        _this.lastNotifiedSaturationValue = 0;
-        _this.lastNotifiedHueValue = 0;
-        _this.lightbulb = service;
-        _this.mode = (_a = options === null || options === void 0 ? void 0 : options.controllerMode) !== null && _a !== void 0 ? _a : 1 /* AUTOMATIC */;
-        _this.customTemperatureAdjustment = (_b = options === null || options === void 0 ? void 0 : options.customTemperatureAdjustment) !== null && _b !== void 0 ? _b : 0;
-        (0, assert_1.default)(_this.lightbulb.testCharacteristic(Characteristic_1.Characteristic.ColorTemperature), "Lightbulb must have the ColorTemperature characteristic added!");
-        (0, assert_1.default)(_this.lightbulb.testCharacteristic(Characteristic_1.Characteristic.Brightness), "Lightbulb must have the Brightness characteristic added!");
-        _this.adjustmentFactorChangedListener = _this.handleAdjustmentFactorChanged.bind(_this);
-        _this.characteristicManualWrittenChangeListener = _this.handleCharacteristicManualWritten.bind(_this);
-        return _this;
+    constructor(service, options) {
+        super();
+        this.lightbulb = service;
+        this.mode = options?.controllerMode ?? 1 /* AdaptiveLightingControllerMode.AUTOMATIC */;
+        this.customTemperatureAdjustment = options?.customTemperatureAdjustment ?? 0;
+        (0, assert_1.default)(this.lightbulb.testCharacteristic(Characteristic_1.Characteristic.ColorTemperature), "Lightbulb must have the ColorTemperature characteristic added!");
+        (0, assert_1.default)(this.lightbulb.testCharacteristic(Characteristic_1.Characteristic.Brightness), "Lightbulb must have the Brightness characteristic added!");
+        this.adjustmentFactorChangedListener = this.handleAdjustmentFactorChanged.bind(this);
+        this.characteristicManualWrittenChangeListener = this.handleCharacteristicManualWritten.bind(this);
     }
     /**
      * @private
      */
-    AdaptiveLightingController.prototype.controllerId = function () {
-        return "characteristic-transition" /* CHARACTERISTIC_TRANSITION */ + "-" + this.lightbulb.getServiceId();
-    };
+    controllerId() {
+        return "characteristic-transition" /* DefaultControllerType.CHARACTERISTIC_TRANSITION */ + "-" + this.lightbulb.getServiceId();
+    }
     // ----------- PUBLIC API START -----------
     /**
      * Returns if a Adaptive Lighting transition is currently active.
      */
-    AdaptiveLightingController.prototype.isAdaptiveLightingActive = function () {
+    isAdaptiveLightingActive() {
         return !!this.activeTransition;
-    };
+    }
     /**
      * This method can be called to manually disable the current active Adaptive Lighting transition.
      * When using {@link AdaptiveLightingControllerMode.AUTOMATIC} you won't need to call this method.
@@ -259,23 +281,18 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
      * This is the case when the user manually changes the value of Hue, Saturation or ColorTemperature characteristics
      * (or if any of those values is changed by physical interaction with the lightbulb).
      */
-    AdaptiveLightingController.prototype.disableAdaptiveLighting = function () {
-        var _a;
+    disableAdaptiveLighting() {
         if (this.updateTimeout) {
             clearTimeout(this.updateTimeout);
             this.updateTimeout = undefined;
         }
         if (this.activeTransition) {
-            this.colorTemperatureCharacteristic.removeListener("change" /* CHANGE */, this.characteristicManualWrittenChangeListener);
-            this.brightnessCharacteristic.removeListener("change" /* CHANGE */, this.adjustmentFactorChangedListener);
-            if (this.hueCharacteristic) {
-                this.hueCharacteristic.removeListener("change" /* CHANGE */, this.characteristicManualWrittenChangeListener);
-            }
-            if (this.saturationCharacteristic) {
-                this.saturationCharacteristic.removeListener("change" /* CHANGE */, this.characteristicManualWrittenChangeListener);
-            }
+            this.colorTemperatureCharacteristic?.removeListener("change" /* CharacteristicEventTypes.CHANGE */, this.characteristicManualWrittenChangeListener);
+            this.brightnessCharacteristic?.removeListener("change" /* CharacteristicEventTypes.CHANGE */, this.adjustmentFactorChangedListener);
+            this.hueCharacteristic?.removeListener("change" /* CharacteristicEventTypes.CHANGE */, this.characteristicManualWrittenChangeListener);
+            this.saturationCharacteristic?.removeListener("change" /* CharacteristicEventTypes.CHANGE */, this.characteristicManualWrittenChangeListener);
             this.activeTransition = undefined;
-            (_a = this.stateChangeDelegate) === null || _a === void 0 ? void 0 : _a.call(this);
+            this.stateChangeDelegate?.();
         }
         this.colorTemperatureCharacteristic = undefined;
         this.brightnessCharacteristic = undefined;
@@ -287,20 +304,20 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
         this.lastNotifiedSaturationValue = 0;
         this.lastNotifiedHueValue = 0;
         this.didRunFirstInitializationStep = false;
-        this.activeTransitionCount.sendEventNotification(0);
+        this.activeTransitionCount?.sendEventNotification(0);
         debug("[%s] Disabling adaptive lighting", this.lightbulb.displayName);
-    };
+    }
     /**
      * Returns the time where the current transition curve was started in epoch time millis.
      * A transition curves is active for 24 hours typically and is renewed every 24 hours by a HomeHub.
      * Additionally see {@link getAdaptiveLightingTimeOffset}.
      */
-    AdaptiveLightingController.prototype.getAdaptiveLightingStartTimeOfTransition = function () {
+    getAdaptiveLightingStartTimeOfTransition() {
         if (!this.activeTransition) {
             throw new Error("There is no active transition!");
         }
         return this.activeTransition.transitionStartMillis;
-    };
+    }
     /**
      * It is not necessarily given, that we have the same time (or rather the correct time) as the HomeKit controller
      * who set up the transition schedule.
@@ -309,24 +326,24 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
      * So in the case were we actually have a correct local time, it most likely will be positive (due to network latency).
      * But of course it can also be negative.
      */
-    AdaptiveLightingController.prototype.getAdaptiveLightingTimeOffset = function () {
+    getAdaptiveLightingTimeOffset() {
         if (!this.activeTransition) {
             throw new Error("There is no active transition!");
         }
         return this.activeTransition.timeMillisOffset;
-    };
-    AdaptiveLightingController.prototype.getAdaptiveLightingTransitionCurve = function () {
+    }
+    getAdaptiveLightingTransitionCurve() {
         if (!this.activeTransition) {
             throw new Error("There is no active transition!");
         }
         return this.activeTransition.transitionCurve;
-    };
-    AdaptiveLightingController.prototype.getAdaptiveLightingBrightnessMultiplierRange = function () {
+    }
+    getAdaptiveLightingBrightnessMultiplierRange() {
         if (!this.activeTransition) {
             throw new Error("There is no active transition!");
         }
         return this.activeTransition.brightnessAdjustmentRange;
-    };
+    }
     /**
      * This method returns the interval (in milliseconds) in which the light should update its internal color temperature
      * (aka changes it physical color).
@@ -334,12 +351,12 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
      *
      * Typically this evaluates to 60000 milliseconds (60 seconds).
      */
-    AdaptiveLightingController.prototype.getAdaptiveLightingUpdateInterval = function () {
+    getAdaptiveLightingUpdateInterval() {
         if (!this.activeTransition) {
             throw new Error("There is no active transition!");
         }
         return this.activeTransition.updateInterval;
-    };
+    }
     /**
      * Returns the minimum interval threshold (in milliseconds) a accessory may notify HomeKit controllers about a new
      * color temperature value via event notifications (what happens when you call {@link Characteristic.updateValue}).
@@ -347,60 +364,70 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
      *
      * Typically this evaluates to 600000 milliseconds (10 minutes).
      */
-    AdaptiveLightingController.prototype.getAdaptiveLightingNotifyIntervalThreshold = function () {
+    getAdaptiveLightingNotifyIntervalThreshold() {
         if (!this.activeTransition) {
             throw new Error("There is no active transition!");
         }
         return this.activeTransition.notifyIntervalThreshold;
-    };
+    }
     // ----------- PUBLIC API END -----------
-    AdaptiveLightingController.prototype.handleActiveTransitionUpdated = function (calledFromDeserializer) {
-        var _a;
-        if (calledFromDeserializer === void 0) { calledFromDeserializer = false; }
-        if (!calledFromDeserializer) {
-            this.activeTransitionCount.sendEventNotification(1);
+    handleActiveTransitionUpdated(calledFromDeserializer = false) {
+        if (this.activeTransitionCount) {
+            if (!calledFromDeserializer) {
+                this.activeTransitionCount.sendEventNotification(1);
+            }
+            else {
+                this.activeTransitionCount.value = 1;
+            }
         }
-        else {
-            this.activeTransitionCount.value = 1;
-        }
-        if (this.mode === 1 /* AUTOMATIC */) {
+        if (this.mode === 1 /* AdaptiveLightingControllerMode.AUTOMATIC */) {
             this.scheduleNextUpdate();
         }
-        else if (this.mode === 2 /* MANUAL */) {
-            this.emit("update" /* UPDATE */);
+        else if (this.mode === 2 /* AdaptiveLightingControllerMode.MANUAL */) {
+            if (!this.activeTransition) {
+                throw new Error("There is no active transition!");
+            }
+            const update = {
+                transitionStartMillis: this.activeTransition.transitionStartMillis,
+                timeMillisOffset: this.activeTransition.timeMillisOffset,
+                transitionCurve: this.activeTransition.transitionCurve,
+                brightnessAdjustmentRange: this.activeTransition.brightnessAdjustmentRange,
+                updateInterval: this.activeTransition.updateInterval,
+                notifyIntervalThreshold: this.activeTransition.notifyIntervalThreshold,
+            };
+            this.emit("update" /* AdaptiveLightingControllerEvents.UPDATE */, update);
         }
         else {
             throw new Error("Unsupported adaptive lighting controller mode: " + this.mode);
         }
         if (!calledFromDeserializer) {
-            (_a = this.stateChangeDelegate) === null || _a === void 0 ? void 0 : _a.call(this);
+            this.stateChangeDelegate?.();
         }
-    };
-    AdaptiveLightingController.prototype.handleAdaptiveLightingEnabled = function () {
+    }
+    handleAdaptiveLightingEnabled() {
         if (!this.activeTransition) {
             throw new Error("There is no active transition!");
         }
         this.colorTemperatureCharacteristic = this.lightbulb.getCharacteristic(Characteristic_1.Characteristic.ColorTemperature);
         this.brightnessCharacteristic = this.lightbulb.getCharacteristic(Characteristic_1.Characteristic.Brightness);
-        this.colorTemperatureCharacteristic.on("change" /* CHANGE */, this.characteristicManualWrittenChangeListener);
-        this.brightnessCharacteristic.on("change" /* CHANGE */, this.adjustmentFactorChangedListener);
+        this.colorTemperatureCharacteristic.on("change" /* CharacteristicEventTypes.CHANGE */, this.characteristicManualWrittenChangeListener);
+        this.brightnessCharacteristic.on("change" /* CharacteristicEventTypes.CHANGE */, this.adjustmentFactorChangedListener);
         if (this.lightbulb.testCharacteristic(Characteristic_1.Characteristic.Hue)) {
             this.hueCharacteristic = this.lightbulb.getCharacteristic(Characteristic_1.Characteristic.Hue)
-                .on("change" /* CHANGE */, this.characteristicManualWrittenChangeListener);
+                .on("change" /* CharacteristicEventTypes.CHANGE */, this.characteristicManualWrittenChangeListener);
         }
         if (this.lightbulb.testCharacteristic(Characteristic_1.Characteristic.Saturation)) {
             this.saturationCharacteristic = this.lightbulb.getCharacteristic(Characteristic_1.Characteristic.Saturation)
-                .on("change" /* CHANGE */, this.characteristicManualWrittenChangeListener);
+                .on("change" /* CharacteristicEventTypes.CHANGE */, this.characteristicManualWrittenChangeListener);
         }
-    };
-    AdaptiveLightingController.prototype.handleAdaptiveLightingDisabled = function () {
-        if (this.mode === 2 /* MANUAL */ && this.activeTransition) { // only emit the event if a transition is actually enabled
-            this.emit("disable" /* DISABLED */);
+    }
+    handleAdaptiveLightingDisabled() {
+        if (this.mode === 2 /* AdaptiveLightingControllerMode.MANUAL */ && this.activeTransition) { // only emit the event if a transition is actually enabled
+            this.emit("disable" /* AdaptiveLightingControllerEvents.DISABLED */);
         }
         this.disableAdaptiveLighting();
-    };
-    AdaptiveLightingController.prototype.handleAdjustmentFactorChanged = function (change) {
-        var _this = this;
+    }
+    handleAdjustmentFactorChanged(change) {
         if (change.newValue === change.oldValue) {
             return;
         }
@@ -413,57 +440,56 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
         // After some short time the Hue or Saturation get handler return with the last known value to the plugin.
         // As those values now differ from the cached values (we already updated) we get a call to handleCharacteristicManualWritten
         // which again disables adaptive lighting.
-        if (change.reason === "read" /* READ */) {
+        if (change.reason === "read" /* ChangeReason.READ */) {
             // if the reason is a read request, we expect that Hue/Saturation are also read
             // thus we postpone our update to ColorTemperature a bit.
             // It doesn't ensure that those race conditions do not happen anymore, but with a 1s delay it reduces the possibility by a bit
-            setTimeout(function () {
-                if (!_this.activeTransition) {
+            setTimeout(() => {
+                if (!this.activeTransition) {
                     return; // was disabled in the mean time
                 }
-                _this.scheduleNextUpdate(true);
+                this.scheduleNextUpdate(true);
             }, 1000).unref();
         }
         else {
             this.scheduleNextUpdate(true); // run a dry scheduleNextUpdate to adjust the colorTemperature using the new brightness value
         }
-    };
+    }
     /**
      * This method is called when a change happens to the Hue/Saturation or ColorTemperature characteristic.
      * When such a write happens (caused by the user changing the color/temperature) Adaptive Lighting must be disabled.
      *
      * @param change
      */
-    AdaptiveLightingController.prototype.handleCharacteristicManualWritten = function (change) {
-        if (change.reason === "write" /* WRITE */ && !(isAdaptiveLightingContext(change.context) && change.context.controller === this)) {
+    handleCharacteristicManualWritten(change) {
+        if (change.reason === "write" /* ChangeReason.WRITE */ && !(isAdaptiveLightingContext(change.context) && change.context.controller === this)) {
             // we ignore write request which are the result of calls made to updateValue or sendEventNotification
             // or the result of a changed value returned by a read handler
             // or the change was done by the controller itself
             debug("[%s] Received a manual write to an characteristic (newValue: %d, oldValue: %d, reason: %s). Thus disabling adaptive lighting!", this.lightbulb.displayName, change.newValue, change.oldValue, change.reason);
             this.disableAdaptiveLighting();
         }
-    };
+    }
     /**
      * Retrieve the {@link AdaptiveLightingTransitionPoint} for the current timestamp.
      * Returns undefined if the current transition schedule reached its end.
      */
-    AdaptiveLightingController.prototype.getCurrentAdaptiveLightingTransitionPoint = function () {
-        var _a, _b, _c, _d, _e;
+    getCurrentAdaptiveLightingTransitionPoint() {
         if (!this.activeTransition) {
             throw new Error("Cannot calculate current transition point if no transition is active!");
         }
         // adjustedNow is the now() date corrected to the time of the initiating controller
-        var adjustedNow = Date.now() - this.activeTransition.timeMillisOffset;
+        const adjustedNow = Date.now() - this.activeTransition.timeMillisOffset;
         // "offset" since the start of the transition schedule
-        var offset = adjustedNow - this.activeTransition.transitionStartMillis;
-        var i = (_b = (_a = this.lastTransitionPointInfo) === null || _a === void 0 ? void 0 : _a.curveIndex) !== null && _b !== void 0 ? _b : 0;
-        var lowerBoundTimeOffset = (_d = (_c = this.lastTransitionPointInfo) === null || _c === void 0 ? void 0 : _c.lowerBoundTimeOffset) !== null && _d !== void 0 ? _d : 0; // time offset to the lowerBound transition entry
-        var lowerBound = undefined;
-        var upperBound = undefined;
+        const offset = adjustedNow - this.activeTransition.transitionStartMillis;
+        let i = this.lastTransitionPointInfo?.curveIndex ?? 0;
+        let lowerBoundTimeOffset = this.lastTransitionPointInfo?.lowerBoundTimeOffset ?? 0; // time offset to the lowerBound transition entry
+        let lowerBound = undefined;
+        let upperBound = undefined;
         for (; i + 1 < this.activeTransition.transitionCurve.length; i++) {
-            var lowerBound0 = this.activeTransition.transitionCurve[i];
-            var upperBound0 = this.activeTransition.transitionCurve[i + 1];
-            var lowerBoundDuration = (_e = lowerBound0.duration) !== null && _e !== void 0 ? _e : 0;
+            const lowerBound0 = this.activeTransition.transitionCurve[i];
+            const upperBound0 = this.activeTransition.transitionCurve[i + 1];
+            const lowerBoundDuration = lowerBound0.duration ?? 0;
             lowerBoundTimeOffset += lowerBound0.transitionTime;
             if (offset >= lowerBoundTimeOffset) {
                 if (offset <= lowerBoundTimeOffset + lowerBoundDuration + upperBound0.transitionTime) {
@@ -498,11 +524,8 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
             lowerBound: lowerBound,
             upperBound: upperBound,
         };
-    };
-    AdaptiveLightingController.prototype.scheduleNextUpdate = function (dryRun) {
-        var _this = this;
-        var _a, _b, _c, _d, _e;
-        if (dryRun === void 0) { dryRun = false; }
+    }
+    scheduleNextUpdate(dryRun = false) {
         if (!this.activeTransition) {
             throw new Error("tried scheduling transition when no transition was active!");
         }
@@ -513,7 +536,7 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
             this.didRunFirstInitializationStep = true;
             this.handleAdaptiveLightingEnabled();
         }
-        var transitionPoint = this.getCurrentAdaptiveLightingTransitionPoint();
+        const transitionPoint = this.getCurrentAdaptiveLightingTransitionPoint();
         if (!transitionPoint) {
             debug("[%s] Reached end of transition curve!", this.lightbulb.displayName);
             if (!dryRun) {
@@ -522,30 +545,30 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
             }
             return;
         }
-        var lowerBound = transitionPoint.lowerBound;
-        var upperBound = transitionPoint.upperBound;
-        var interpolatedTemperature;
-        var interpolatedAdjustmentFactor;
+        const lowerBound = transitionPoint.lowerBound;
+        const upperBound = transitionPoint.upperBound;
+        let interpolatedTemperature;
+        let interpolatedAdjustmentFactor;
         if (lowerBound.duration && transitionPoint.transitionOffset <= lowerBound.duration) {
             interpolatedTemperature = lowerBound.temperature;
             interpolatedAdjustmentFactor = lowerBound.brightnessAdjustmentFactor;
         }
         else {
-            var timePercentage = (transitionPoint.transitionOffset - ((_a = lowerBound.duration) !== null && _a !== void 0 ? _a : 0)) / upperBound.transitionTime;
+            const timePercentage = (transitionPoint.transitionOffset - (lowerBound.duration ?? 0)) / upperBound.transitionTime;
             interpolatedTemperature = lowerBound.temperature + (upperBound.temperature - lowerBound.temperature) * timePercentage;
             interpolatedAdjustmentFactor = lowerBound.brightnessAdjustmentFactor
                 + (upperBound.brightnessAdjustmentFactor - lowerBound.brightnessAdjustmentFactor) * timePercentage;
         }
-        var adjustmentMultiplier = Math.max(this.activeTransition.brightnessAdjustmentRange.minBrightnessValue, Math.min(this.activeTransition.brightnessAdjustmentRange.maxBrightnessValue, this.brightnessCharacteristic.value));
-        var temperature = Math.round(interpolatedTemperature + interpolatedAdjustmentFactor * adjustmentMultiplier);
+        const adjustmentMultiplier = Math.max(this.activeTransition.brightnessAdjustmentRange.minBrightnessValue, Math.min(this.activeTransition.brightnessAdjustmentRange.maxBrightnessValue, this.brightnessCharacteristic?.value));
+        let temperature = Math.round(interpolatedTemperature + interpolatedAdjustmentFactor * adjustmentMultiplier);
         // apply any manually applied temperature adjustments
         temperature += this.customTemperatureAdjustment;
-        var min = (_c = (_b = this.colorTemperatureCharacteristic) === null || _b === void 0 ? void 0 : _b.props.minValue) !== null && _c !== void 0 ? _c : 140;
-        var max = (_e = (_d = this.colorTemperatureCharacteristic) === null || _d === void 0 ? void 0 : _d.props.maxValue) !== null && _e !== void 0 ? _e : 500;
+        const min = this.colorTemperatureCharacteristic?.props.minValue ?? 140;
+        const max = this.colorTemperatureCharacteristic?.props.maxValue ?? 500;
         temperature = Math.max(min, Math.min(max, temperature));
-        var color = __1.ColorUtils.colorTemperatureToHueAndSaturation(temperature);
+        const color = color_utils_1.ColorUtils.colorTemperatureToHueAndSaturation(temperature);
         debug("[%s] Next temperature value is %d (for brightness %d adj: %s)", this.lightbulb.displayName, temperature, adjustmentMultiplier, this.customTemperatureAdjustment);
-        var context = {
+        const context = {
             controller: this,
             omitEventUpdate: true,
         };
@@ -570,8 +593,8 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
         if (this.hueCharacteristic) {
             this.hueCharacteristic.value = color.hue;
         }
-        this.colorTemperatureCharacteristic.handleSetRequest(temperature, undefined, context).catch(function (reason) {
-            debug("[%s] Failed to next adaptive lighting transition point: %d", _this.lightbulb.displayName, reason);
+        this.colorTemperatureCharacteristic?.handleSetRequest(temperature, undefined, context).catch(reason => {
+            debug("[%s] Failed to next adaptive lighting transition point: %d", this.lightbulb.displayName, reason);
         });
         if (!this.activeTransition) {
             console.warn("[" + this.lightbulb.displayName + "] Adaptive Lighting was probably disable my mistake by some call in " +
@@ -579,15 +602,15 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
                 "Please check that you don't call setValue/setCharacteristic on the Hue, Saturation or ColorTemperature characteristic!");
             return;
         }
-        var now = Date.now();
+        const now = Date.now();
         if (!dryRun && now - this.lastEventNotificationSent >= this.activeTransition.notifyIntervalThreshold) {
             debug("[%s] Sending event notifications for current transition!", this.lightbulb.displayName);
             this.lastEventNotificationSent = now;
-            var eventContext = {
+            const eventContext = {
                 controller: this,
             };
             if (this.lastNotifiedTemperatureValue !== temperature) {
-                this.colorTemperatureCharacteristic.sendEventNotification(temperature, eventContext);
+                this.colorTemperatureCharacteristic?.sendEventNotification(temperature, eventContext);
                 this.lastNotifiedTemperatureValue = temperature;
             }
             if (this.saturationCharacteristic && this.lastNotifiedSaturationValue !== color.saturation) {
@@ -602,25 +625,24 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
         if (!dryRun) {
             this.updateTimeout = setTimeout(this.scheduleNextUpdate.bind(this), this.activeTransition.updateInterval);
         }
-    };
+    }
     /**
      * @private
      */
-    AdaptiveLightingController.prototype.constructServices = function () {
+    constructServices() {
         return {};
-    };
+    }
     /**
      * @private
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    AdaptiveLightingController.prototype.initWithServices = function (serviceMap) {
+    initWithServices(serviceMap) {
         // do nothing
-    };
+    }
     /**
      * @private
      */
-    AdaptiveLightingController.prototype.configureServices = function () {
-        var _this = this;
+    configureServices() {
         this.supportedTransitionConfiguration = this.lightbulb.getCharacteristic(Characteristic_1.Characteristic.SupportedCharacteristicValueTransitionConfiguration);
         this.transitionControl = this.lightbulb.getCharacteristic(Characteristic_1.Characteristic.CharacteristicValueTransitionControl)
             .updateValue("");
@@ -629,25 +651,25 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
         this.supportedTransitionConfiguration
             .onGet(this.handleSupportedTransitionConfigurationRead.bind(this));
         this.transitionControl
-            .onGet(function () {
-            return _this.buildTransitionControlResponseBuffer().toString("base64");
+            .onGet(() => {
+            return this.buildTransitionControlResponseBuffer().toString("base64");
         })
-            .onSet(function (value) {
+            .onSet(value => {
             try {
-                return _this.handleTransitionControlWrite(value);
+                return this.handleTransitionControlWrite(value);
             }
             catch (error) {
-                console.warn("[%s] DEBUG: '".concat(value, "'"));
+                console.warn(`[%s] DEBUG: '${value}'`);
                 console.warn("[%s] Encountered error on CharacteristicValueTransitionControl characteristic: " + error.stack);
-                _this.disableAdaptiveLighting();
-                throw new __1.HapStatusError(-70402 /* SERVICE_COMMUNICATION_FAILURE */);
+                this.disableAdaptiveLighting();
+                throw new hapStatusError_1.HapStatusError(-70402 /* HAPStatus.SERVICE_COMMUNICATION_FAILURE */);
             }
         });
-    };
+    }
     /**
      * @private
      */
-    AdaptiveLightingController.prototype.handleControllerRemoved = function () {
+    handleControllerRemoved() {
         this.lightbulb.removeCharacteristic(this.supportedTransitionConfiguration);
         this.lightbulb.removeCharacteristic(this.transitionControl);
         this.lightbulb.removeCharacteristic(this.activeTransitionCount);
@@ -655,28 +677,28 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
         this.transitionControl = undefined;
         this.activeTransitionCount = undefined;
         this.removeAllListeners();
-    };
+    }
     /**
      * @private
      */
-    AdaptiveLightingController.prototype.handleFactoryReset = function () {
+    handleFactoryReset() {
         this.handleAdaptiveLightingDisabled();
-    };
+    }
     /**
      * @private
      */
-    AdaptiveLightingController.prototype.serialize = function () {
+    serialize() {
         if (!this.activeTransition) {
             return undefined;
         }
         return {
             activeTransition: this.activeTransition,
         };
-    };
+    }
     /**
      * @private
      */
-    AdaptiveLightingController.prototype.deserialize = function (serialized) {
+    deserialize(serialized) {
         this.activeTransition = serialized.activeTransition;
         // Data migrations from beta builds
         if (!this.activeTransition.transitionId) {
@@ -689,158 +711,145 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
             this.activeTransition.timeMillisOffset = 0;
         }
         this.handleActiveTransitionUpdated(true);
-    };
+    }
     /**
      * @private
      */
-    AdaptiveLightingController.prototype.setupStateChangeDelegate = function (delegate) {
+    setupStateChangeDelegate(delegate) {
         this.stateChangeDelegate = delegate;
-    };
-    AdaptiveLightingController.prototype.handleSupportedTransitionConfigurationRead = function () {
-        var brightnessIID = this.lightbulb.getCharacteristic(Characteristic_1.Characteristic.Brightness).iid;
-        var temperatureIID = this.lightbulb.getCharacteristic(Characteristic_1.Characteristic.ColorTemperature).iid;
+    }
+    handleSupportedTransitionConfigurationRead() {
+        const brightnessIID = this.lightbulb?.getCharacteristic(Characteristic_1.Characteristic.Brightness).iid;
+        const temperatureIID = this.lightbulb?.getCharacteristic(Characteristic_1.Characteristic.ColorTemperature).iid;
         (0, assert_1.default)(brightnessIID, "iid for brightness characteristic is undefined");
         (0, assert_1.default)(temperatureIID, "iid for temperature characteristic is undefined");
-        return tlv.encode(1 /* SUPPORTED_TRANSITION_CONFIGURATION */, [
-            tlv.encode(1 /* CHARACTERISTIC_IID */, tlv.writeVariableUIntLE(brightnessIID), 2 /* TRANSITION_TYPE */, 1 /* BRIGHTNESS */),
-            tlv.encode(1 /* CHARACTERISTIC_IID */, tlv.writeVariableUIntLE(temperatureIID), 2 /* TRANSITION_TYPE */, 2 /* COLOR_TEMPERATURE */),
+        return tlv.encode(1 /* SupportedCharacteristicValueTransitionConfigurationsTypes.SUPPORTED_TRANSITION_CONFIGURATION */, [
+            tlv.encode(1 /* SupportedValueTransitionConfigurationTypes.CHARACTERISTIC_IID */, tlv.writeVariableUIntLE(brightnessIID), 2 /* SupportedValueTransitionConfigurationTypes.TRANSITION_TYPE */, 1 /* TransitionType.BRIGHTNESS */),
+            tlv.encode(1 /* SupportedValueTransitionConfigurationTypes.CHARACTERISTIC_IID */, tlv.writeVariableUIntLE(temperatureIID), 2 /* SupportedValueTransitionConfigurationTypes.TRANSITION_TYPE */, 2 /* TransitionType.COLOR_TEMPERATURE */),
         ]).toString("base64");
-    };
-    AdaptiveLightingController.prototype.buildTransitionControlResponseBuffer = function (time) {
+    }
+    buildTransitionControlResponseBuffer(time) {
         if (!this.activeTransition) {
             return Buffer.alloc(0);
         }
-        var active = this.activeTransition;
-        var timeSinceStart = time !== null && time !== void 0 ? time : (Date.now() - active.timeMillisOffset - active.transitionStartMillis);
-        var timeSinceStartBuffer = tlv.writeVariableUIntLE(timeSinceStart);
-        var parameters = tlv.encode(1 /* TRANSITION_ID */, uuid.write(active.transitionId), 2 /* START_TIME */, Buffer.from(active.transitionStartBuffer, "hex"));
+        const active = this.activeTransition;
+        const timeSinceStart = time ?? (Date.now() - active.timeMillisOffset - active.transitionStartMillis);
+        const timeSinceStartBuffer = tlv.writeVariableUIntLE(timeSinceStart);
+        let parameters = tlv.encode(1 /* ValueTransitionParametersTypes.TRANSITION_ID */, uuid.write(active.transitionId), 2 /* ValueTransitionParametersTypes.START_TIME */, Buffer.from(active.transitionStartBuffer, "hex"));
         if (active.id3) {
             parameters = Buffer.concat([
                 parameters,
-                tlv.encode(3 /* UNKNOWN_3 */, Buffer.from(active.id3, "hex")),
+                tlv.encode(3 /* ValueTransitionParametersTypes.UNKNOWN_3 */, Buffer.from(active.id3, "hex")),
             ]);
         }
-        var status = tlv.encode(1 /* CHARACTERISTIC_IID */, tlv.writeVariableUIntLE(active.iid), 2 /* TRANSITION_PARAMETERS */, parameters, 3 /* TIME_SINCE_START */, timeSinceStartBuffer);
-        return tlv.encode(1 /* VALUE_CONFIGURATION_STATUS */, status);
-    };
-    AdaptiveLightingController.prototype.handleTransitionControlWrite = function (value) {
+        const status = tlv.encode(1 /* ValueTransitionConfigurationStatusTypes.CHARACTERISTIC_IID */, tlv.writeVariableUIntLE(active.iid), 2 /* ValueTransitionConfigurationStatusTypes.TRANSITION_PARAMETERS */, parameters, 3 /* ValueTransitionConfigurationStatusTypes.TIME_SINCE_START */, timeSinceStartBuffer);
+        return tlv.encode(1 /* ValueTransitionConfigurationResponseTypes.VALUE_CONFIGURATION_STATUS */, status);
+    }
+    handleTransitionControlWrite(value) {
         if (typeof value !== "string") {
-            throw new __1.HapStatusError(-70410 /* INVALID_VALUE_IN_REQUEST */);
+            throw new hapStatusError_1.HapStatusError(-70410 /* HAPStatus.INVALID_VALUE_IN_REQUEST */);
         }
-        var tlvData = tlv.decode(Buffer.from(value, "base64"));
-        var responseBuffers = [];
-        var readTransition = tlvData[1 /* READ_CURRENT_VALUE_TRANSITION_CONFIGURATION */];
+        const tlvData = tlv.decode(Buffer.from(value, "base64"));
+        const responseBuffers = [];
+        const readTransition = tlvData[1 /* TransitionControlTypes.READ_CURRENT_VALUE_TRANSITION_CONFIGURATION */];
         if (readTransition) {
-            var readTransitionResponse = this.handleTransitionControlReadTransition(readTransition);
+            const readTransitionResponse = this.handleTransitionControlReadTransition(readTransition);
             if (readTransitionResponse) {
                 responseBuffers.push(readTransitionResponse);
             }
         }
-        var updateTransition = tlvData[2 /* UPDATE_VALUE_TRANSITION_CONFIGURATION */];
+        const updateTransition = tlvData[2 /* TransitionControlTypes.UPDATE_VALUE_TRANSITION_CONFIGURATION */];
         if (updateTransition) {
-            var updateTransitionResponse = this.handleTransitionControlUpdateTransition(updateTransition);
+            const updateTransitionResponse = this.handleTransitionControlUpdateTransition(updateTransition);
             if (updateTransitionResponse) {
                 responseBuffers.push(updateTransitionResponse);
             }
         }
         return Buffer.concat(responseBuffers).toString("base64");
-    };
-    AdaptiveLightingController.prototype.handleTransitionControlReadTransition = function (buffer) {
-        var readTransition = tlv.decode(buffer);
-        var iid = tlv.readVariableUIntLE(readTransition[1 /* CHARACTERISTIC_IID */]);
+    }
+    handleTransitionControlReadTransition(buffer) {
+        const readTransition = tlv.decode(buffer);
+        const iid = tlv.readVariableUIntLE(readTransition[1 /* ReadValueTransitionConfiguration.CHARACTERISTIC_IID */]);
         if (this.activeTransition) {
             if (this.activeTransition.iid !== iid) {
                 console.warn("[" + this.lightbulb.displayName + "] iid of current adaptive lighting transition (" + this.activeTransition.iid
                     + ") doesn't match the requested one " + iid);
-                throw new __1.HapStatusError(-70410 /* INVALID_VALUE_IN_REQUEST */);
+                throw new hapStatusError_1.HapStatusError(-70410 /* HAPStatus.INVALID_VALUE_IN_REQUEST */);
             }
-            var parameters = tlv.encode(1 /* TRANSITION_ID */, uuid.write(this.activeTransition.transitionId), 2 /* START_TIME */, Buffer.from(this.activeTransition.transitionStartBuffer, "hex"));
+            let parameters = tlv.encode(1 /* ValueTransitionParametersTypes.TRANSITION_ID */, uuid.write(this.activeTransition.transitionId), 2 /* ValueTransitionParametersTypes.START_TIME */, Buffer.from(this.activeTransition.transitionStartBuffer, "hex"));
             if (this.activeTransition.id3) {
                 parameters = Buffer.concat([
                     parameters,
-                    tlv.encode(3 /* UNKNOWN_3 */, Buffer.from(this.activeTransition.id3, "hex")),
+                    tlv.encode(3 /* ValueTransitionParametersTypes.UNKNOWN_3 */, Buffer.from(this.activeTransition.id3, "hex")),
                 ]);
             }
-            return tlv.encode(1 /* READ_CURRENT_VALUE_TRANSITION_CONFIGURATION */, tlv.encode(1 /* CHARACTERISTIC_IID */, tlv.writeVariableUIntLE(this.activeTransition.iid), 2 /* TRANSITION_PARAMETERS */, parameters, 3 /* UNKNOWN_3 */, 1, 5 /* TRANSITION_CURVE_CONFIGURATION */, tlv.encode(1 /* TRANSITION_ENTRY */, this.activeTransition.transitionCurve.map(function (entry, index, array) {
-                var _a, _b;
-                var duration = (_b = (_a = array[index - 1]) === null || _a === void 0 ? void 0 : _a.duration) !== null && _b !== void 0 ? _b : 0; // we store stuff differently :sweat_smile:
-                return tlv.encode(1 /* ADJUSTMENT_FACTOR */, tlv.writeFloat32LE(entry.brightnessAdjustmentFactor), 2 /* VALUE */, tlv.writeFloat32LE(entry.temperature), 3 /* TRANSITION_OFFSET */, tlv.writeVariableUIntLE(entry.transitionTime), 4 /* DURATION */, tlv.writeVariableUIntLE(duration));
-            }), 2 /* ADJUSTMENT_CHARACTERISTIC_IID */, tlv.writeVariableUIntLE(this.activeTransition.brightnessCharacteristicIID), 3 /* ADJUSTMENT_MULTIPLIER_RANGE */, tlv.encode(1 /* MINIMUM_ADJUSTMENT_MULTIPLIER */, tlv.writeUInt32(this.activeTransition.brightnessAdjustmentRange.minBrightnessValue), 2 /* MAXIMUM_ADJUSTMENT_MULTIPLIER */, tlv.writeUInt32(this.activeTransition.brightnessAdjustmentRange.maxBrightnessValue))), 6 /* UPDATE_INTERVAL */, tlv.writeVariableUIntLE(this.activeTransition.updateInterval), 8 /* NOTIFY_INTERVAL_THRESHOLD */, tlv.writeVariableUIntLE(this.activeTransition.notifyIntervalThreshold)));
+            return tlv.encode(1 /* TransitionControlTypes.READ_CURRENT_VALUE_TRANSITION_CONFIGURATION */, tlv.encode(1 /* ValueTransitionConfigurationTypes.CHARACTERISTIC_IID */, tlv.writeVariableUIntLE(this.activeTransition.iid), 2 /* ValueTransitionConfigurationTypes.TRANSITION_PARAMETERS */, parameters, 3 /* ValueTransitionConfigurationTypes.UNKNOWN_3 */, 1, 5 /* ValueTransitionConfigurationTypes.TRANSITION_CURVE_CONFIGURATION */, tlv.encode(1 /* TransitionCurveConfigurationTypes.TRANSITION_ENTRY */, this.activeTransition.transitionCurve.map((entry, index, array) => {
+                const duration = array[index - 1]?.duration ?? 0; // we store stuff differently :sweat_smile:
+                return tlv.encode(1 /* TransitionEntryTypes.ADJUSTMENT_FACTOR */, tlv.writeFloat32LE(entry.brightnessAdjustmentFactor), 2 /* TransitionEntryTypes.VALUE */, tlv.writeFloat32LE(entry.temperature), 3 /* TransitionEntryTypes.TRANSITION_OFFSET */, tlv.writeVariableUIntLE(entry.transitionTime), 4 /* TransitionEntryTypes.DURATION */, tlv.writeVariableUIntLE(duration));
+            }), 2 /* TransitionCurveConfigurationTypes.ADJUSTMENT_CHARACTERISTIC_IID */, tlv.writeVariableUIntLE(this.activeTransition.brightnessCharacteristicIID), 3 /* TransitionCurveConfigurationTypes.ADJUSTMENT_MULTIPLIER_RANGE */, tlv.encode(1 /* TransitionAdjustmentMultiplierRange.MINIMUM_ADJUSTMENT_MULTIPLIER */, tlv.writeUInt32(this.activeTransition.brightnessAdjustmentRange.minBrightnessValue), 2 /* TransitionAdjustmentMultiplierRange.MAXIMUM_ADJUSTMENT_MULTIPLIER */, tlv.writeUInt32(this.activeTransition.brightnessAdjustmentRange.maxBrightnessValue))), 6 /* ValueTransitionConfigurationTypes.UPDATE_INTERVAL */, tlv.writeVariableUIntLE(this.activeTransition.updateInterval), 8 /* ValueTransitionConfigurationTypes.NOTIFY_INTERVAL_THRESHOLD */, tlv.writeVariableUIntLE(this.activeTransition.notifyIntervalThreshold)));
         }
         else {
             return undefined; // returns empty string
         }
-    };
-    AdaptiveLightingController.prototype.handleTransitionControlUpdateTransition = function (buffer) {
-        var e_1, _a;
-        var _b, _c;
-        var updateTransition = tlv.decode(buffer);
-        var transitionConfiguration = tlv.decode(updateTransition[1 /* VALUE_TRANSITION_CONFIGURATION */]);
-        var iid = tlv.readVariableUIntLE(transitionConfiguration[1 /* CHARACTERISTIC_IID */]);
+    }
+    handleTransitionControlUpdateTransition(buffer) {
+        const updateTransition = tlv.decode(buffer);
+        const transitionConfiguration = tlv.decode(updateTransition[1 /* UpdateValueTransitionConfigurationsTypes.VALUE_TRANSITION_CONFIGURATION */]);
+        const iid = tlv.readVariableUIntLE(transitionConfiguration[1 /* ValueTransitionConfigurationTypes.CHARACTERISTIC_IID */]);
         if (!this.lightbulb.getCharacteristicByIID(iid)) {
-            throw new __1.HapStatusError(-70410 /* INVALID_VALUE_IN_REQUEST */);
+            throw new hapStatusError_1.HapStatusError(-70410 /* HAPStatus.INVALID_VALUE_IN_REQUEST */);
         }
-        var param3 = (_b = transitionConfiguration[3 /* UNKNOWN_3 */]) === null || _b === void 0 ? void 0 : _b.readUInt8(0); // when present it is always 1
+        const param3 = transitionConfiguration[3 /* ValueTransitionConfigurationTypes.UNKNOWN_3 */]?.readUInt8(0); // when present it is always 1
         if (!param3) { // if HomeKit just sends the iid, we consider that as "disable adaptive lighting" (assumption)
             this.handleAdaptiveLightingDisabled();
-            return tlv.encode(2 /* UPDATE_VALUE_TRANSITION_CONFIGURATION */, Buffer.alloc(0));
+            return tlv.encode(2 /* TransitionControlTypes.UPDATE_VALUE_TRANSITION_CONFIGURATION */, Buffer.alloc(0));
         }
-        var parametersTLV = tlv.decode(transitionConfiguration[2 /* TRANSITION_PARAMETERS */]);
-        var curveConfiguration = tlv.decodeWithLists(transitionConfiguration[5 /* TRANSITION_CURVE_CONFIGURATION */]);
-        var updateInterval = (_c = transitionConfiguration[6 /* UPDATE_INTERVAL */]) === null || _c === void 0 ? void 0 : _c.readUInt16LE(0);
-        var notifyIntervalThreshold = transitionConfiguration[8 /* NOTIFY_INTERVAL_THRESHOLD */].readUInt32LE(0);
-        var transitionId = parametersTLV[1 /* TRANSITION_ID */];
-        var startTime = parametersTLV[2 /* START_TIME */];
-        var id3 = parametersTLV[3 /* UNKNOWN_3 */]; // this may be undefined
-        var startTimeMillis = (0, __1.epochMillisFromMillisSince2001_01_01Buffer)(startTime);
-        var timeMillisOffset = Date.now() - startTimeMillis;
-        var transitionCurve = [];
-        var previous = undefined;
-        var transitions = curveConfiguration[1 /* TRANSITION_ENTRY */];
-        try {
-            for (var transitions_1 = (0, tslib_1.__values)(transitions), transitions_1_1 = transitions_1.next(); !transitions_1_1.done; transitions_1_1 = transitions_1.next()) {
-                var entry = transitions_1_1.value;
-                var tlvEntry = tlv.decode(entry);
-                var adjustmentFactor = tlvEntry[1 /* ADJUSTMENT_FACTOR */].readFloatLE(0);
-                var value = tlvEntry[2 /* VALUE */].readFloatLE(0);
-                var transitionOffset = tlv.readVariableUIntLE(tlvEntry[3 /* TRANSITION_OFFSET */]);
-                var duration = tlvEntry[4 /* DURATION */] ? tlv.readVariableUIntLE(tlvEntry[4 /* DURATION */]) : undefined;
-                if (previous) {
-                    previous.duration = duration;
-                }
-                previous = {
-                    temperature: value,
-                    brightnessAdjustmentFactor: adjustmentFactor,
-                    transitionTime: transitionOffset,
-                };
-                transitionCurve.push(previous);
+        const parametersTLV = tlv.decode(transitionConfiguration[2 /* ValueTransitionConfigurationTypes.TRANSITION_PARAMETERS */]);
+        const curveConfiguration = tlv.decodeWithLists(transitionConfiguration[5 /* ValueTransitionConfigurationTypes.TRANSITION_CURVE_CONFIGURATION */]);
+        const updateInterval = transitionConfiguration[6 /* ValueTransitionConfigurationTypes.UPDATE_INTERVAL */]?.readUInt16LE(0);
+        const notifyIntervalThreshold = transitionConfiguration[8 /* ValueTransitionConfigurationTypes.NOTIFY_INTERVAL_THRESHOLD */].readUInt32LE(0);
+        const transitionId = parametersTLV[1 /* ValueTransitionParametersTypes.TRANSITION_ID */];
+        const startTime = parametersTLV[2 /* ValueTransitionParametersTypes.START_TIME */];
+        const id3 = parametersTLV[3 /* ValueTransitionParametersTypes.UNKNOWN_3 */]; // this may be undefined
+        const startTimeMillis = (0, time_1.epochMillisFromMillisSince2001_01_01Buffer)(startTime);
+        const timeMillisOffset = Date.now() - startTimeMillis;
+        const transitionCurve = [];
+        let previous = undefined;
+        const transitions = curveConfiguration[1 /* TransitionCurveConfigurationTypes.TRANSITION_ENTRY */];
+        for (const entry of transitions) {
+            const tlvEntry = tlv.decode(entry);
+            const adjustmentFactor = tlvEntry[1 /* TransitionEntryTypes.ADJUSTMENT_FACTOR */].readFloatLE(0);
+            const value = tlvEntry[2 /* TransitionEntryTypes.VALUE */].readFloatLE(0);
+            const transitionOffset = tlv.readVariableUIntLE(tlvEntry[3 /* TransitionEntryTypes.TRANSITION_OFFSET */]);
+            const duration = tlvEntry[4 /* TransitionEntryTypes.DURATION */] ? tlv.readVariableUIntLE(tlvEntry[4 /* TransitionEntryTypes.DURATION */]) : undefined;
+            if (previous) {
+                previous.duration = duration;
             }
+            previous = {
+                temperature: value,
+                brightnessAdjustmentFactor: adjustmentFactor,
+                transitionTime: transitionOffset,
+            };
+            transitionCurve.push(previous);
         }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (transitions_1_1 && !transitions_1_1.done && (_a = transitions_1.return)) _a.call(transitions_1);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        var adjustmentIID = tlv.readVariableUIntLE(curveConfiguration[2 /* ADJUSTMENT_CHARACTERISTIC_IID */]);
-        var adjustmentMultiplierRange = tlv.decode(curveConfiguration[3 /* ADJUSTMENT_MULTIPLIER_RANGE */]);
-        var minAdjustmentMultiplier = adjustmentMultiplierRange[1 /* MINIMUM_ADJUSTMENT_MULTIPLIER */].readUInt32LE(0);
-        var maxAdjustmentMultiplier = adjustmentMultiplierRange[2 /* MAXIMUM_ADJUSTMENT_MULTIPLIER */].readUInt32LE(0);
+        const adjustmentIID = tlv.readVariableUIntLE(curveConfiguration[2 /* TransitionCurveConfigurationTypes.ADJUSTMENT_CHARACTERISTIC_IID */]);
+        const adjustmentMultiplierRange = tlv.decode(curveConfiguration[3 /* TransitionCurveConfigurationTypes.ADJUSTMENT_MULTIPLIER_RANGE */]);
+        const minAdjustmentMultiplier = adjustmentMultiplierRange[1 /* TransitionAdjustmentMultiplierRange.MINIMUM_ADJUSTMENT_MULTIPLIER */].readUInt32LE(0);
+        const maxAdjustmentMultiplier = adjustmentMultiplierRange[2 /* TransitionAdjustmentMultiplierRange.MAXIMUM_ADJUSTMENT_MULTIPLIER */].readUInt32LE(0);
         this.activeTransition = {
             iid: iid,
             transitionStartMillis: startTimeMillis,
             timeMillisOffset: timeMillisOffset,
             transitionId: uuid.unparse(transitionId),
             transitionStartBuffer: startTime.toString("hex"),
-            id3: id3 === null || id3 === void 0 ? void 0 : id3.toString("hex"),
+            id3: id3?.toString("hex"),
             brightnessCharacteristicIID: adjustmentIID,
             brightnessAdjustmentRange: {
                 minBrightnessValue: minAdjustmentMultiplier,
                 maxBrightnessValue: maxAdjustmentMultiplier,
             },
             transitionCurve: transitionCurve,
-            updateInterval: updateInterval !== null && updateInterval !== void 0 ? updateInterval : 60000,
+            updateInterval: updateInterval ?? 60000,
             notifyIntervalThreshold: notifyIntervalThreshold,
         };
         if (this.updateTimeout) {
@@ -852,9 +861,8 @@ var AdaptiveLightingController = /** @class */ (function (_super) {
             debug("[%s] Adaptive lighting was enabled.", this.lightbulb.displayName);
         }
         this.handleActiveTransitionUpdated();
-        return tlv.encode(2 /* UPDATE_VALUE_TRANSITION_CONFIGURATION */, this.buildTransitionControlResponseBuffer(0));
-    };
-    return AdaptiveLightingController;
-}(events_1.EventEmitter));
+        return tlv.encode(2 /* TransitionControlTypes.UPDATE_VALUE_TRANSITION_CONFIGURATION */, this.buildTransitionControlResponseBuffer(0));
+    }
+}
 exports.AdaptiveLightingController = AdaptiveLightingController;
 //# sourceMappingURL=AdaptiveLightingController.js.map

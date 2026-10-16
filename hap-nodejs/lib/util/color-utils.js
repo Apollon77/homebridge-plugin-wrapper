@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ColorUtils = void 0;
-var tslib_1 = require("tslib");
-var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
-var lookupTable = new Map([
+const tslib_1 = require("tslib");
+const assert_1 = tslib_1.__importDefault(require("assert"));
+const lookupTable = new Map([
     [100, [19, 222.1]],
     [101, [18.7, 222.2]],
     [102, [18.4, 222.3]],
@@ -406,19 +406,19 @@ var lookupTable = new Map([
     [499, [63.9, 28.3]],
     [500, [64.1, 28.3]],
 ]);
-var ColorUtils = /** @class */ (function () {
-    function ColorUtils() {
-    }
+/**
+ * @group Utils
+ */
+class ColorUtils {
     /**
      * Returns the Hue and Saturation representation of the given color temperature in mired.
      *
      * @param colorTemperature - The color temperature in mired.
      * @param roundResults - The lookup table has a precision of .1 decimal places. The given characteristics only have a step value of 1.
-     *  Thus the method will round the results by default to an integer value. This can be turned of using this option.
+     *  Thus, the method will round the results by default to an integer value. This can be turned off using this option.
      * @returns An number array of length 2 with the first element being the saturation and the second argument being the hue.
      */
-    ColorUtils.colorTemperatureToHueAndSaturation = function (colorTemperature, roundResults) {
-        if (roundResults === void 0) { roundResults = true; }
+    static colorTemperatureToHueAndSaturation(colorTemperature, roundResults = true) {
         if (colorTemperature > 500) {
             colorTemperature = 500;
         }
@@ -426,7 +426,7 @@ var ColorUtils = /** @class */ (function () {
             colorTemperature = 100;
         }
         colorTemperature = Math.round(colorTemperature); // ensure integer
-        var hueAndTemperature = lookupTable.get(colorTemperature);
+        const hueAndTemperature = lookupTable.get(colorTemperature);
         (0, assert_1.default)(colorTemperature != null, "lookup for temperature " + colorTemperature + " did not yield any results");
         if (roundResults) {
             hueAndTemperature[0] = Math.round(hueAndTemperature[0]);
@@ -436,8 +436,7 @@ var ColorUtils = /** @class */ (function () {
             saturation: hueAndTemperature[0],
             hue: hueAndTemperature[1],
         };
-    };
-    return ColorUtils;
-}());
+    }
+}
 exports.ColorUtils = ColorUtils;
 //# sourceMappingURL=color-utils.js.map

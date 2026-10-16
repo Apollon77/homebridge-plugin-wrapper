@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ServiceSinceInformation = exports.CharacteristicSinceInformation = exports.ServiceManualAdditions = exports.ServiceCharacteristicConfigurationOverrides = exports.ServiceDeprecatedNames = exports.ServiceNameOverrides = exports.CharacteristicManualAdditions = exports.CharacteristicOverriding = exports.CharacteristicClassAdditions = exports.CharacteristicValidValuesOverride = exports.CharacteristicDeprecatedNames = exports.CharacteristicNameOverrides = exports.CharacteristicHidden = void 0;
-var tslib_1 = require("tslib");
-var assert_1 = (0, tslib_1.__importDefault)(require("assert"));
+const tslib_1 = require("tslib");
+const assert_1 = tslib_1.__importDefault(require("assert"));
 var PropertyId;
 (function (PropertyId) {
     PropertyId[PropertyId["NOTIFY"] = 1] = "NOTIFY";
@@ -20,11 +20,8 @@ exports.CharacteristicHidden = new Set([
 exports.CharacteristicNameOverrides = new Map([
     ["air-quality", "Air Quality"],
     ["app-matching-identifier", "App Matching Identifier"],
-    ["cloud-relay.control-point", "Relay Control Point"],
-    ["cloud-relay.current-state", "Relay State"],
-    ["cloud-relay.enabled", "Relay Enabled"],
     ["density.voc", "VOC Density"],
-    ["filter.reset-indication", "Reset Filter Indication"],
+    ["filter.reset-indication", "Reset Filter Indication"], // Filter Reset Change Indication
     ["light-level.current", "Current Ambient Light Level"],
     ["network-client-control", "Network Client Profile Control"],
     ["on", "On"],
@@ -35,14 +32,15 @@ exports.CharacteristicNameOverrides = new Map([
     ["snr", "Signal To Noise Ratio"],
     ["supported-target-configuration", "Target Control Supported Configuration"],
     ["target-list", "Target Control List"],
-    ["tunneled-accessory.advertising", "Tunneled Accessory Advertising"],
-    ["tunneled-accessory.connected", "Tunneled Accessory Connected"],
     ["water-level", "Water Level"],
 ]);
-exports.CharacteristicDeprecatedNames = new Map([ // keep in mind that the displayName will change
-]);
+// keep in mind that the displayName will change
+exports.CharacteristicDeprecatedNames = new Map([]);
 exports.CharacteristicValidValuesOverride = new Map([
+    ["camera-operating-mode-indicator", { "0": "Disable", "1": "Enable" }],
     ["closed-captions", { "0": "Disabled", "1": "Enabled" }],
+    ["event-snapshots-active", { "0": "Disable", "1": "Enable" }],
+    ["homekit-camera-active", { "0": "Off", "1": "On" }],
     ["input-device-type", { "0": "Other", "1": "TV", "2": "Recording", "3": "Tuner", "4": "Playback", "5": "Audio System" }],
     ["input-source-type", { "0": "Other", "1": "Home Screen", "2": "Tuner", "3": "HDMI", "4": "Composite Video", "5": "S Video",
             "6": "Component Video", "7": "DVI", "8": "AirPlay", "9": "USB", "10": "Application" }],
@@ -50,99 +48,98 @@ exports.CharacteristicValidValuesOverride = new Map([
     ["manually-disabled", { "0": "Enabled", "1": "Disabled" }],
     ["media-state.current", { "0": "Play", "1": "Pause", "2": "Stop", "4": "LOADING", "5": "Interrupted" }],
     ["media-state.target", { "0": "Play", "1": "Pause", "2": "Stop" }],
+    ["periodic-snapshots-active", { "0": "Disable", "1": "Enable" }],
     ["picture-mode", { "0": "Other", "1": "Standard", "2": "Calibrated", "3": "Calibrated Dark", "4": "Vivid", "5": "Game", "6": "Computer", "7": "Custom" }],
     ["power-mode-selection", { "0": "Show", "1": "Hide" }],
     ["recording-audio-active", { "0": "Disable", "1": "Enable" }],
     ["remote-key", { "0": "Rewind", "1": "Fast Forward", "2": "Next Track", "3": "Previous Track", "4": "Arrow Up", "5": "Arrow Down",
             "6": "Arrow Left", "7": "Arrow Right", "8": "Select", "9": "Back", "10": "Exit", "11": "Play Pause", "15": "Information" }],
     ["router-status", { "0": "Ready", "1": "Not Ready" }],
+    ["security-system.alarm-type", { "0": "No Alarm", "1": "Unknown" }],
     ["siri-input-type", { "0": "Push Button Triggered Apple TV" }],
     ["sleep-discovery-mode", { "0": "Not Discoverable", "1": "Always Discoverable" }],
+    ["third-party-camera-active", { "0": "Off", "1": "On" }],
     ["visibility-state.current", { "0": "Shown", "1": "Hidden" }],
     ["visibility-state.target", { "0": "Shown", "1": "Hidden" }],
     ["volume-control-type", { "0": "None", "1": "Relative", "2": "Relative With Current", "3": "Absolute" }],
     ["volume-selector", { "0": "Increment", "1": "Decrement" }],
     ["wifi-satellite-status", { "0": "Unknown", "1": "Connected", "2": "Not Connected" }],
 ]);
-exports.CharacteristicClassAdditions = new Map([
-    ["humidifier-dehumidifier.state.target", [
-            "/**\n   * @deprecated Removed in iOS 11. Use {@link HUMIDIFIER_OR_DEHUMIDIFIER} instead.\n   */\n  public static readonly AUTO = 0;",
-        ]],
-]);
+exports.CharacteristicClassAdditions = new Map([]);
 exports.CharacteristicOverriding = new Map([
-    ["rotation.speed", function (generated) {
+    ["rotation.speed", generated => {
             generated.units = "percentage";
         }],
-    ["temperature.current", function (generated) {
+    ["temperature.current", generated => {
             generated.minValue = -270;
         }],
-    ["characteristic-value-transition-control", function (generated) {
-            generated.properties |= 128 /* WRITE_RESPONSE */;
+    ["characteristic-value-transition-control", generated => {
+            generated.properties |= 128 /* PropertyId.WRITE_RESPONSE */;
         }],
-    ["setup-data-stream-transport", function (generated) {
-            generated.properties |= 128 /* WRITE_RESPONSE */;
+    ["setup-data-stream-transport", generated => {
+            generated.properties |= 128 /* PropertyId.WRITE_RESPONSE */;
         }],
-    ["data-stream-hap-transport", function (generated) {
-            generated.properties |= 128 /* WRITE_RESPONSE */;
+    ["data-stream-hap-transport", generated => {
+            generated.properties |= 128 /* PropertyId.WRITE_RESPONSE */;
         }],
-    ["lock-mechanism.last-known-action", function (generated) {
+    ["lock-mechanism.last-known-action", generated => {
             (0, assert_1.default)(generated.maxValue === 8, "LockLastKnownAction seems to have changed in metadata!");
             generated.maxValue = 10;
             generated.validValues["9"] = "SECURED_PHYSICALLY";
             generated.validValues["10"] = "UNSECURED_PHYSICALLY";
         }],
-    ["configured-name", function (generated) {
+    ["configured-name", generated => {
             // the write permission on the configured name characteristic is actually optional and should only be supported
             // if a HomeKit controller should be able to change the name (e.g. for a TV Input).
             // As of legacy compatibility we just add that permission and tackle that problem later in a TVController (or something).
-            generated.properties |= 4 /* WRITE */;
+            generated.properties |= 4 /* PropertyId.WRITE */;
         }],
-    ["is-configured", function (generated) {
+    ["is-configured", generated => {
             // write permission on is configured is optional (out of history it was present with HAP-NodeJS)
             // if the HomeKit controller is able to change the configured state, it can be set to write.
-            generated.properties |= 4 /* WRITE */;
+            generated.properties |= 4 /* PropertyId.WRITE */;
         }],
-    ["display-order", function (generated) {
+    ["display-order", generated => {
             // write permission on display order is optional (out of history it was present with HAP-NodeJS)
             // if the HomeKit controller is able to change the configured state, it can be set to write.
-            generated.properties |= 4 /* WRITE */;
+            generated.properties |= 4 /* PropertyId.WRITE */;
         }],
-    ["button-event", function (generated) {
-            generated.adminOnlyAccess = [2 /* NOTIFY */];
+    ["button-event", generated => {
+            generated.adminOnlyAccess = [2 /* Access.NOTIFY */];
         }],
-    ["target-list", function (generated) {
-            generated.adminOnlyAccess = [0 /* READ */, 1 /* WRITE */];
+    ["target-list", generated => {
+            generated.adminOnlyAccess = [0 /* Access.READ */, 1 /* Access.WRITE */];
         }],
-    ["slat.state.current", function (generated) {
+    ["slat.state.current", generated => {
             generated.maxValue = 2;
         }],
-    ["event-snapshots-active", function (generated) {
+    ["event-snapshots-active", generated => {
             generated.format = "uint8";
             generated.minValue = 0;
             generated.maxValue = 1;
-            generated.properties &= ~32 /* TIMED_WRITE */;
+            generated.properties &= ~32 /* PropertyId.TIMED_WRITE */;
         }],
-    ["homekit-camera-active", function (generated) {
+    ["homekit-camera-active", generated => {
             generated.format = "uint8";
             generated.minValue = 0;
             generated.maxValue = 1;
-            generated.properties &= ~32 /* TIMED_WRITE */;
+            generated.properties &= ~32 /* PropertyId.TIMED_WRITE */;
         }],
-    ["periodic-snapshots-active", function (generated) {
+    ["periodic-snapshots-active", generated => {
             generated.format = "uint8";
-            generated.properties &= ~32 /* TIMED_WRITE */;
+            generated.properties &= ~32 /* PropertyId.TIMED_WRITE */;
         }],
-    ["third-party-camera-active", function (generated) {
+    ["third-party-camera-active", generated => {
             generated.format = "uint8";
         }],
-    ["input-device-type", function (generated) {
+    ["input-device-type", generated => {
             // @ts-expect-error: undefined access
             generated.validValues[6] = null;
         }],
-    ["pairing-features", function (generated) {
-            generated.properties &= ~4 /* WRITE */;
+    ["pairing-features", generated => {
+            generated.properties &= ~4 /* PropertyId.WRITE */;
         }],
-    ["picture-mode", function (generated) {
+    ["picture-mode", generated => {
             // @ts-expect-error: undefined access
             generated.validValues[8] = null;
             // @ts-expect-error: undefined access
@@ -156,7 +153,7 @@ exports.CharacteristicOverriding = new Map([
             // @ts-expect-error: undefined access
             generated.validValues[13] = null;
         }],
-    ["remote-key", function (generated) {
+    ["remote-key", generated => {
             // @ts-expect-error: undefined access
             generated.validValues[12] = null;
             // @ts-expect-error: undefined access
@@ -166,26 +163,26 @@ exports.CharacteristicOverriding = new Map([
             // @ts-expect-error: undefined access
             generated.validValues[16] = null;
         }],
-    ["service-label-namespace", function (generated) {
+    ["service-label-namespace", generated => {
             generated.maxValue = 1;
         }],
-    ["siri-input-type", function (generated) {
+    ["siri-input-type", generated => {
             generated.maxValue = 0;
         }],
-    ["visibility-state.current", function (generated) {
+    ["visibility-state.current", generated => {
             generated.maxValue = 1;
         }],
-    ["active-identifier", function (generated) {
+    ["active-identifier", generated => {
             generated.minValue = undefined;
         }],
-    ["identifier", function (generated) {
+    ["identifier", generated => {
             generated.minValue = undefined;
         }],
-    ["access-code-control-point", function (generated) {
-            generated.properties |= 128 /* WRITE_RESPONSE */;
+    ["access-code-control-point", generated => {
+            generated.properties |= 128 /* PropertyId.WRITE_RESPONSE */;
         }],
-    ["nfc-access-control-point", function (generated) {
-            generated.properties |= 128 /* WRITE_RESPONSE */;
+    ["nfc-access-control-point", generated => {
+            generated.properties |= 128 /* PropertyId.WRITE_RESPONSE */;
         }],
 ]);
 exports.CharacteristicManualAdditions = new Map([
@@ -197,7 +194,7 @@ exports.CharacteristicManualAdditions = new Map([
             since: "13.2",
             format: "float",
             units: "arcdegrees",
-            properties: 3,
+            properties: 3, // notify, paired read
             minValue: 0,
             maxValue: 360,
         }],
@@ -207,134 +204,100 @@ exports.CharacteristicManualAdditions = new Map([
             name: "Version",
             className: "Version",
             format: "string",
-            properties: 2,
+            properties: 2, // paired read
             maxLength: 64,
         }],
-    ["target-air-quality", {
-            id: "target-air-quality",
-            UUID: "000000AE-0000-1000-8000-0026BB765291",
-            name: "Target Air Quality",
-            className: "TargetAirQuality",
-            deprecatedNotice: "Removed and not used anymore",
-            format: "uint8",
-            properties: 7,
-            minValue: 0,
-            maxValue: 2,
-            validValues: {
-                "0": "EXCELLENT",
-                "1": "GOOD",
-                "2": "FAIR",
-            },
-        }],
-    ["target-slat-state", {
-            id: "target-slat-state",
-            UUID: "000000BE-0000-1000-8000-0026BB765291",
-            name: "Target Slat State",
-            className: "TargetSlatState",
-            deprecatedNotice: "Removed and not used anymore",
-            format: "uint8",
-            properties: 7,
-            minValue: 0,
-            maxValue: 1,
-            validValues: {
-                "0": "MANUAL",
-                "1": "AUTO",
-            },
-        }],
-    ["current-time", {
-            id: "current-time",
-            UUID: "0000009B-0000-1000-8000-0026BB765291",
-            name: "Current Time",
-            className: "CurrentTime",
-            deprecatedNotice: "Removed and not used anymore",
-            format: "string",
-            properties: 6, // read, write
-        }],
-    ["day-of-the-week", {
-            id: "day-of-the-week",
-            UUID: "00000098-0000-1000-8000-0026BB765291",
-            name: "Day of the Week",
-            className: "DayoftheWeek",
-            deprecatedNotice: "Removed and not used anymore",
-            format: "uint8",
-            properties: 6,
-            minValue: 1,
-            maxValue: 7,
-        }],
-    ["time-update", {
-            id: "time-update",
-            UUID: "0000009A-0000-1000-8000-0026BB765291",
-            name: "Time Update",
-            className: "TimeUpdate",
-            deprecatedNotice: "Removed and not used anymore",
-            format: "bool",
-            properties: 6, // read, write
-        }],
-    ["reachable", {
-            id: "reachable",
-            UUID: "00000063-0000-1000-8000-0026BB765291",
-            name: "Reachable",
-            className: "Reachable",
-            deprecatedNotice: "Removed and not used anymore",
-            format: "bool",
-            properties: 6, // read, write
-        }],
-    ["link-quality", {
-            id: "link-quality",
-            UUID: "0000009C-0000-1000-8000-0026BB765291",
-            name: "Link Quality",
-            className: "LinkQuality",
-            deprecatedNotice: "Removed and not used anymore",
-            format: "uint8",
-            properties: 3,
-            minValue: 1,
-            maxValue: 4,
-        }],
-    ["category", {
-            id: "category",
-            UUID: "000000A3-0000-1000-8000-0026BB765291",
-            name: "Category",
-            className: "Category",
-            deprecatedNotice: "Removed and not used anymore",
-            format: "uint16",
-            properties: 3,
-            minValue: 1,
-            maxValue: 16,
-        }],
-    ["configure-bridged-accessory-status", {
-            id: "configure-bridged-accessory-status",
-            UUID: "0000009D-0000-1000-8000-0026BB765291",
-            name: "Configure Bridged Accessory Status",
-            className: "ConfigureBridgedAccessoryStatus",
-            deprecatedNotice: "Removed and not used anymore",
+    ["crypto-hash", {
+            id: "crypto-hash",
+            UUID: "00000250-0000-1000-8000-0026BB765291",
+            name: "Crypto Hash",
+            className: "CryptoHash",
+            since: "14.0",
             format: "tlv8",
-            properties: 3, // read, notify
+            properties: 132, // write (4) + write_response (128)
         }],
-    ["configure-bridged-accessory", {
-            id: "configure-bridged-accessory",
-            UUID: "000000A0-0000-1000-8000-0026BB765291",
-            name: "Configure Bridged Accessory",
-            className: "ConfigureBridgedAccessory",
-            deprecatedNotice: "Removed and not used anymore",
+    ["relay-control-point", {
+            id: "relay-control-point",
+            UUID: "0000005E-0000-1000-8000-0026BB765291",
+            name: "Relay Control Point",
+            className: "RelayControlPoint",
+            deprecatedNotice: "Removed",
             format: "tlv8",
-            properties: 4,
-        }],
-    ["discover-bridged-accessories", {
-            id: "discover-bridged-accessories",
-            UUID: "0000009E-0000-1000-8000-0026BB765291",
-            name: "Discover Bridged Accessories",
-            className: "DiscoverBridgedAccessories",
-            deprecatedNotice: "Removed and not used anymore",
-            format: "uint8",
             properties: 7, // read, write, notify
         }],
-    ["discovered-bridged-accessories", {
-            id: "discovered-bridged-accessories",
-            UUID: "0000009F-0000-1000-8000-0026BB765291",
-            name: "Discovered Bridged Accessories",
-            className: "DiscoveredBridgedAccessories",
-            deprecatedNotice: "Removed and not used anymore",
+    ["relay-enabled", {
+            id: "relay-enabled",
+            UUID: "0000005B-0000-1000-8000-0026BB765291",
+            name: "Relay Enabled",
+            className: "RelayEnabled",
+            deprecatedNotice: "Removed",
+            format: "bool",
+            properties: 7, // read, write, notify
+        }],
+    ["relay-state", {
+            id: "relay-state",
+            UUID: "0000005C-0000-1000-8000-0026BB765291",
+            name: "Relay State",
+            className: "RelayState",
+            deprecatedNotice: "Removed",
+            format: "uint8",
+            properties: 3, // read, notify
+            stepValue: 1,
+            minValue: 0,
+            maxValue: 5,
+        }],
+    ["tap-type", {
+            id: "tap-type",
+            UUID: "0000022F-0000-1000-8000-0026BB765291",
+            name: "Tap Type",
+            className: "TapType",
+            deprecatedNotice: "Removed",
             format: "uint16",
+            properties: 2, // read
+        }],
+    ["token", {
+            id: "token",
+            UUID: "00000231-0000-1000-8000-0026BB765291",
+            name: "Token",
+            className: "Token",
+            deprecatedNotice: "Removed",
+            format: "data",
+            properties: 4, // write
+        }],
+    ["tunnel-connection-timeout", {
+            id: "tunnel-connection-timeout",
+            UUID: "00000061-0000-1000-8000-0026BB765291",
+            name: "Tunnel Connection Timeout",
+            className: "TunnelConnectionTimeout",
+            deprecatedNotice: "Removed",
+            format: "int",
+            properties: 7, // read, write, notify
+        }],
+    ["tunneled-accessory-advertising", {
+            id: "tunneled-accessory-advertising",
+            UUID: "00000060-0000-1000-8000-0026BB765291",
+            name: "Tunneled Accessory Advertising",
+            className: "TunneledAccessoryAdvertising",
+            deprecatedNotice: "Removed",
+            format: "bool",
+            properties: 7, // read, write, notify
+        }],
+    ["tunneled-accessory-connected", {
+            id: "tunneled-accessory-connected",
+            UUID: "00000059-0000-1000-8000-0026BB765291",
+            name: "Tunneled Accessory Connected",
+            className: "TunneledAccessoryConnected",
+            deprecatedNotice: "Removed",
+            format: "bool",
+            properties: 7, // read, write, notify
+        }],
+    ["tunneled-accessory-state-number", {
+            id: "tunneled-accessory-state-number",
+            UUID: "00000058-0000-1000-8000-0026BB765291",
+            name: "Tunneled Accessory State Number",
+            className: "TunneledAccessoryStateNumber",
+            deprecatedNotice: "Removed",
+            format: "int",
             properties: 3, // read, notify
         }],
 ]);
@@ -344,16 +307,10 @@ exports.ServiceNameOverrides = new Map([
     ["fanv2", "Fanv2"],
     ["service-label", "Service Label"],
     ["smart-speaker", "Smart Speaker"],
-    ["speaker", "Television Speaker"],
+    ["speaker", "Television Speaker"], // has some additional accessories
     ["nfc-access", "NFC Access"],
 ]);
-exports.ServiceDeprecatedNames = new Map([
-    ["battery", "Battery Service"],
-    ["camera-recording-management", "Camera Event Recording Management"],
-    ["cloud-relay", "Relay"],
-    ["slats", "Slat"],
-    ["tunnel", "Tunneled BTLE Accessory Service"],
-]);
+exports.ServiceDeprecatedNames = new Map([]);
 exports.ServiceCharacteristicConfigurationOverrides = new Map([
     ["accessory-information", { addedRequired: ["firmware.revision"], removedOptional: ["firmware.revision"] }],
     ["camera-operating-mode", { addedOptional: ["diagonal-field-of-view"] }],
@@ -368,57 +325,44 @@ exports.ServiceManualAdditions = new Map([
             requiredCharacteristics: ["mute"],
             optionalCharacteristics: ["active", "volume"],
         }],
-    ["camera-control", {
-            id: "camera-control",
-            UUID: "00000111-0000-1000-8000-0026BB765291",
-            name: "Camera Control",
-            className: "CameraControl",
-            deprecatedNotice: "This service has no usage anymore and will be ignored by iOS",
-            requiredCharacteristics: ["on"],
-            optionalCharacteristics: [
-                "horizontal-tilt.current",
-                "vertical-tilt.current",
-                "horizontal-tilt.target",
-                "vertical-tilt.target",
-                "night-vision",
-                "optical-zoom",
-                "digital-zoom",
-                "image-rotation",
-                "image-mirroring",
-                "name",
-            ],
-        }],
-    ["time-information", {
-            id: "time-information",
-            UUID: "00000099-0000-1000-8000-0026BB765291",
-            name: "Time Information",
-            className: "TimeInformation",
-            deprecatedNotice: "Removed and not used anymore",
-            requiredCharacteristics: ["current-time", "day-of-the-week", "time-update"],
-            optionalCharacteristics: ["name"],
-        }],
-    ["bridging-state", {
-            id: "bridging-state",
-            UUID: "00000062-0000-1000-8000-0026BB765291",
-            name: "Bridging State",
-            className: "BridgingState",
-            deprecatedNotice: "Removed and not used anymore",
-            requiredCharacteristics: ["reachable", "link-quality", "accessory.identifier", "category"],
-            optionalCharacteristics: ["name"],
-        }],
-    ["bridge-configuration", {
-            id: "bridge-configuration",
-            UUID: "000000A1-0000-1000-8000-0026BB765291",
-            name: "Bridge Configuration",
-            className: "BridgeConfiguration",
-            deprecatedNotice: "Removed and not used anymore",
+    ["cloud-relay", {
+            id: "cloud-relay",
+            UUID: "0000005A-0000-1000-8000-0026BB765291",
+            name: "Cloud Relay",
+            className: "CloudRelay",
+            deprecatedNotice: "Removed",
             requiredCharacteristics: [
-                "configure-bridged-accessory-status",
-                "discover-bridged-accessories",
-                "discovered-bridged-accessories",
-                "configure-bridged-accessory",
+                "relay-control-point",
+                "relay-state",
+                "relay-enabled",
             ],
-            optionalCharacteristics: ["name"],
+        }],
+    ["tap-management", {
+            id: "tap-management",
+            UUID: "0000022E-0000-1000-8000-0026BB765291",
+            name: "Tap Management",
+            className: "TapManagement",
+            deprecatedNotice: "Removed",
+            requiredCharacteristics: [
+                "active",
+                "crypto-hash",
+                "tap-type",
+                "token",
+            ],
+        }],
+    ["tunnel", {
+            id: "tunnel",
+            UUID: "00000056-0000-1000-8000-0026BB765291",
+            name: "Tunnel",
+            className: "Tunnel",
+            deprecatedNotice: "Removed",
+            requiredCharacteristics: [
+                "accessory.identifier",
+                "tunnel-connection-timeout",
+                "tunneled-accessory-advertising",
+                "tunneled-accessory-connected",
+                "tunneled-accessory-state-number",
+            ],
         }],
 ]);
 exports.CharacteristicSinceInformation = new Map([

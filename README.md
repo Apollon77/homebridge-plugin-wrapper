@@ -20,7 +20,11 @@ Also, very important is to note, that this project will NOT provide any "Bridge"
 This project contains copies and slightly changed files from Homebridge and
 HAP-NodeJS and only minimal dependencies. Especially the whole MDNS and
 Encryption stuff is not included because using the Wrapper is not publishing
-the bridge (because not needed).
+the bridge (because not needed). The Matter runtime of Homebridge 2 is not included either,
+it is only loaded by Homebridge when Matter is enabled.
+
+The copies are created by `npm run vendor` (`scripts/vendor.mjs`), see "Updating Homebridge" below.
+The used versions are in `vendor-versions.json`.
 
 The wrapper also uses the great "mock-require" module to further minimize
 dependencies for modules that are not needed in this usage.
@@ -30,9 +34,8 @@ dependencies for modules that are not needed in this usage.
 If you have a problem with this please contact me via an issue and we can try to find a solution.
 
 ## Example?
-In the example folder you find a very easy example.
-For this to work please install homebridge-sun-position to your testing directory to get the needed plugin.
-Then you can start the example via **node example.js**, and it outputs all available characteristics.
+In the example folder you find a very easy example. It uses the plugin of the tests (test/plugins).
+Start the example via **node example.js** in the example folder, and it outputs all available characteristics.
 The example file also contain an example how to get and set a value.
 
 ## How to use it?
@@ -41,6 +44,12 @@ Basically you create an object instance and providing a configuration object to 
 * homebridgeConfigPath: a directory to store Homebridge Persist-Files
 * wrapperConfig: the Homebridge configuration in "wrapperConfig".
 * characteristicPollingInterval: a number in ms in which interval all values will be read to always stay up to date. This can be used if plugins do not send updates from itself
+
+Optional:
+* characteristicPollingList: polling intervals in ms per characteristic name, overrides characteristicPollingInterval
+* insecureAccess: passed to Homebridge (like the CLI option `-I`)
+* debugModeEnabled: enables the debug log of Homebridge (like the CLI option `-D`)
+* customPluginPath: an additional directory in which Homebridge searches for plugins (like the CLI option `-P`)
 
 See the example file.
 
@@ -55,17 +64,42 @@ The example contains code how to get and set values.
 ## What will NOT work?
 * Since homebridge 1.3.x it is possible to define child bridges for the devices. This idea basically makes no sense when using this library. This means that a configuration with child bridges will fork separate processes, but in fact the library can not access those data, so please do not configure it that way.
 * The homebridge UI/config plugins are not working.
-* Since homebridge 1.5.0 there might work plugins that run as ESM modules. Not sure if such modules will work with this library.
+* Matter (Homebridge 2) is not supported.
+* Plugins that are not compatible with Homebridge 2 do not work, e.g. plugins that still inherit from `Characteristic`
+  or `Service` in the old ES5 style (`Characteristic.call(this, ...)`), like `homebridge-sun-position`.
 
 ## What's changed on Homebridge/HAP-NodeJS?
-* Homebridge: version.js to return the version of the files "static" instead of a dynamic lookup
-* Mocked away: qrcode-terminal, and some more
+* Homebridge: only the files needed by the server are copied and converted from ESM to CommonJS
+  (`@homebridge/hap-nodejs` points to the copy), version.js returns the version "static" instead of reading package.json
+* Mocked away: qrcode-terminal, the mDNS advertisers (ciao, bonjour-hap, dbus-native), tweetnacl, fast-srp-hap and the HAP HTTP server
 * In Accessory.js the MAX settings for accessories and services are increased
+* pluginManager.js searches plugins also in the paths of the main module (like Homebridge 1), so plugins installed next to
+  the application are found even if the wrapper is hoisted to another node_modules folder
+
+## Updating Homebridge
+1. `npm run vendor -- <homebridge version>` (default: the version in `scripts/vendor.mjs`). The script installs Homebridge
+   into a temporary directory, copies the files, applies the patches and prints the packages the copies use.
+2. Compare these packages with the `dependencies` in package.json and the mocks in index.js.
+3. If a patch does not match anymore, the script stops - adjust `HAP_PATCHES` in the script.
+4. `npm test`
 
 ## Todo
 * More/Better Documentation :-) (open Issue if you need it)
 
 ## Changelog
+<!--
+	Placeholder for the next version (at the beginning of the line):
+	### **WORK IN PROGRESS**
+-->
+### **WORK IN PROGRESS**
+* BREAKING: Homebridge 2.4.0 and HAP-NodeJS 2.2.2, Node.js >= 22 required. Plugins must be compatible with Homebridge 2
+* The copies of Homebridge and HAP-NodeJS are created by `npm run vendor` now
+* Values are read with `handleGetRequest()` (HAP-NodeJS has no `getValue(callback)` anymore), write-only characteristics are not read
+* Added option `customPluginPath`
+* Plugins are searched in the paths of the main module too (like with Homebridge 1)
+* Fixed: `getAccessoryByName()` and `getAccessoryByUUID()`
+* Fixed: external accessories (e.g. cameras) are reported with `addExternalAccessory`
+
 ### 3.2.0 (2022-09-15)
 * Add option to set debugModeEnabled property in the init options to enable the homebridge debug mode
 

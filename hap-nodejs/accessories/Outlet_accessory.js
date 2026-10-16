@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var __1 = require("..");
-var err = null; // in case there were any problems
+const __1 = require("..");
+const err = null; // in case there were any problems
 // here's a fake hardware device that we'll expose to HomeKit
-var FAKE_OUTLET = {
+const FAKE_OUTLET = {
     powerOn: false,
-    setPowerOn: function (on) {
+    setPowerOn: (on) => {
         console.log("Turning the outlet %s!...", on ? "on" : "off");
         if (on) {
             FAKE_OUTLET.powerOn = true;
@@ -29,15 +29,15 @@ var FAKE_OUTLET = {
 // Generate a consistent UUID for our outlet Accessory that will remain the same even when
 // restarting our server. We use the `uuid.generate` helper function to create a deterministic
 // UUID based on an arbitrary "namespace" and the accessory name.
-var outletUUID = __1.uuid.generate("hap-nodejs:accessories:Outlet");
+const outletUUID = __1.uuid.generate("hap-nodejs:accessories:Outlet");
 // This is the Accessory that we'll return to HAP-NodeJS that represents our fake light.
-var outlet = exports.accessory = new __1.Accessory("Outlet", outletUUID);
+const outlet = exports.accessory = new __1.Accessory("Outlet", outletUUID);
 // Add properties for publishing (in case we're using Core.js and not BridgedCore.js)
 // @ts-expect-error: Core/BridgeCore API
 outlet.username = "1A:2B:3C:4D:5D:FF";
 // @ts-expect-error: Core/BridgeCore API
 outlet.pincode = "031-45-154";
-outlet.category = 7 /* OUTLET */;
+outlet.category = 7 /* Categories.OUTLET */;
 // set some basic properties (these values are arbitrary and setting them is optional)
 outlet
     .getService(__1.Service.AccessoryInformation)
@@ -45,7 +45,7 @@ outlet
     .setCharacteristic(__1.Characteristic.Model, "Rev-1")
     .setCharacteristic(__1.Characteristic.SerialNumber, "A1S2NASF88EW");
 // listen for the "identify" event for this Accessory
-outlet.on("identify" /* IDENTIFY */, function (paired, callback) {
+outlet.on("identify" /* AccessoryEventTypes.IDENTIFY */, (paired, callback) => {
     FAKE_OUTLET.identify();
     callback(); // success
 });
@@ -53,7 +53,7 @@ outlet.on("identify" /* IDENTIFY */, function (paired, callback) {
 outlet
     .addService(__1.Service.Outlet, "Fake Outlet") // services exposed to the user should have "names" like "Fake Light" for us
     .getCharacteristic(__1.Characteristic.On)
-    .on("set" /* SET */, function (value, callback) {
+    .on("set" /* CharacteristicEventTypes.SET */, (value, callback) => {
     FAKE_OUTLET.setPowerOn(value);
     callback(); // Our fake Outlet is synchronous - this value has been successfully set
 });
@@ -62,11 +62,11 @@ outlet
 outlet
     .getService(__1.Service.Outlet)
     .getCharacteristic(__1.Characteristic.On)
-    .on("get" /* GET */, function (callback) {
+    .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
     // this event is emitted when you ask Siri directly whether your light is on or not. you might query
     // the light hardware itself to find this out, then call the callback. But if you take longer than a
     // few seconds to respond, Siri will give up.
-    var err = null; // in case there were any problems
+    const err = null; // in case there were any problems
     if (FAKE_OUTLET.powerOn) {
         console.log("Are we on? Yes.");
         callback(err, true);

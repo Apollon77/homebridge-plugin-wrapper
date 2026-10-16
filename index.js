@@ -19,6 +19,16 @@ let ServerReq;
 let Service;
 let Accessory;
 
+/** The bridge is not published: the mDNS service (ciao is the default advertiser since HAP-NodeJS 1.x) does nothing */
+const fakeCiaoService = {
+    on() {},
+    updatePort() {},
+    updateTxt() {},
+    advertise: () => Promise.resolve(),
+    end: () => Promise.resolve(),
+    destroy: () => Promise.resolve(),
+};
+
 function customStringify(v, func, intent) {
     const cache = new Map();
     return JSON.stringify(v, function (key, value) {
@@ -38,7 +48,9 @@ function customStringify(v, func, intent) {
 function HomebridgeWrapper(config) {
     const that = this;
 
+    // plugins that require HAP-NodeJS themselves get the copy of this package
     mock('hap-nodejs', './hap-nodejs');
+    mock('@homebridge/hap-nodejs', './hap-nodejs');
     mock('hap-nodejs/accessories/types.js', './hap-nodejs/accessories/types.js');
     mock('hap-nodejs/lib/util/once', './hap-nodejs/lib/util/once');
     mock(path.join(__dirname, '/hap-nodejs/lib/util/eventedhttp.js'), {
@@ -46,6 +58,8 @@ function HomebridgeWrapper(config) {
             this.listen = function () {
             };
             this.stop = function () {
+            };
+            this.destroy = function () {
             };
             this.sendEvent = function () {
             };
@@ -60,6 +74,8 @@ function HomebridgeWrapper(config) {
     });
     mock('qrcode-terminal', {
         generate: function () {
+        },
+        setErrorLevel: function () {
         }
     });
     mock('tweetnacl', {
@@ -86,12 +102,14 @@ function HomebridgeWrapper(config) {
             }
         }
     });
-    mock('@homebridge/ciao', function () {
+    mock('@homebridge/ciao', {
+        getResponder: () => ({
+            createService: () => fakeCiaoService,
+            shutdown: () => Promise.resolve(),
+        }),
     });
     mock('@homebridge/dbus-native', function () {
     });
-    mock(path.join(__dirname, '/homebridge/version.js'), path.join(__dirname, '/homebridge-version.js'));
-
 
     User = require(path.join(__dirname, 'homebridge/user')).User;
     hap = require('./hap-nodejs');
@@ -101,9 +119,9 @@ function HomebridgeWrapper(config) {
     Server = ServerReq.Server;
     Service = hap.Service;
     Accessory = hap.Accessory;
-    const homebridgeLogger = require(path.join(__dirname, 'homebridge/logger'));
+    const { Logger } = require(path.join(__dirname, 'homebridge/logger'));
     if (config.debugModeEnabled) {
-        homebridgeLogger.setDebugEnabled(true);
+        Logger.setDebugEnabled(true);
     }
 
     this.logger = config.logger;
@@ -113,6 +131,7 @@ function HomebridgeWrapper(config) {
     this.characteristicPollingTimeouts = {};
     this.characteristicValues = {};
     this.insecureAccess = config.insecureAccess;
+    this.customPluginPath = config.customPluginPath;
     this.knownAccessories = {};
 
     if (!this.wrapperConfig.bridge) {
@@ -121,7 +140,6 @@ function HomebridgeWrapper(config) {
             "username": "FF:FF:FF:FF:FF:FF",
             "port": 0,
             "pin": "0",
-//            "advertiser": "ciao"
         };
     }
 
@@ -129,7 +147,7 @@ function HomebridgeWrapper(config) {
         if (!fs.existsSync(config.homebridgeConfigPath)) {
             fs.mkdirSync(config.homebridgeConfigPath);
         }
-        // some Plugins want to have config file
+        // Homebridge reads its configuration from this file, some plugins too
         fs.writeFileSync(path.join(config.homebridgeConfigPath, 'config.json'), JSON.stringify(this.wrapperConfig));
     }
     catch (e) {
@@ -137,21 +155,20 @@ function HomebridgeWrapper(config) {
     }
     User.setStoragePath(config.homebridgeConfigPath);
 
-    function WrapperBridge(displayName, serialNumber) {
-        that.logger.debug(`Homebridge Wrapper Bridge constructor displayName=${displayName}, UUID=${serialNumber}`);
-        WrapperBridge.super_.call(this, displayName, serialNumber);
+    // The Bridge of HAP-NodeJS is an ES class, so it is extended with a class (not with util.inherits)
+    class WrapperBridge extends hap.Bridge {
+        constructor(displayName, serialNumber) {
+            that.logger.debug(`Homebridge Wrapper Bridge constructor displayName=${displayName}, UUID=${serialNumber}`);
+            super(displayName, serialNumber);
+        }
 
-        this._origPublish = this.publish;
-        this._origAddBridgedAccessory = this.addBridgedAccessory;
-
-        this.publish = function(info, allowInsecureRequest) {
+        publish(info, allowInsecureRequest) {
             that.logger.info(`Homebridge Wrapper Bridge publish ${customStringify(info)}`);
-            // Вызов метода родительского класса
             // Calling the method of the parent class
-            this._origPublish.call(this, info, allowInsecureRequest);
-        };
+            return super.publish(info, allowInsecureRequest);
+        }
 
-        this.___handleCharacteristicPolling = function(accessory, serviceOrNameOrUUID, characteristicOrNameOrUUID) {
+        ___handleCharacteristicPolling(accessory, serviceOrNameOrUUID, characteristicOrNameOrUUID) {
             const service = typeof serviceOrNameOrUUID === 'string' ? accessory.services.find(s => s.displayName === serviceOrNameOrUUID || s.UUID === serviceOrNameOrUUID) : serviceOrNameOrUUID;
             const characteristic = typeof characteristicOrNameOrUUID === 'string' ? service.characteristics.find(c => c.displayName === characteristicOrNameOrUUID || c.UUID === characteristicOrNameOrUUID) : characteristicOrNameOrUUID;
             let pollingInterval;
@@ -160,10 +177,8 @@ function HomebridgeWrapper(config) {
             } else {
                 pollingInterval = that.characteristicPollingInterval;
             }
-            //that.logger.debug('Interval: char=' + characteristic.displayName + ' ; interval= ' + customStringify(pollingInterval));
             if (pollingInterval) {
                 const key = `${accessory.UUID}-${accessory.displayName}.${service.UUID}-${service.displayName}-${service.subtype}.${characteristic.UUID}-${characteristic.displayName}`;
-                //that.logger.debug('POLLING: char=' + characteristic.displayName + ' ; interval= ' + customStringify(pollingInterval));
                 if (that.characteristicPollingTimeouts[key]) {
                     clearTimeout(that.characteristicPollingTimeouts[key]);
                 }
@@ -172,7 +187,6 @@ function HomebridgeWrapper(config) {
                     const currService = accessory.services.find(s => s.UUID === service.UUID && s.displayName === service.displayName && s.subtype === service.subtype);
                     const currCharacteristic = currService.characteristics.find(c => c.UUID === characteristic.UUID && c.displayName === characteristic.displayName);
                     if (!currCharacteristic) {
-                        //console.log(`Characteristic not found: ${serviceUUID}/${characteristicUUID} in ${accessory.displayName}`);
                         return;
                     }
                     this.___getAndPollCharacteristic(accessory, currService, currCharacteristic, false);
@@ -180,38 +194,46 @@ function HomebridgeWrapper(config) {
             }
         }
 
-        this.___getAndPollCharacteristic = async function(accessory, service, characteristic, isUpdate) {
-            return new Promise(resolve => characteristic.getValue((err, value) => {
-                if (!err) {
-                    const key = `${accessory.UUID}-${accessory.displayName}.${service.UUID}-${service.displayName}-${service.subtype}.${characteristic.UUID}-${characteristic.displayName}`;
-                    if (!that.characteristicValues[key] || that.characteristicValues[key].val !== value || isUpdate) {
-                        // for accessory updates we should check if we need to repost the value
-                        that.characteristicValues[key] = {
-                            val: value,
-                            ts: Date.now()
-                        };
-                        that.emit('characteristic-value-change', {
-                            accessory,
-                            service,
-                            characteristic,
-                            newValue: value
-                        });
-                        that.emit('characteristic-value-update', {
-                            accessory,
-                            service,
-                            characteristic,
-                            newValue: value
-                        });
-                    }
-                } else {
-                    value = undefined;
+        async ___getAndPollCharacteristic(accessory, service, characteristic, isUpdate) {
+            if (characteristic.props && characteristic.props.perms && !characteristic.props.perms.includes('pr')) {
+                // write-only (e.g. Identify): HAP-NodeJS rejects the read with HAPStatus.WRITE_ONLY_CHARACTERISTIC
+                return undefined;
+            }
+            let value;
+            try {
+                // calls the get handler of the plugin (HAP-NodeJS has no getValue(callback) anymore)
+                value = await characteristic.handleGetRequest();
+            } catch (e) {
+                // e.g. write-only characteristics or a HAP status error of the plugin
+                value = undefined;
+            }
+            if (value !== undefined) {
+                const key = `${accessory.UUID}-${accessory.displayName}.${service.UUID}-${service.displayName}-${service.subtype}.${characteristic.UUID}-${characteristic.displayName}`;
+                if (!that.characteristicValues[key] || that.characteristicValues[key].val !== value || isUpdate) {
+                    // for accessory updates we should check if we need to repost the value
+                    that.characteristicValues[key] = {
+                        val: value,
+                        ts: Date.now()
+                    };
+                    that.emit('characteristic-value-change', {
+                        accessory,
+                        service,
+                        characteristic,
+                        newValue: value
+                    });
+                    that.emit('characteristic-value-update', {
+                        accessory,
+                        service,
+                        characteristic,
+                        newValue: value
+                    });
                 }
-                this.___handleCharacteristicPolling(accessory, service, characteristic);
-                resolve(value);
-            }));
+            }
+            this.___handleCharacteristicPolling(accessory, service, characteristic);
+            return value;
         }
 
-        this.___wrapperAccessoryLogic = async function(accessory, external, isUpdate) {
+        async ___wrapperAccessoryLogic(accessory, external, isUpdate) {
             if (that.knownAccessories[accessory.UUID]) {
                 that.logger.debug(`Accessory ${accessory.displayName} with ID ${accessory.UUID} already known`);
                 for (const key of Object.keys(that.characteristicPollingTimeouts)) {
@@ -273,11 +295,7 @@ function HomebridgeWrapper(config) {
             await this.___pollAccessory(accessory, isUpdate);
         }
 
-        this.___wrapperAccessoryRemoveLogic = function(accessory) {
-            if (that.knownAccessories[accessory.UUID] && !that.knownAccessories[accessory.UUID] === accessory) {
-                that.logger.debug(`Accessory ${accessory.displayName} with ID ${accessory.UUID} to remove but not the same object as we know`);
-                return;
-            }
+        ___wrapperAccessoryRemoveLogic(accessory) {
             if (that.knownAccessories[accessory.UUID]) {
                 that.logger.debug(`Delete Accessory ${accessory.displayName} with ID ${accessory.UUID}`);
                 for (const key of Object.keys(that.characteristicPollingTimeouts)) {
@@ -293,23 +311,22 @@ function HomebridgeWrapper(config) {
             that.emit('removeAccessory', accessory);
         }
 
-        this.addBridgedAccessory = function(accessory, deferUpdate) {
-            // Вызов метода родительского класса
+        addBridgedAccessory(accessory, deferUpdate) {
             // Calling the method of the parent class
-            accessory = this._origAddBridgedAccessory.call(this, accessory, deferUpdate);
+            accessory = super.addBridgedAccessory(accessory, deferUpdate);
             that.logger.debug(`Homebridge Wrapper Bridge addBridgedAccessory ${customStringify(accessory)}`); //OK
 
             this.___wrapperAccessoryLogic(accessory);
             return accessory;
-        };
+        }
 
-        this.___pollAccessory = async function ___pollAccessory(accessory, isUpdate) {
+        async ___pollAccessory(accessory, isUpdate) {
             for (const service of accessory.services) {
                 await this.___pollAccessoryService(accessory, service, isUpdate);
             }
-        };
+        }
 
-        this.___pollAccessoryService = async function ___pollAccessoryService(accessory, serviceOrNameOrUUID, isUpdate) {
+        async ___pollAccessoryService(accessory, serviceOrNameOrUUID, isUpdate) {
             if (typeof serviceOrNameOrUUID === 'string') {
                 serviceOrNameOrUUID = accessory.services.find(s => s.displayName === serviceOrNameOrUUID || s.UUID === serviceOrNameOrUUID);
             }
@@ -319,9 +336,9 @@ function HomebridgeWrapper(config) {
             for (const characteristic of serviceOrNameOrUUID.characteristics) {
                 await this.___getAndPollCharacteristic(accessory, serviceOrNameOrUUID, characteristic, isUpdate);
             }
-        };
+        }
 
-        this.___pollAccessoryServiceCharacteristic = async function ___pollAccessoryServiceCharacteristic(accessory, serviceOrNameOrUUID, characteristicOrNameOrUUID, isUpdate) {
+        async ___pollAccessoryServiceCharacteristic(accessory, serviceOrNameOrUUID, characteristicOrNameOrUUID, isUpdate) {
             if (typeof serviceOrNameOrUUID === 'string') {
                 serviceOrNameOrUUID = accessory.services.find(s => s.displayName === serviceOrNameOrUUID || s.UUID === serviceOrNameOrUUID);
             }
@@ -333,18 +350,16 @@ function HomebridgeWrapper(config) {
                 return;
             }
             return this.___getAndPollCharacteristic(accessory, serviceOrNameOrUUID, characteristicOrNameOrUUID, isUpdate);
-        };
+        }
+
+        getBridgedAccessoryByUUID(uuid) {
+            return this.bridgedAccessories.find(accessory => accessory.UUID === uuid);
+        }
+
+        getBridgedAccessoryByName(name) {
+            return this.bridgedAccessories.find(accessory => accessory.displayName === name);
+        }
     }
-
-    inherits(WrapperBridge, hap.Bridge);
-
-    WrapperBridge.prototype.getBridgedAccessoryByUUID = function (uuid) {
-      return this.bridgedAccessories.find(accessory => accessory.UUID === uuid);
-    };
-
-    WrapperBridge.prototype.getBridgedAccessoryByName = function (name) {
-      return this.bridgedAccessories.find(accessory => accessory.displayName === name);
-    };
 
     this.WrapperBridge = WrapperBridge;
 
@@ -371,9 +386,11 @@ HomebridgeWrapper.prototype.init = function init() {
     hapStorage.setCustomStoragePath(User.persistPath());
 
     const serverOpts = {
-        config: this.wrapperConfig,
+        // Homebridge reads the config itself from config.json (written in the constructor)
         hideQRCode: true,
-        insecureAccess: this.insecureAccess
+        insecureAccess: this.insecureAccess,
+        // additional directory to search for plugins
+        customPluginPath: this.customPluginPath,
     };
     this.server = new Server(serverOpts);
     this.server.bridgeService.bridge = new this.WrapperBridge(this.server.config.bridge.name, hap.uuid.generate("HomeBridge"));
@@ -415,13 +432,18 @@ HomebridgeWrapper.prototype.init = function init() {
         });
     });
 
-    const origHandlePublishExternalAccessories = this.server.bridgeService.handlePublishExternalAccessories;
-    this.server.bridgeService.handlePublishExternalAccessories = async accessories => {
+    // Homebridge binds handlePublishExternalAccessories to the API event in the BridgeService constructor,
+    // so the external accessories are intercepted by replacing that listener
+    const bridgeService = this.server.bridgeService;
+    const origHandlePublishExternalAccessories = bridgeService.handlePublishExternalAccessories;
+    const handlePublishExternalAccessories = async accessories => {
         for (const accessory of accessories) {
-            this.server.bridgeService.bridge.___wrapperAccessoryLogic(accessory, true);
+            bridgeService.bridge.___wrapperAccessoryLogic(accessory._associatedHAPAccessory || accessory, true);
         }
-        return origHandlePublishExternalAccessories.call(this.server.bridgeService, accessories);
-    }
+        return origHandlePublishExternalAccessories.call(bridgeService, accessories);
+    };
+    bridgeService.api.removeAllListeners('publishExternalAccessories');
+    bridgeService.api.on('publishExternalAccessories', handlePublishExternalAccessories);
 
     this.server.start();
 };
@@ -442,7 +464,7 @@ HomebridgeWrapper.prototype.finish = function finish() {
 };
 
 HomebridgeWrapper.prototype.getAccessoryByName = function getAccessoryByName(name) {
-    return this.server.getBridge().getBridgedAccessoryByName(name);
+    return this.server.bridgeService.bridge.getBridgedAccessoryByName(name);
 };
 
 HomebridgeWrapper.prototype.getServiceByName = function getServiceByName(accessoryName, serviceName) {
@@ -455,7 +477,7 @@ HomebridgeWrapper.prototype.getCharacteristicByName = function getCharacteristic
 
 
 HomebridgeWrapper.prototype.getAccessoryByUUID = function getAccessoryByUUID(uuid) {
-    return this.server.getBridge().getBridgedAccessoryByUUID(uuid);
+    return this.server.bridgeService.bridge.getBridgedAccessoryByUUID(uuid);
 };
 
 HomebridgeWrapper.prototype.getServiceByUUID = function getServiceByUUID(accessoryUUID, serviceUUID) {

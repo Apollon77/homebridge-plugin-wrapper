@@ -1,18 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RecordingManagement = exports.PacketDataType = exports.AudioRecordingSamplerate = exports.AudioRecordingCodecType = exports.MediaContainerType = exports.EventTriggerOption = void 0;
-var tslib_1 = require("tslib");
-var crypto_1 = (0, tslib_1.__importDefault)(require("crypto"));
-var debug_1 = (0, tslib_1.__importDefault)(require("debug"));
-var events_1 = require("events");
-var Characteristic_1 = require("../Characteristic");
-var datastream_1 = require("../datastream");
-var Service_1 = require("../Service");
-var hapStatusError_1 = require("../util/hapStatusError");
-var tlv = (0, tslib_1.__importStar)(require("../util/tlv"));
-var debug = (0, debug_1.default)("HAP-NodeJS:Camera:RecordingManagement");
+const tslib_1 = require("tslib");
+const crypto_1 = tslib_1.__importDefault(require("crypto"));
+const debug_1 = tslib_1.__importDefault(require("debug"));
+const events_1 = require("events");
+const Characteristic_1 = require("../Characteristic");
+const datastream_1 = require("../datastream");
+const Service_1 = require("../Service");
+const hapStatusError_1 = require("../util/hapStatusError");
+const tlv = tslib_1.__importStar(require("../util/tlv"));
+const debug = (0, debug_1.default)("HAP-NodeJS:Camera:RecordingManagement");
+const hksvDebug = (0, debug_1.default)("HAP-NodeJS:HKSV");
 /**
  * Describes the Event trigger.
+ *
+ * @group Camera
  */
 var EventTriggerOption;
 (function (EventTriggerOption) {
@@ -22,13 +25,21 @@ var EventTriggerOption;
     EventTriggerOption[EventTriggerOption["MOTION"] = 1] = "MOTION";
     /**
      * The Doorbell trigger. If enabled a doorbell button press should trigger the start of a recording.
+     *
+     * Note: While the doorbell is defined by the HomeKit specification and HAP-NodeJS supports (and the
+     * {@link RecordingManagement} advertises support for it), HomeKit HomeHubs will (as of now, iOS 15-16)
+     * never enable Doorbell triggers. Seemingly this is currently unsupported by Apple.
+     * See https://github.com/homebridge/HAP-NodeJS/issues/976#issuecomment-1280301989.
      */
     EventTriggerOption[EventTriggerOption["DOORBELL"] = 2] = "DOORBELL";
-})(EventTriggerOption = exports.EventTriggerOption || (exports.EventTriggerOption = {}));
+})(EventTriggerOption || (exports.EventTriggerOption = EventTriggerOption = {}));
+/**
+ * @group Camera
+ */
 var MediaContainerType;
 (function (MediaContainerType) {
     MediaContainerType[MediaContainerType["FRAGMENTED_MP4"] = 0] = "FRAGMENTED_MP4";
-})(MediaContainerType = exports.MediaContainerType || (exports.MediaContainerType = {}));
+})(MediaContainerType || (exports.MediaContainerType = MediaContainerType = {}));
 var VideoCodecConfigurationTypes;
 (function (VideoCodecConfigurationTypes) {
     VideoCodecConfigurationTypes[VideoCodecConfigurationTypes["CODEC_TYPE"] = 1] = "CODEC_TYPE";
@@ -54,11 +65,17 @@ var SelectedCameraRecordingConfigurationTypes;
     SelectedCameraRecordingConfigurationTypes[SelectedCameraRecordingConfigurationTypes["SELECTED_VIDEO_CONFIGURATION"] = 2] = "SELECTED_VIDEO_CONFIGURATION";
     SelectedCameraRecordingConfigurationTypes[SelectedCameraRecordingConfigurationTypes["SELECTED_AUDIO_CONFIGURATION"] = 3] = "SELECTED_AUDIO_CONFIGURATION";
 })(SelectedCameraRecordingConfigurationTypes || (SelectedCameraRecordingConfigurationTypes = {}));
+/**
+ * @group Camera
+ */
 var AudioRecordingCodecType;
 (function (AudioRecordingCodecType) {
     AudioRecordingCodecType[AudioRecordingCodecType["AAC_LC"] = 0] = "AAC_LC";
     AudioRecordingCodecType[AudioRecordingCodecType["AAC_ELD"] = 1] = "AAC_ELD";
-})(AudioRecordingCodecType = exports.AudioRecordingCodecType || (exports.AudioRecordingCodecType = {}));
+})(AudioRecordingCodecType || (exports.AudioRecordingCodecType = AudioRecordingCodecType = {}));
+/**
+ * @group Camera
+ */
 var AudioRecordingSamplerate;
 (function (AudioRecordingSamplerate) {
     AudioRecordingSamplerate[AudioRecordingSamplerate["KHZ_8"] = 0] = "KHZ_8";
@@ -67,7 +84,7 @@ var AudioRecordingSamplerate;
     AudioRecordingSamplerate[AudioRecordingSamplerate["KHZ_32"] = 3] = "KHZ_32";
     AudioRecordingSamplerate[AudioRecordingSamplerate["KHZ_44_1"] = 4] = "KHZ_44_1";
     AudioRecordingSamplerate[AudioRecordingSamplerate["KHZ_48"] = 5] = "KHZ_48";
-})(AudioRecordingSamplerate = exports.AudioRecordingSamplerate || (exports.AudioRecordingSamplerate = {}));
+})(AudioRecordingSamplerate || (exports.AudioRecordingSamplerate = AudioRecordingSamplerate = {}));
 var SupportedVideoRecordingConfigurationTypes;
 (function (SupportedVideoRecordingConfigurationTypes) {
     SupportedVideoRecordingConfigurationTypes[SupportedVideoRecordingConfigurationTypes["VIDEO_CODEC_CONFIGURATION"] = 1] = "VIDEO_CODEC_CONFIGURATION";
@@ -103,66 +120,88 @@ var SupportedAudioRecordingConfigurationTypes;
 (function (SupportedAudioRecordingConfigurationTypes) {
     SupportedAudioRecordingConfigurationTypes[SupportedAudioRecordingConfigurationTypes["AUDIO_CODEC_CONFIGURATION"] = 1] = "AUDIO_CODEC_CONFIGURATION";
 })(SupportedAudioRecordingConfigurationTypes || (SupportedAudioRecordingConfigurationTypes = {}));
+/**
+ * @group Camera
+ */
 var PacketDataType;
 (function (PacketDataType) {
-    // mp4 moov box
+    /**
+     * mp4 moov box
+     */
     PacketDataType["MEDIA_INITIALIZATION"] = "mediaInitialization";
-    // mp4 moof + mdat boxes
+    /**
+     * mp4 moof + mdat boxes
+     */
     PacketDataType["MEDIA_FRAGMENT"] = "mediaFragment";
-})(PacketDataType = exports.PacketDataType || (exports.PacketDataType = {}));
-var RecordingManagement = /** @class */ (function () {
-    function RecordingManagement(options, delegate, eventTriggerOptions, services) {
-        var e_1, _a;
-        /**
-         * Array of sensor services (e.g. {@link Service.MotionSensor} or {@link Service.OccupancySensor}).
-         * Any service in this array owns a {@link Characteristic.StatusActive} characteristic.
-         * The value of the {@link Characteristic.HomeKitCameraActive} is mirrored towards the {@link Characteristic.StatusActive} characteristic.
-         * The array is initialized my the caller shortly after calling the constructor.
-         */
-        this.sensorServices = [];
+})(PacketDataType || (exports.PacketDataType = PacketDataType = {}));
+/**
+ * @group Camera
+ */
+class RecordingManagement {
+    options;
+    delegate;
+    stateChangeDelegate;
+    supportedCameraRecordingConfiguration;
+    supportedVideoRecordingConfiguration;
+    supportedAudioRecordingConfiguration;
+    /**
+     * 32 bit mask of enabled {@link EventTriggerOption}s.
+     */
+    eventTriggerOptions;
+    recordingManagementService;
+    operatingModeService;
+    dataStreamManagement;
+    /**
+     * The currently active recording stream.
+     * Any camera only supports one stream at a time.
+     */
+    recordingStream;
+    selectedConfiguration;
+    /**
+     * Array of sensor services (e.g. {@link Service.MotionSensor} or {@link Service.OccupancySensor}).
+     * Any service in this array owns a {@link Characteristic.StatusActive} characteristic.
+     * The value of the {@link Characteristic.HomeKitCameraActive} is mirrored towards the {@link Characteristic.StatusActive} characteristic.
+     * The array is initialized my the caller shortly after calling the constructor.
+     */
+    sensorServices = [];
+    /**
+     * Defines if recording is enabled for this recording management.
+     */
+    recordingActive = false;
+    constructor(options, delegate, eventTriggerOptions, services) {
         this.options = options;
         this.delegate = delegate;
-        var recordingServices = services || this.constructService();
+        const recordingServices = services || this.constructService();
         this.recordingManagementService = recordingServices.recordingManagement;
         this.operatingModeService = recordingServices.operatingMode;
         this.dataStreamManagement = recordingServices.dataStreamManagement;
         this.eventTriggerOptions = 0;
-        try {
-            for (var eventTriggerOptions_1 = (0, tslib_1.__values)(eventTriggerOptions), eventTriggerOptions_1_1 = eventTriggerOptions_1.next(); !eventTriggerOptions_1_1.done; eventTriggerOptions_1_1 = eventTriggerOptions_1.next()) {
-                var option = eventTriggerOptions_1_1.value;
-                this.eventTriggerOptions |= option; // OR
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (eventTriggerOptions_1_1 && !eventTriggerOptions_1_1.done && (_a = eventTriggerOptions_1.return)) _a.call(eventTriggerOptions_1);
-            }
-            finally { if (e_1) throw e_1.error; }
+        for (const option of eventTriggerOptions) {
+            this.eventTriggerOptions |= option; // OR
         }
         this.supportedCameraRecordingConfiguration = this._supportedCameraRecordingConfiguration(options);
         this.supportedVideoRecordingConfiguration = this._supportedVideoRecordingConfiguration(options.video);
         this.supportedAudioRecordingConfiguration = this._supportedAudioStreamConfiguration(options.audio);
         this.setupServiceHandlers();
+        hksvDebug("RecordingManagement created (eventTriggers=0x%s)", this.eventTriggerOptions.toString(16));
     }
-    RecordingManagement.prototype.constructService = function () {
-        var recordingManagement = new Service_1.Service.CameraRecordingManagement("", "");
+    constructService() {
+        const recordingManagement = new Service_1.Service.CameraRecordingManagement("", "");
         recordingManagement.setCharacteristic(Characteristic_1.Characteristic.Active, false);
         recordingManagement.setCharacteristic(Characteristic_1.Characteristic.RecordingAudioActive, false);
-        var operatingMode = new Service_1.Service.CameraOperatingMode("", "");
+        const operatingMode = new Service_1.Service.CameraOperatingMode("", "");
         operatingMode.setCharacteristic(Characteristic_1.Characteristic.EventSnapshotsActive, true);
         operatingMode.setCharacteristic(Characteristic_1.Characteristic.HomeKitCameraActive, true);
         operatingMode.setCharacteristic(Characteristic_1.Characteristic.PeriodicSnapshotsActive, true);
-        var dataStreamManagement = new datastream_1.DataStreamManagement();
+        const dataStreamManagement = new datastream_1.DataStreamManagement();
         recordingManagement.addLinkedService(dataStreamManagement.getService());
         return {
             recordingManagement: recordingManagement,
             operatingMode: operatingMode,
             dataStreamManagement: dataStreamManagement,
         };
-    };
-    RecordingManagement.prototype.setupServiceHandlers = function () {
-        var _this = this;
+    }
+    setupServiceHandlers() {
         // update the current configuration values to the current state.
         this.recordingManagementService.setCharacteristic(Characteristic_1.Characteristic.SupportedCameraRecordingConfiguration, this.supportedCameraRecordingConfiguration);
         this.recordingManagementService.setCharacteristic(Characteristic_1.Characteristic.SupportedVideoRecordingConfiguration, this.supportedVideoRecordingConfiguration);
@@ -170,142 +209,142 @@ var RecordingManagement = /** @class */ (function () {
         this.recordingManagementService.getCharacteristic(Characteristic_1.Characteristic.SelectedCameraRecordingConfiguration)
             .onGet(this.handleSelectedCameraRecordingConfigurationRead.bind(this))
             .onSet(this.handleSelectedCameraRecordingConfigurationWrite.bind(this))
-            .setProps({ adminOnlyAccess: [1 /* WRITE */] });
+            .setProps({ adminOnlyAccess: [1 /* Access.WRITE */] });
         this.recordingManagementService.getCharacteristic(Characteristic_1.Characteristic.Active)
-            .onSet(function (value) { return _this.delegate.updateRecordingActive(!!value); })
-            .on("change" /* CHANGE */, function () { var _a; return (_a = _this.stateChangeDelegate) === null || _a === void 0 ? void 0 : _a.call(_this); })
-            .setProps({ adminOnlyAccess: [1 /* WRITE */] });
-        this.recordingManagementService.getCharacteristic(Characteristic_1.Characteristic.RecordingAudioActive)
-            .on("change" /* CHANGE */, function () { var _a; return (_a = _this.stateChangeDelegate) === null || _a === void 0 ? void 0 : _a.call(_this); });
-        this.operatingModeService.getCharacteristic(Characteristic_1.Characteristic.HomeKitCameraActive)
-            .on("change" /* CHANGE */, function (change) {
-            var e_2, _a;
-            var _b;
-            try {
-                for (var _c = (0, tslib_1.__values)(_this.sensorServices), _d = _c.next(); !_d.done; _d = _c.next()) {
-                    var service = _d.value;
-                    service.setCharacteristic(Characteristic_1.Characteristic.StatusActive, !!change.newValue);
-                }
+            .onSet(value => {
+            if (!!value === this.recordingActive) {
+                return; // skip delegate call if state didn't change!
             }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
-            finally {
-                try {
-                    if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
-                }
-                finally { if (e_2) throw e_2.error; }
-            }
-            if (!change.newValue && _this.recordingStream) {
-                _this.recordingStream.close(1 /* NOT_ALLOWED */);
-            }
-            (_b = _this.stateChangeDelegate) === null || _b === void 0 ? void 0 : _b.call(_this);
+            this.recordingActive = !!value;
+            hksvDebug("Active onSet: recordingActive -> %s", this.recordingActive);
+            this.delegate.updateRecordingActive(this.recordingActive);
         })
-            .setProps({ adminOnlyAccess: [1 /* WRITE */] });
+            .on("change" /* CharacteristicEventTypes.CHANGE */, () => this.stateChangeDelegate?.())
+            .setProps({ adminOnlyAccess: [1 /* Access.WRITE */] });
+        this.recordingManagementService.getCharacteristic(Characteristic_1.Characteristic.RecordingAudioActive)
+            .on("change" /* CharacteristicEventTypes.CHANGE */, () => this.stateChangeDelegate?.());
+        this.operatingModeService.getCharacteristic(Characteristic_1.Characteristic.HomeKitCameraActive)
+            .on("change" /* CharacteristicEventTypes.CHANGE */, change => {
+            for (const service of this.sensorServices) {
+                service.setCharacteristic(Characteristic_1.Characteristic.StatusActive, !!change.newValue);
+            }
+            if (!change.newValue && this.recordingStream) {
+                this.recordingStream.close(1 /* HDSProtocolSpecificErrorReason.NOT_ALLOWED */);
+            }
+            this.stateChangeDelegate?.();
+        })
+            .setProps({ adminOnlyAccess: [1 /* Access.WRITE */] });
         this.operatingModeService.getCharacteristic(Characteristic_1.Characteristic.EventSnapshotsActive)
-            .on("change" /* CHANGE */, function () { var _a; return (_a = _this.stateChangeDelegate) === null || _a === void 0 ? void 0 : _a.call(_this); })
-            .setProps({ adminOnlyAccess: [1 /* WRITE */] });
+            .on("change" /* CharacteristicEventTypes.CHANGE */, () => this.stateChangeDelegate?.())
+            .setProps({ adminOnlyAccess: [1 /* Access.WRITE */] });
         this.operatingModeService.getCharacteristic(Characteristic_1.Characteristic.PeriodicSnapshotsActive)
-            .on("change" /* CHANGE */, function () { var _a; return (_a = _this.stateChangeDelegate) === null || _a === void 0 ? void 0 : _a.call(_this); })
-            .setProps({ adminOnlyAccess: [1 /* WRITE */] });
+            .on("change" /* CharacteristicEventTypes.CHANGE */, () => this.stateChangeDelegate?.())
+            .setProps({ adminOnlyAccess: [1 /* Access.WRITE */] });
         this.dataStreamManagement
-            .onRequestMessage("dataSend" /* DATA_SEND */, "open" /* OPEN */, this.handleDataSendOpen.bind(this));
-    };
+            .onRequestMessage("dataSend" /* Protocols.DATA_SEND */, "open" /* Topics.OPEN */, this.handleDataSendOpen.bind(this));
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    RecordingManagement.prototype.handleDataSendOpen = function (connection, id, message) {
-        var _this = this;
+    handleDataSendOpen(connection, id, message) {
         // for message fields see https://github.com/Supereg/secure-video-specification#41-start
-        var streamId = message.streamId;
-        var type = message.type;
-        var target = message.target;
-        var reason = message.reason;
+        const streamId = message.streamId;
+        const type = message.type;
+        const target = message.target;
+        const reason = message.reason;
         if (target !== "controller" || type !== "ipcamera.recording") {
             debug("[HDS %s] Received data send with unexpected target: %s or type: %d. Rejecting...", connection.remoteAddress, target, type);
-            connection.sendResponse("dataSend" /* DATA_SEND */, "open" /* OPEN */, id, datastream_1.HDSStatus.PROTOCOL_SPECIFIC_ERROR, {
-                status: 5 /* UNEXPECTED_FAILURE */,
+            connection.sendResponse("dataSend" /* Protocols.DATA_SEND */, "open" /* Topics.OPEN */, id, datastream_1.HDSStatus.PROTOCOL_SPECIFIC_ERROR, {
+                status: 5 /* HDSProtocolSpecificErrorReason.UNEXPECTED_FAILURE */,
             });
             return;
         }
-        if (!this.recordingManagementService.getCharacteristic(Characteristic_1.Characteristic.Active).value) {
-            connection.sendResponse("dataSend" /* DATA_SEND */, "open" /* OPEN */, id, datastream_1.HDSStatus.PROTOCOL_SPECIFIC_ERROR, {
-                status: 1 /* NOT_ALLOWED */,
+        if (!this.recordingActive) {
+            hksvDebug("[HDS %s] rejecting DATA_SEND OPEN: recordingActive=false", connection.remoteAddress);
+            connection.sendResponse("dataSend" /* Protocols.DATA_SEND */, "open" /* Topics.OPEN */, id, datastream_1.HDSStatus.PROTOCOL_SPECIFIC_ERROR, {
+                status: 1 /* HDSProtocolSpecificErrorReason.NOT_ALLOWED */,
             });
             return;
         }
         if (!this.operatingModeService.getCharacteristic(Characteristic_1.Characteristic.HomeKitCameraActive).value) {
-            connection.sendResponse("dataSend" /* DATA_SEND */, "open" /* OPEN */, id, datastream_1.HDSStatus.PROTOCOL_SPECIFIC_ERROR, {
-                status: 1 /* NOT_ALLOWED */,
+            hksvDebug("[HDS %s] rejecting DATA_SEND OPEN: HomeKitCameraActive=false", connection.remoteAddress);
+            connection.sendResponse("dataSend" /* Protocols.DATA_SEND */, "open" /* Topics.OPEN */, id, datastream_1.HDSStatus.PROTOCOL_SPECIFIC_ERROR, {
+                status: 1 /* HDSProtocolSpecificErrorReason.NOT_ALLOWED */,
             });
             return;
         }
         if (this.recordingStream) {
             debug("[HDS %s] Rejecting DATA_SEND OPEN as another stream (%s) is already recording with streamId %d!", connection.remoteAddress, this.recordingStream.connection.remoteAddress, this.recordingStream.streamId);
             // there is already a recording stream running.
-            connection.sendResponse("dataSend" /* DATA_SEND */, "open" /* OPEN */, id, datastream_1.HDSStatus.PROTOCOL_SPECIFIC_ERROR, {
-                status: 2 /* BUSY */,
+            connection.sendResponse("dataSend" /* Protocols.DATA_SEND */, "open" /* Topics.OPEN */, id, datastream_1.HDSStatus.PROTOCOL_SPECIFIC_ERROR, {
+                status: 2 /* HDSProtocolSpecificErrorReason.BUSY */,
             });
             return;
         }
         if (!this.selectedConfiguration) {
-            connection.sendResponse("dataSend" /* DATA_SEND */, "open" /* OPEN */, id, datastream_1.HDSStatus.PROTOCOL_SPECIFIC_ERROR, {
-                status: 9 /* INVALID_CONFIGURATION */,
+            hksvDebug("[HDS %s] rejecting DATA_SEND OPEN: no selectedConfiguration (homebridge#3928)", connection.remoteAddress);
+            connection.sendResponse("dataSend" /* Protocols.DATA_SEND */, "open" /* Topics.OPEN */, id, datastream_1.HDSStatus.PROTOCOL_SPECIFIC_ERROR, {
+                status: 9 /* HDSProtocolSpecificErrorReason.INVALID_CONFIGURATION */,
             });
             return;
         }
         debug("[HDS %s] HDS DATA_SEND Open with reason '%s'.", connection.remoteAddress, reason);
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
         this.recordingStream = new CameraRecordingStream(connection, this.delegate, id, streamId);
-        this.recordingStream.on("closed" /* CLOSED */, function () {
-            debug("[HDS %s] Removing active recoding session from recording management!");
-            _this.recordingStream = undefined;
+        this.recordingStream.on("closed" /* CameraRecordingStreamEvents.CLOSED */, () => {
+            debug("[HDS %s] Removing active recoding session from recording management!", connection.remoteAddress);
+            this.recordingStream = undefined;
         });
         this.recordingStream.startStreaming();
-    };
-    RecordingManagement.prototype.handleSelectedCameraRecordingConfigurationRead = function () {
+    }
+    handleSelectedCameraRecordingConfigurationRead() {
         if (!this.selectedConfiguration) {
-            throw new hapStatusError_1.HapStatusError(-70402 /* SERVICE_COMMUNICATION_FAILURE */);
+            throw new hapStatusError_1.HapStatusError(-70402 /* HAPStatus.SERVICE_COMMUNICATION_FAILURE */);
         }
         return this.selectedConfiguration.base64;
-    };
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    RecordingManagement.prototype.handleSelectedCameraRecordingConfigurationWrite = function (value) {
-        var _a;
-        var configuration = this.parseSelectedConfiguration(value);
+    handleSelectedCameraRecordingConfigurationWrite(value) {
+        const configuration = this.parseSelectedConfiguration(value);
+        const changed = this.selectedConfiguration?.base64 !== value;
+        hksvDebug("SelectedRecordingConfiguration write: changed=%s hasStateChangeDelegate=%s base64Len=%d", changed, !!this.stateChangeDelegate, typeof value === "string" ? value.length : -1);
         this.selectedConfiguration = {
             parsed: configuration,
             base64: value,
         };
-        this.delegate.updateRecordingConfiguration(this.selectedConfiguration.parsed);
-        // notify controller storage about updated values!
-        (_a = this.stateChangeDelegate) === null || _a === void 0 ? void 0 : _a.call(this);
-    };
-    RecordingManagement.prototype.parseSelectedConfiguration = function (value) {
-        var decoded = tlv.decode(Buffer.from(value, "base64"));
-        var recording = tlv.decode(decoded[1 /* SELECTED_RECORDING_CONFIGURATION */]);
-        var video = tlv.decode(decoded[2 /* SELECTED_VIDEO_CONFIGURATION */]);
-        var audio = tlv.decode(decoded[3 /* SELECTED_AUDIO_CONFIGURATION */]);
-        var prebufferLength = recording[1 /* PREBUFFER_LENGTH */].readInt32LE(0);
-        var eventTriggerOptions = recording[2 /* EVENT_TRIGGER_OPTIONS */].readInt32LE(0);
-        var mediaContainerConfiguration = tlv.decode(recording[3 /* MEDIA_CONTAINER_CONFIGURATIONS */]);
-        var containerType = mediaContainerConfiguration[1 /* MEDIA_CONTAINER_TYPE */][0];
-        var mediaContainerParameters = tlv.decode(mediaContainerConfiguration[2 /* MEDIA_CONTAINER_PARAMETERS */]);
-        var fragmentLength = mediaContainerParameters[1 /* FRAGMENT_LENGTH */].readInt32LE(0);
-        var videoCodec = video[1 /* CODEC_TYPE */][0];
-        var videoParameters = tlv.decode(video[2 /* CODEC_PARAMETERS */]);
-        var videoAttributes = tlv.decode(video[3 /* ATTRIBUTES */]);
-        var profile = videoParameters[1 /* PROFILE_ID */][0];
-        var level = videoParameters[2 /* LEVEL */][0];
-        var videoBitrate = videoParameters[3 /* BITRATE */].readInt32LE(0);
-        var iFrameInterval = videoParameters[4 /* IFRAME_INTERVAL */].readInt32LE(0);
-        var width = videoAttributes[1 /* IMAGE_WIDTH */].readInt16LE(0);
-        var height = videoAttributes[2 /* IMAGE_HEIGHT */].readInt16LE(0);
-        var framerate = videoAttributes[3 /* FRAME_RATE */][0];
-        var audioCodec = audio[1 /* CODEC_TYPE */][0];
-        var audioParameters = tlv.decode(audio[2 /* CODEC_PARAMETERS */]);
-        var audioChannels = audioParameters[1 /* CHANNEL */][0];
-        var samplerate = audioParameters[3 /* SAMPLE_RATE */][0];
-        var audioBitrateMode = audioParameters[2 /* BIT_RATE */][0];
-        var audioBitrate = audioParameters[4 /* MAX_AUDIO_BITRATE */].readUInt32LE(0);
-        var typedEventTriggers = [];
-        var bit_index = 0;
+        if (changed) {
+            this.delegate.updateRecordingConfiguration(this.selectedConfiguration.parsed);
+            // notify controller storage about updated values!
+            this.stateChangeDelegate?.();
+        }
+    }
+    parseSelectedConfiguration(value) {
+        const decoded = tlv.decode(Buffer.from(value, "base64"));
+        const recording = tlv.decode(decoded[1 /* SelectedCameraRecordingConfigurationTypes.SELECTED_RECORDING_CONFIGURATION */]);
+        const video = tlv.decode(decoded[2 /* SelectedCameraRecordingConfigurationTypes.SELECTED_VIDEO_CONFIGURATION */]);
+        const audio = tlv.decode(decoded[3 /* SelectedCameraRecordingConfigurationTypes.SELECTED_AUDIO_CONFIGURATION */]);
+        const prebufferLength = recording[1 /* SupportedCameraRecordingConfigurationTypes.PREBUFFER_LENGTH */].readInt32LE(0);
+        let eventTriggerOptions = recording[2 /* SupportedCameraRecordingConfigurationTypes.EVENT_TRIGGER_OPTIONS */].readInt32LE(0);
+        const mediaContainerConfiguration = tlv.decode(recording[3 /* SupportedCameraRecordingConfigurationTypes.MEDIA_CONTAINER_CONFIGURATIONS */]);
+        const containerType = mediaContainerConfiguration[1 /* MediaContainerConfigurationTypes.MEDIA_CONTAINER_TYPE */][0];
+        const mediaContainerParameters = tlv.decode(mediaContainerConfiguration[2 /* MediaContainerConfigurationTypes.MEDIA_CONTAINER_PARAMETERS */]);
+        const fragmentLength = mediaContainerParameters[1 /* MediaContainerParameterTypes.FRAGMENT_LENGTH */].readInt32LE(0);
+        const videoCodec = video[1 /* VideoCodecConfigurationTypes.CODEC_TYPE */][0];
+        const videoParameters = tlv.decode(video[2 /* VideoCodecConfigurationTypes.CODEC_PARAMETERS */]);
+        const videoAttributes = tlv.decode(video[3 /* VideoCodecConfigurationTypes.ATTRIBUTES */]);
+        const profile = videoParameters[1 /* VideoCodecParametersTypes.PROFILE_ID */][0];
+        const level = videoParameters[2 /* VideoCodecParametersTypes.LEVEL */][0];
+        const videoBitrate = videoParameters[3 /* VideoCodecParametersTypes.BITRATE */].readInt32LE(0);
+        const iFrameInterval = videoParameters[4 /* VideoCodecParametersTypes.IFRAME_INTERVAL */].readInt32LE(0);
+        const width = videoAttributes[1 /* VideoAttributesTypes.IMAGE_WIDTH */].readInt16LE(0);
+        const height = videoAttributes[2 /* VideoAttributesTypes.IMAGE_HEIGHT */].readInt16LE(0);
+        const framerate = videoAttributes[3 /* VideoAttributesTypes.FRAME_RATE */][0];
+        const audioCodec = audio[1 /* AudioCodecConfigurationTypes.CODEC_TYPE */][0];
+        const audioParameters = tlv.decode(audio[2 /* AudioCodecConfigurationTypes.CODEC_PARAMETERS */]);
+        const audioChannels = audioParameters[1 /* AudioCodecParametersTypes.CHANNEL */][0];
+        const samplerate = audioParameters[3 /* AudioCodecParametersTypes.SAMPLE_RATE */][0];
+        const audioBitrateMode = audioParameters[2 /* AudioCodecParametersTypes.BIT_RATE */][0];
+        const audioBitrate = audioParameters[4 /* AudioCodecParametersTypes.MAX_AUDIO_BITRATE */].readUInt32LE(0);
+        const typedEventTriggers = [];
+        let bit_index = 0;
         while (eventTriggerOptions > 0) {
             if (eventTriggerOptions & 0x01) { // of the lowest bit is set add the next event trigger option
                 typedEventTriggers.push(1 << bit_index);
@@ -318,7 +357,7 @@ var RecordingManagement = /** @class */ (function () {
             eventTriggerTypes: typedEventTriggers,
             mediaContainerConfiguration: {
                 type: containerType,
-                fragmentLength: fragmentLength,
+                fragmentLength,
             },
             videoCodec: {
                 type: videoCodec,
@@ -331,104 +370,101 @@ var RecordingManagement = /** @class */ (function () {
                 resolution: [width, height, framerate],
             },
             audioCodec: {
-                audioChannels: audioChannels,
+                audioChannels,
                 type: audioCodec,
-                samplerate: samplerate,
+                samplerate,
                 bitrateMode: audioBitrateMode,
                 bitrate: audioBitrate,
             },
         };
-    };
-    RecordingManagement.prototype._supportedCameraRecordingConfiguration = function (options) {
-        var mediaContainers = Array.isArray(options.mediaContainerConfiguration)
+    }
+    _supportedCameraRecordingConfiguration(options) {
+        const mediaContainers = Array.isArray(options.mediaContainerConfiguration)
             ? options.mediaContainerConfiguration
             : [options.mediaContainerConfiguration];
-        var prebufferLength = Buffer.alloc(4);
-        var eventTriggerOptions = Buffer.alloc(8);
+        const prebufferLength = Buffer.alloc(4);
+        const eventTriggerOptions = Buffer.alloc(8);
         prebufferLength.writeInt32LE(options.prebufferLength, 0);
         eventTriggerOptions.writeInt32LE(this.eventTriggerOptions, 0);
-        return tlv.encode(1 /* PREBUFFER_LENGTH */, prebufferLength, 2 /* EVENT_TRIGGER_OPTIONS */, eventTriggerOptions, 3 /* MEDIA_CONTAINER_CONFIGURATIONS */, mediaContainers.map(function (config) {
-            var fragmentLength = Buffer.alloc(4);
+        return tlv.encode(1 /* SupportedCameraRecordingConfigurationTypes.PREBUFFER_LENGTH */, prebufferLength, 2 /* SupportedCameraRecordingConfigurationTypes.EVENT_TRIGGER_OPTIONS */, eventTriggerOptions, 3 /* SupportedCameraRecordingConfigurationTypes.MEDIA_CONTAINER_CONFIGURATIONS */, mediaContainers.map(config => {
+            const fragmentLength = Buffer.alloc(4);
             fragmentLength.writeInt32LE(config.fragmentLength, 0);
-            return tlv.encode(1 /* MEDIA_CONTAINER_TYPE */, config.type, 2 /* MEDIA_CONTAINER_PARAMETERS */, tlv.encode(1 /* FRAGMENT_LENGTH */, fragmentLength));
+            return tlv.encode(1 /* MediaContainerConfigurationTypes.MEDIA_CONTAINER_TYPE */, config.type, 2 /* MediaContainerConfigurationTypes.MEDIA_CONTAINER_PARAMETERS */, tlv.encode(1 /* MediaContainerParameterTypes.FRAGMENT_LENGTH */, fragmentLength));
         })).toString("base64");
-    };
-    RecordingManagement.prototype._supportedVideoRecordingConfiguration = function (videoOptions) {
+    }
+    _supportedVideoRecordingConfiguration(videoOptions) {
         if (!videoOptions.parameters) {
             throw new Error("Video parameters cannot be undefined");
         }
         if (!videoOptions.resolutions) {
             throw new Error("Video resolutions cannot be undefined");
         }
-        var codecParameters = tlv.encode(1 /* PROFILE_ID */, videoOptions.parameters.profiles, 2 /* LEVEL */, videoOptions.parameters.levels);
-        var videoStreamConfiguration = tlv.encode(1 /* CODEC_TYPE */, videoOptions.type, 2 /* CODEC_PARAMETERS */, codecParameters, 3 /* ATTRIBUTES */, videoOptions.resolutions.map(function (resolution) {
+        const codecParameters = tlv.encode(1 /* VideoCodecParametersTypes.PROFILE_ID */, videoOptions.parameters.profiles, 2 /* VideoCodecParametersTypes.LEVEL */, videoOptions.parameters.levels);
+        const videoStreamConfiguration = tlv.encode(1 /* VideoCodecConfigurationTypes.CODEC_TYPE */, videoOptions.type, 2 /* VideoCodecConfigurationTypes.CODEC_PARAMETERS */, codecParameters, 3 /* VideoCodecConfigurationTypes.ATTRIBUTES */, videoOptions.resolutions.map(resolution => {
             if (resolution.length !== 3) {
                 throw new Error("Unexpected video resolution");
             }
-            var width = Buffer.alloc(2);
-            var height = Buffer.alloc(2);
-            var frameRate = Buffer.alloc(1);
+            const width = Buffer.alloc(2);
+            const height = Buffer.alloc(2);
+            const frameRate = Buffer.alloc(1);
             width.writeUInt16LE(resolution[0], 0);
             height.writeUInt16LE(resolution[1], 0);
             frameRate.writeUInt8(resolution[2], 0);
-            return tlv.encode(1 /* IMAGE_WIDTH */, width, 2 /* IMAGE_HEIGHT */, height, 3 /* FRAME_RATE */, frameRate);
+            return tlv.encode(1 /* VideoAttributesTypes.IMAGE_WIDTH */, width, 2 /* VideoAttributesTypes.IMAGE_HEIGHT */, height, 3 /* VideoAttributesTypes.FRAME_RATE */, frameRate);
         }));
-        return tlv.encode(1 /* VIDEO_CODEC_CONFIGURATION */, videoStreamConfiguration).toString("base64");
-    };
-    RecordingManagement.prototype._supportedAudioStreamConfiguration = function (audioOptions) {
-        var audioCodecs = Array.isArray(audioOptions.codecs)
+        return tlv.encode(1 /* SupportedVideoRecordingConfigurationTypes.VIDEO_CODEC_CONFIGURATION */, videoStreamConfiguration).toString("base64");
+    }
+    _supportedAudioStreamConfiguration(audioOptions) {
+        const audioCodecs = Array.isArray(audioOptions.codecs)
             ? audioOptions.codecs
             : [audioOptions.codecs];
         if (audioCodecs.length === 0) {
             throw Error("CameraRecordingOptions.audio: At least one audio codec configuration must be specified!");
         }
-        var codecConfigurations = audioCodecs.map(function (codec) {
-            var providedSamplerates = Array.isArray(codec.samplerate)
+        const codecConfigurations = audioCodecs.map(codec => {
+            const providedSamplerates = Array.isArray(codec.samplerate)
                 ? codec.samplerate
                 : [codec.samplerate];
             if (providedSamplerates.length === 0) {
                 throw new Error("CameraRecordingOptions.audio.codecs: Audio samplerate cannot be empty!");
             }
-            var audioParameters = tlv.encode(1 /* CHANNEL */, Math.max(1, codec.audioChannels || 1), 2 /* BIT_RATE */, codec.bitrateMode || 0 /* VARIABLE */, 3 /* SAMPLE_RATE */, providedSamplerates);
-            return tlv.encode(1 /* CODEC_TYPE */, codec.type, 2 /* CODEC_PARAMETERS */, audioParameters);
+            const audioParameters = tlv.encode(1 /* AudioCodecParametersTypes.CHANNEL */, Math.max(1, codec.audioChannels || 1), 2 /* AudioCodecParametersTypes.BIT_RATE */, codec.bitrateMode || 0 /* AudioBitrate.VARIABLE */, 3 /* AudioCodecParametersTypes.SAMPLE_RATE */, providedSamplerates);
+            return tlv.encode(1 /* AudioCodecConfigurationTypes.CODEC_TYPE */, codec.type, 2 /* AudioCodecConfigurationTypes.CODEC_PARAMETERS */, audioParameters);
         });
-        return tlv.encode(1 /* AUDIO_CODEC_CONFIGURATION */, codecConfigurations).toString("base64");
-    };
-    RecordingManagement.prototype.computeConfigurationHash = function (algorithm) {
-        if (algorithm === void 0) { algorithm = "sha256"; }
-        var configurationHash = crypto_1.default.createHash(algorithm);
+        return tlv.encode(1 /* SupportedAudioRecordingConfigurationTypes.AUDIO_CODEC_CONFIGURATION */, codecConfigurations).toString("base64");
+    }
+    computeConfigurationHash(algorithm = "sha256") {
+        const configurationHash = crypto_1.default.createHash(algorithm);
         configurationHash.update(this.supportedCameraRecordingConfiguration);
         configurationHash.update(this.supportedVideoRecordingConfiguration);
         configurationHash.update(this.supportedAudioRecordingConfiguration);
         return configurationHash.digest().toString("hex");
-    };
+    }
     /**
      * @private
      */
-    RecordingManagement.prototype.serialize = function () {
-        var _a;
+    serialize() {
         return {
             configurationHash: {
                 algorithm: "sha256",
                 hash: this.computeConfigurationHash("sha256"),
             },
-            selectedConfiguration: (_a = this.selectedConfiguration) === null || _a === void 0 ? void 0 : _a.base64,
-            recordingActive: !!this.recordingManagementService.getCharacteristic(Characteristic_1.Characteristic.Active).value,
+            selectedConfiguration: this.selectedConfiguration?.base64,
+            recordingActive: this.recordingActive,
             recordingAudioActive: !!this.recordingManagementService.getCharacteristic(Characteristic_1.Characteristic.RecordingAudioActive).value,
             eventSnapshotsActive: !!this.operatingModeService.getCharacteristic(Characteristic_1.Characteristic.EventSnapshotsActive).value,
             homeKitCameraActive: !!this.operatingModeService.getCharacteristic(Characteristic_1.Characteristic.HomeKitCameraActive).value,
             periodicSnapshotsActive: !!this.operatingModeService.getCharacteristic(Characteristic_1.Characteristic.PeriodicSnapshotsActive).value,
         };
-    };
+    }
     /**
      * @private
      */
-    RecordingManagement.prototype.deserialize = function (serialized) {
-        var e_3, _a;
-        var _b;
-        var changedState = false;
+    deserialize(serialized) {
+        let changedState = false;
         // we only restore the `selectedConfiguration` if our supported configuration hasn't changed.
-        var currentConfigurationHash = this.computeConfigurationHash(serialized.configurationHash.algorithm);
+        const currentConfigurationHash = this.computeConfigurationHash(serialized.configurationHash.algorithm);
+        hksvDebug("deserialize: hasSavedSelectedConfig=%s savedHash=%s currentHash=%s hashMatch=%s recordingActive=%s", !!serialized.selectedConfiguration, serialized.configurationHash?.hash?.slice(0, 12), currentConfigurationHash.slice(0, 12), currentConfigurationHash === serialized.configurationHash?.hash, serialized.recordingActive);
         if (serialized.selectedConfiguration) {
             if (currentConfigurationHash === serialized.configurationHash.hash) {
                 this.selectedConfiguration = {
@@ -437,30 +473,26 @@ var RecordingManagement = /** @class */ (function () {
                 };
             }
             else {
+                hksvDebug("deserialize: discarding saved selectedConfiguration — supportedConfiguration hash changed since last run");
                 changedState = true;
             }
         }
+        this.recordingActive = serialized.recordingActive;
         this.recordingManagementService.updateCharacteristic(Characteristic_1.Characteristic.Active, serialized.recordingActive);
         this.recordingManagementService.updateCharacteristic(Characteristic_1.Characteristic.RecordingAudioActive, serialized.recordingAudioActive);
         this.operatingModeService.updateCharacteristic(Characteristic_1.Characteristic.EventSnapshotsActive, serialized.eventSnapshotsActive);
         this.operatingModeService.updateCharacteristic(Characteristic_1.Characteristic.PeriodicSnapshotsActive, serialized.periodicSnapshotsActive);
         this.operatingModeService.updateCharacteristic(Characteristic_1.Characteristic.HomeKitCameraActive, serialized.homeKitCameraActive);
-        try {
-            for (var _c = (0, tslib_1.__values)(this.sensorServices), _d = _c.next(); !_d.done; _d = _c.next()) {
-                var service = _d.value;
-                service.setCharacteristic(Characteristic_1.Characteristic.StatusActive, serialized.homeKitCameraActive);
-            }
-        }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
-        finally {
-            try {
-                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
-            }
-            finally { if (e_3) throw e_3.error; }
+        for (const service of this.sensorServices) {
+            service.setCharacteristic(Characteristic_1.Characteristic.StatusActive, serialized.homeKitCameraActive);
         }
         try {
             if (this.selectedConfiguration) {
+                hksvDebug("deserialize: replaying updateRecordingConfiguration to delegate");
                 this.delegate.updateRecordingConfiguration(this.selectedConfiguration.parsed);
+            }
+            else {
+                hksvDebug("deserialize: no selectedConfiguration to restore");
             }
             if (serialized.recordingActive) {
                 this.delegate.updateRecordingActive(serialized.recordingActive);
@@ -470,38 +502,28 @@ var RecordingManagement = /** @class */ (function () {
             console.error("Failed to properly initialize CameraRecordingDelegate from persistent storage: " + error.stack);
         }
         if (changedState) {
-            (_b = this.stateChangeDelegate) === null || _b === void 0 ? void 0 : _b.call(this);
+            this.stateChangeDelegate?.();
         }
-    };
+    }
     /**
      * @private
      */
-    RecordingManagement.prototype.setupStateChangeDelegate = function (delegate) {
+    setupStateChangeDelegate(delegate) {
         this.stateChangeDelegate = delegate;
-    };
-    RecordingManagement.prototype.destroy = function () {
+    }
+    destroy() {
         this.dataStreamManagement.destroy();
-    };
-    RecordingManagement.prototype.handleFactoryReset = function () {
-        var e_4, _a;
+    }
+    handleFactoryReset() {
+        hksvDebug("handleFactoryReset: clearing selectedConfiguration and resetting recording state");
         this.selectedConfiguration = undefined;
         this.recordingManagementService.updateCharacteristic(Characteristic_1.Characteristic.Active, false);
         this.recordingManagementService.updateCharacteristic(Characteristic_1.Characteristic.RecordingAudioActive, false);
         this.operatingModeService.updateCharacteristic(Characteristic_1.Characteristic.EventSnapshotsActive, true);
         this.operatingModeService.updateCharacteristic(Characteristic_1.Characteristic.PeriodicSnapshotsActive, true);
         this.operatingModeService.updateCharacteristic(Characteristic_1.Characteristic.HomeKitCameraActive, true);
-        try {
-            for (var _b = (0, tslib_1.__values)(this.sensorServices), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var service = _c.value;
-                service.setCharacteristic(Characteristic_1.Characteristic.StatusActive, true);
-            }
-        }
-        catch (e_4_1) { e_4 = { error: e_4_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_4) throw e_4.error; }
+        for (const service of this.sensorServices) {
+            service.setCharacteristic(Characteristic_1.Characteristic.StatusActive, true);
         }
         try {
             // notifying the delegate about the updated state
@@ -511,10 +533,12 @@ var RecordingManagement = /** @class */ (function () {
         catch (error) {
             console.error("CameraRecordingDelegate failed to update state after handleFactoryReset: " + error.stack);
         }
-    };
-    return RecordingManagement;
-}());
+    }
+}
 exports.RecordingManagement = RecordingManagement;
+/**
+ * @group Camera
+ */
 var CameraRecordingStreamEvents;
 (function (CameraRecordingStreamEvents) {
     /**
@@ -527,227 +551,219 @@ var CameraRecordingStreamEvents;
 /**
  * A `CameraRecordingStream` represents an ongoing stream request for a HomeKit Secure Video recording.
  * A single camera can only support one ongoing recording at a time.
+ *
+ * @group Camera
  */
-var CameraRecordingStream = /** @class */ (function (_super) {
-    (0, tslib_1.__extends)(CameraRecordingStream, _super);
-    function CameraRecordingStream(connection, delegate, requestId, streamId) {
-        var _a;
-        var _this = _super.call(this) || this;
-        _this.closed = false;
-        _this.eventHandler = (_a = {},
-            _a["close" /* CLOSE */] = _this.handleDataSendClose.bind(_this),
-            _a["ack" /* ACK */] = _this.handleDataSendAck.bind(_this),
-            _a);
-        _this.requestHandler = undefined;
-        _this.connection = connection;
-        _this.delegate = delegate;
-        _this.hdsRequestId = requestId;
-        _this.streamId = streamId;
-        _this.connection.on("closed" /* CLOSED */, _this.closeListener = _this.handleDataStreamConnectionClosed.bind(_this));
-        _this.connection.addProtocolHandler("dataSend" /* DATA_SEND */, _this);
-        return _this;
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+class CameraRecordingStream extends events_1.EventEmitter {
+    connection;
+    delegate;
+    hdsRequestId;
+    streamId;
+    abortController;
+    closed = false;
+    eventHandler = {
+        ["close" /* Topics.CLOSE */]: this.handleDataSendClose.bind(this),
+        ["ack" /* Topics.ACK */]: this.handleDataSendAck.bind(this),
+    };
+    requestHandler = undefined;
+    closeListener;
+    generator;
+    /**
+     * This timeout is used to detect non-returning generators.
+     * When we signal the delegate that it is being closed its generator must return withing 10s.
+     */
+    generatorTimeout;
+    /**
+     * This timer is used to check if the stream is properly closed when we expect it to do so.
+     * When we expect a close signal from the remote, we wait 12s for it. Otherwise, we abort and close it ourselves.
+     * This ensures memory is freed, and that we recover fast from erroneous states.
+     */
+    closingTimeout;
+    constructor(connection, delegate, requestId, streamId) {
+        super();
+        this.connection = connection;
+        this.delegate = delegate;
+        this.hdsRequestId = requestId;
+        this.streamId = streamId;
+        this.connection.on("closed" /* DataStreamConnectionEvent.CLOSED */, this.closeListener = this.handleDataStreamConnectionClosed.bind(this));
+        this.connection.addProtocolHandler("dataSend" /* Protocols.DATA_SEND */, this);
     }
-    CameraRecordingStream.prototype.startStreaming = function () {
+    startStreaming() {
         // noinspection JSIgnoredPromiseFromCall
         this._startStreaming();
-    };
-    CameraRecordingStream.prototype._startStreaming = function () {
-        var e_5, _a;
-        return (0, tslib_1.__awaiter)(this, void 0, void 0, function () {
-            var maxChunk, initialization, dataSequenceNumber, lastFragmentWasMarkedLast, _b, _c, packet, fragment, offset, dataChunkSequenceNumber, data, event, e_5_1, error_1, closeReason;
-            return (0, tslib_1.__generator)(this, function (_d) {
-                switch (_d.label) {
-                    case 0:
-                        debug("[HDS %s] Sending DATA_SEND OPEN response for streamId %d", this.connection.remoteAddress, this.streamId);
-                        this.connection.sendResponse("dataSend" /* DATA_SEND */, "open" /* OPEN */, this.hdsRequestId, datastream_1.HDSStatus.SUCCESS, {
-                            status: datastream_1.HDSStatus.SUCCESS,
-                        });
-                        maxChunk = 0x40000;
-                        initialization = true;
-                        dataSequenceNumber = 1;
-                        lastFragmentWasMarkedLast = false;
-                        _d.label = 1;
-                    case 1:
-                        _d.trys.push([1, 14, 15, 16]);
-                        this.generator = this.delegate.handleRecordingStreamRequest(this.streamId);
-                        _d.label = 2;
-                    case 2:
-                        _d.trys.push([2, 7, 8, 13]);
-                        _b = (0, tslib_1.__asyncValues)(this.generator);
-                        _d.label = 3;
-                    case 3: return [4 /*yield*/, _b.next()];
-                    case 4:
-                        if (!(_c = _d.sent(), !_c.done)) return [3 /*break*/, 6];
-                        packet = _c.value;
-                        if (this.closed) {
-                            console.error("[HDS ".concat(this.connection.remoteAddress, "] Delegate yielded fragment after stream ").concat(this.streamId, " was already closed!"));
-                            return [3 /*break*/, 6];
-                        }
-                        if (lastFragmentWasMarkedLast) {
-                            console.error("[HDS ".concat(this.connection.remoteAddress, "] Delegate yielded fragment for stream ").concat(this.streamId, " after already signaling end of stream!"));
-                            return [3 /*break*/, 6];
-                        }
-                        fragment = packet.data;
-                        offset = 0;
-                        dataChunkSequenceNumber = 1;
-                        while (offset < fragment.length) {
-                            data = fragment.slice(offset, offset + maxChunk);
-                            offset += data.length;
-                            event = {
-                                streamId: this.streamId,
-                                packets: [{
-                                        data: data,
-                                        metadata: {
-                                            dataType: initialization ? "mediaInitialization" /* MEDIA_INITIALIZATION */ : "mediaFragment" /* MEDIA_FRAGMENT */,
-                                            dataSequenceNumber: dataSequenceNumber,
-                                            dataChunkSequenceNumber: dataChunkSequenceNumber,
-                                            isLastDataChunk: offset >= fragment.length,
-                                            dataTotalSize: dataChunkSequenceNumber === 1 ? fragment.length : undefined,
-                                        },
-                                    }],
-                                endOfStream: offset >= fragment.length ? Boolean(packet.isLast).valueOf() : undefined,
-                            };
-                            debug("[HDS %s] Sending DATA_SEND DATA for stream %d with metadata: %o and length %d; EoS: %s", this.connection.remoteAddress, this.streamId, event.packets[0].metadata, data.length, event.endOfStream);
-                            this.connection.sendEvent("dataSend" /* DATA_SEND */, "data" /* DATA */, event);
-                            dataChunkSequenceNumber++;
-                            initialization = false;
-                        }
-                        lastFragmentWasMarkedLast = packet.isLast;
-                        if (packet.isLast) {
-                            return [3 /*break*/, 6];
-                        }
-                        dataSequenceNumber++;
-                        _d.label = 5;
-                    case 5: return [3 /*break*/, 3];
-                    case 6: return [3 /*break*/, 13];
-                    case 7:
-                        e_5_1 = _d.sent();
-                        e_5 = { error: e_5_1 };
-                        return [3 /*break*/, 13];
-                    case 8:
-                        _d.trys.push([8, , 11, 12]);
-                        if (!(_c && !_c.done && (_a = _b.return))) return [3 /*break*/, 10];
-                        return [4 /*yield*/, _a.call(_b)];
-                    case 9:
-                        _d.sent();
-                        _d.label = 10;
-                    case 10: return [3 /*break*/, 12];
-                    case 11:
-                        if (e_5) throw e_5.error;
-                        return [7 /*endfinally*/];
-                    case 12: return [7 /*endfinally*/];
-                    case 13:
-                        if (!lastFragmentWasMarkedLast && !this.closed) {
-                            // Delegate violates the contract. Exited normally on a non-closed stream without properly setting `isLast`.
-                            console.warn("[HDS ".concat(this.connection.remoteAddress, "] Delegate finished streaming for ").concat(this.streamId, " without setting RecordingPacket.isLast.         Can't notify Controller about endOfStream!"));
-                        }
-                        return [3 /*break*/, 16];
-                    case 14:
-                        error_1 = _d.sent();
-                        if (this.closed) {
-                            console.warn("[HDS ".concat(this.connection.remoteAddress, "] Encountered unexpected error on already closed recording stream ").concat(this.streamId, ": ").concat(error_1.stack));
-                        }
-                        else {
-                            closeReason = 5 /* UNEXPECTED_FAILURE */;
-                            if (error_1 instanceof datastream_1.HDSProtocolError) {
-                                closeReason = error_1.reason;
-                                debug("[HDS %s] Delegate signaled to close the recording stream %d.", this.connection.remoteAddress, this.streamId);
-                            }
-                            else if (error_1 instanceof datastream_1.HDSConnectionError && error_1.type === 2 /* CLOSED_SOCKET */) {
-                                // we are probably on a shutdown or just late. Connection is dead. End the stream!
-                                debug("[HDS %s] Exited recording stream due to closed HDS socket: stream id %d.", this.connection.remoteAddress, this.streamId);
-                                return [2 /*return*/]; // execute finally and then exit (we want to skip the `sendEvent` below)
-                            }
-                            else {
-                                console.error("[HDS ".concat(this.connection.remoteAddress, "] Encountered unexpected error for recording stream ").concat(this.streamId, ": ").concat(error_1.stack));
-                            }
-                            // call close to go through standard close routine!
-                            this.close(closeReason);
-                        }
-                        return [2 /*return*/];
-                    case 15:
-                        this.generator = undefined;
-                        if (this.generatorTimeout) {
-                            clearTimeout(this.generatorTimeout);
-                        }
-                        if (!this.closed) {
-                            // e.g. when returning with `endOfStream` we rely on the HomeHub to send an ACK event to close the recording.
-                            // With this timer we ensure that the HomeHub has the chance to close the stream gracefully but at the same time
-                            // ensure that if something fails the recording stream is freed nonetheless.
-                            this.kickOffCloseTimeout();
-                        }
-                        return [7 /*endfinally*/];
-                    case 16:
-                        if (initialization) { // we never actually sent anything out there!
-                            console.warn("[HDS ".concat(this.connection.remoteAddress, "] Delegate finished recording stream ").concat(this.streamId, " without sending anything out.       Controller will CANCEL."));
-                        }
-                        debug("[HDS %s] Finished DATA_SEND transmission for stream %d!", this.connection.remoteAddress, this.streamId);
-                        return [2 /*return*/];
-                }
-            });
+    }
+    async _startStreaming() {
+        debug("[HDS %s] Sending DATA_SEND OPEN response for streamId %d", this.connection.remoteAddress, this.streamId);
+        this.connection.sendResponse("dataSend" /* Protocols.DATA_SEND */, "open" /* Topics.OPEN */, this.hdsRequestId, datastream_1.HDSStatus.SUCCESS, {
+            status: datastream_1.HDSStatus.SUCCESS,
         });
-    };
+        // 256 KiB (1KiB to 900 KiB)
+        const maxChunk = 0x40000;
+        // The first buffer which we receive from the generator is always the `mediaInitialization` packet (mp4 `moov` box).
+        let initialization = true;
+        let dataSequenceNumber = 1;
+        // tracks if the last received RecordingPacket was yielded with `isLast=true`.
+        let lastFragmentWasMarkedLast = false;
+        try {
+            this.abortController = new AbortController();
+            this.generator = this.delegate.handleRecordingStreamRequest(this.streamId, this.abortController.signal);
+            for await (const packet of this.generator) {
+                if (this.closed) {
+                    debug("[HDS %s] Delegate yielded fragment after stream %d was already closed.", this.connection.remoteAddress, this.streamId);
+                    break;
+                }
+                if (lastFragmentWasMarkedLast) {
+                    console.error(`[HDS ${this.connection.remoteAddress}] Delegate yielded fragment for stream ${this.streamId} after already signaling end of stream!`);
+                    break;
+                }
+                const fragment = packet.data;
+                let offset = 0;
+                let dataChunkSequenceNumber = 1;
+                while (offset < fragment.length) {
+                    if (this.closed) {
+                        break;
+                    }
+                    const data = fragment.subarray(offset, offset + maxChunk);
+                    offset += data.length;
+                    // see https://github.com/Supereg/secure-video-specification#42-binary-data
+                    const event = {
+                        streamId: this.streamId,
+                        packets: [{
+                                data: data,
+                                metadata: {
+                                    dataType: initialization ? "mediaInitialization" /* PacketDataType.MEDIA_INITIALIZATION */ : "mediaFragment" /* PacketDataType.MEDIA_FRAGMENT */,
+                                    dataSequenceNumber: dataSequenceNumber,
+                                    dataChunkSequenceNumber: dataChunkSequenceNumber,
+                                    isLastDataChunk: offset >= fragment.length,
+                                    dataTotalSize: dataChunkSequenceNumber === 1 ? fragment.length : undefined,
+                                },
+                            }],
+                        endOfStream: offset >= fragment.length ? Boolean(packet.isLast).valueOf() : undefined,
+                    };
+                    debug("[HDS %s] Sending DATA_SEND DATA for stream %d with metadata: %o and length %d; EoS: %s", this.connection.remoteAddress, this.streamId, event.packets[0].metadata, data.length, event.endOfStream);
+                    this.connection.sendEvent("dataSend" /* Protocols.DATA_SEND */, "data" /* Topics.DATA */, event);
+                    dataChunkSequenceNumber++;
+                    initialization = false;
+                }
+                lastFragmentWasMarkedLast = packet.isLast;
+                if (packet.isLast) {
+                    break;
+                }
+                dataSequenceNumber++;
+            }
+            if (!lastFragmentWasMarkedLast && !this.closed) {
+                // Delegate violates the contract. Exited normally on a non-closed stream without properly setting `isLast`.
+                console.warn(`[HDS ${this.connection.remoteAddress}] Delegate finished streaming for ${this.streamId} without setting RecordingPacket.isLast. ` +
+                    "Can't notify Controller about endOfStream!");
+            }
+        }
+        catch (error) {
+            if (this.closed) {
+                console.warn(`[HDS ${this.connection.remoteAddress}] Encountered unexpected error on already closed recording stream ${this.streamId}: ${error.stack}`);
+            }
+            else {
+                let closeReason = 5 /* HDSProtocolSpecificErrorReason.UNEXPECTED_FAILURE */;
+                if (error instanceof datastream_1.HDSProtocolError) {
+                    closeReason = error.reason;
+                    debug("[HDS %s] Delegate signaled to close the recording stream %d.", this.connection.remoteAddress, this.streamId);
+                }
+                else if (error instanceof datastream_1.HDSConnectionError && error.type === 2 /* HDSConnectionErrorType.CLOSED_SOCKET */) {
+                    // we are probably on a shutdown or just late. Connection is dead. End the stream!
+                    debug("[HDS %s] Exited recording stream due to closed HDS socket: stream id %d.", this.connection.remoteAddress, this.streamId);
+                    return; // execute finally and then exit (we want to skip the `sendEvent` below)
+                }
+                else {
+                    console.error(`[HDS ${this.connection.remoteAddress}] Encountered unexpected error for recording stream ${this.streamId}: ${error.stack}`);
+                }
+                // call close to go through standard close routine!
+                this.close(closeReason);
+            }
+            return;
+        }
+        finally {
+            this.abortController = undefined;
+            this.generator = undefined;
+            if (this.generatorTimeout) {
+                clearTimeout(this.generatorTimeout);
+            }
+            if (!this.closed) {
+                // e.g. when returning with `endOfStream` we rely on the HomeHub to send an ACK event to close the recording.
+                // With this timer we ensure that the HomeHub has the chance to close the stream gracefully but at the same time
+                // ensure that if something fails the recording stream is freed nonetheless.
+                this.kickOffCloseTimeout();
+            }
+        }
+        debug("[HDS %s] Finished DATA_SEND transmission for stream %d!", this.connection.remoteAddress, this.streamId);
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    CameraRecordingStream.prototype.handleDataSendAck = function (message) {
-        var _this = this;
-        var streamId = message.streamId;
-        var endOfStream = message.endOfStream;
+    handleDataSendAck(message) {
+        const streamId = message.streamId;
+        const endOfStream = message.endOfStream;
         // The HomeKit Controller will send a DATA_SEND ACK if we set the `endOfStream` flag in the last packet
         // of our DATA_SEND DATA packet.
         // To my testing the session is then considered complete and the HomeKit controller will close the HDS Connection after 5 seconds.
         debug("[HDS %s] Received DATA_SEND ACK packet for streamId %s. Acknowledged %s.", this.connection.remoteAddress, streamId, endOfStream);
-        this.handleClosed(function () { var _a, _b; return (_b = (_a = _this.delegate).acknowledgeStream) === null || _b === void 0 ? void 0 : _b.call(_a, _this.streamId); });
-    };
+        this.handleClosed(() => this.delegate.acknowledgeStream?.(this.streamId));
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    CameraRecordingStream.prototype.handleDataSendClose = function (message) {
-        var _this = this;
+    handleDataSendClose(message) {
         // see https://github.com/Supereg/secure-video-specification#43-close
-        var streamId = message.streamId;
-        var reason = message.reason;
+        const streamId = message.streamId;
+        const reason = message.reason;
         if (streamId !== this.streamId) {
             return;
         }
         debug("[HDS %s] Received DATA_SEND CLOSE for streamId %d with reason %s", 
         // @ts-expect-error: forceConsistentCasingInFileNames compiler option
         this.connection.remoteAddress, streamId, datastream_1.HDSProtocolSpecificErrorReason[reason]);
-        this.handleClosed(function () { return _this.delegate.closeRecordingStream(streamId, reason); });
-    };
-    CameraRecordingStream.prototype.handleDataStreamConnectionClosed = function () {
-        var _this = this;
+        this.handleClosed(() => this.delegate.closeRecordingStream(streamId, reason));
+    }
+    handleDataStreamConnectionClosed() {
         debug("[HDS %s] The HDS connection of the stream %d closed.", this.connection.remoteAddress, this.streamId);
-        this.handleClosed(function () { return _this.delegate.closeRecordingStream(_this.streamId, undefined); });
-    };
-    CameraRecordingStream.prototype.handleClosed = function (closure) {
-        var _this = this;
+        this.handleClosed(() => this.delegate.closeRecordingStream(this.streamId, undefined));
+    }
+    handleClosed(closure) {
+        if (this.closed) {
+            return;
+        }
         this.closed = true;
+        // Signal the delegate's generator to stop immediately. This allows delegates with abortable async operations (e.g. pacing delays) to interrupt them and
+        // return without yielding to a closed stream.
+        this.abortController?.abort();
         if (this.closingTimeout) {
             clearTimeout(this.closingTimeout);
             this.closingTimeout = undefined;
         }
-        this.connection.removeProtocolHandler("dataSend" /* DATA_SEND */, this);
-        this.connection.removeListener("closed" /* CLOSED */, this.closeListener);
+        this.connection.removeProtocolHandler("dataSend" /* Protocols.DATA_SEND */, this);
+        this.connection.removeListener("closed" /* DataStreamConnectionEvent.CLOSED */, this.closeListener);
         if (this.generator) {
+            // Signal the generator to terminate via the async generator protocol. The return is queued and takes effect
+            // after the generator's current await completes. Combined with the AbortSignal above, this ensures the
+            // generator terminates promptly even if the delegate doesn't check the signal. We catch rejections
+            // to prevent unhandled promise warnings if the generator's cleanup throws.
+            // @ts-expect-error: AsyncGenerator.return() requires a value parameter, but we're signaling termination.
+            void this.generator.return().catch((error) => debug("[HDS %s] Error while closing recording generator for stream %d: %s", this.connection.remoteAddress, this.streamId, error.stack ?? String(error)));
             // when this variable is defined, the generator hasn't returned yet.
             // we start a timeout to uncover potential programming mistakes where we await forever and can't free resources.
-            this.generatorTimeout = setTimeout(function () {
+            this.generatorTimeout = setTimeout(() => {
                 console.error("[HDS %s] Recording download stream %d is still awaiting generator although stream was closed 10s ago! " +
-                    "This is a programming mistake by the camera implementation which prevents freeing up resources.", _this.connection.remoteAddress, _this.streamId);
+                    "This is a programming mistake by the camera implementation which prevents freeing up resources.", this.connection.remoteAddress, this.streamId);
             }, 10000);
         }
         try {
             closure();
         }
         catch (error) {
-            console.error("[HDS ".concat(this.connection.remoteAddress, "] CameraRecordingDelegated failed to handle closing the stream ").concat(this.streamId, ": ").concat(error.stack));
+            console.error(`[HDS ${this.connection.remoteAddress}] CameraRecordingDelegated failed to handle closing the stream ${this.streamId}: ${error.stack}`);
         }
-        this.emit("closed" /* CLOSED */);
-    };
+        this.emit("closed" /* CameraRecordingStreamEvents.CLOSED */);
+    }
     /**
      * This method can be used to close a recording session from the outside.
      * @param reason - The reason to close the stream with.
      */
-    CameraRecordingStream.prototype.close = function (reason) {
-        var _this = this;
+    close(reason) {
         if (this.closed) {
             return;
         }
@@ -756,26 +772,24 @@ var CameraRecordingStream = /** @class */ (function (_super) {
         this.connection.remoteAddress, this.streamId, reason ? datastream_1.HDSProtocolSpecificErrorReason[reason] : "CLOSED");
         // the `isConsideredClosed` check just ensures that the won't ever throw here and that `handledClosed` is always executed.
         if (!this.connection.isConsideredClosed()) {
-            this.connection.sendEvent("dataSend" /* DATA_SEND */, "close" /* CLOSE */, {
+            this.connection.sendEvent("dataSend" /* Protocols.DATA_SEND */, "close" /* Topics.CLOSE */, {
                 streamId: this.streamId,
                 reason: reason,
             });
         }
-        this.handleClosed(function () { return _this.delegate.closeRecordingStream(_this.streamId, reason); });
-    };
-    CameraRecordingStream.prototype.kickOffCloseTimeout = function () {
-        var _this = this;
+        this.handleClosed(() => this.delegate.closeRecordingStream(this.streamId, reason));
+    }
+    kickOffCloseTimeout() {
         if (this.closingTimeout) {
             clearTimeout(this.closingTimeout);
         }
-        this.closingTimeout = setTimeout(function () {
-            if (_this.closed) {
+        this.closingTimeout = setTimeout(() => {
+            if (this.closed) {
                 return;
             }
-            debug("[HDS %s] Recording stream %d took longer than expected to fully close. Force closing now!", _this.connection.remoteAddress, _this.streamId);
-            _this.close(3 /* CANCELLED */);
+            debug("[HDS %s] Recording stream %d took longer than expected to fully close. Force closing now!", this.connection.remoteAddress, this.streamId);
+            this.close(3 /* HDSProtocolSpecificErrorReason.CANCELLED */);
         }, 12000);
-    };
-    return CameraRecordingStream;
-}(events_1.EventEmitter));
+    }
+}
 //# sourceMappingURL=RecordingManagement.js.map

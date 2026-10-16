@@ -1,35 +1,35 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // here's a fake hardware device that we'll expose to HomeKit
-var __1 = require("..");
-var SPRINKLER = {
+const __1 = require("..");
+const SPRINKLER = {
     active: false,
     name: "Garten Hinten",
     timerEnd: 0,
     defaultDuration: 3600,
     motionDetected: false,
-    getStatus: function () {
+    getStatus: () => {
         //set the boolean here, this will be returned to the device
         SPRINKLER.motionDetected = false;
     },
-    identify: function () {
+    identify: () => {
         console.log("Identify the sprinkler!");
     },
 };
 // Generate a consistent UUID for our Motion Sensor Accessory that will remain the same even when
 // restarting our server. We use the `uuid.generate` helper function to create a deterministic
 // UUID based on an arbitrary "namespace" and the word "motionsensor".
-var sprinklerUUID = __1.uuid.generate("hap-nodejs:accessories:sprinkler");
+const sprinklerUUID = __1.uuid.generate("hap-nodejs:accessories:sprinkler");
 // This is the Accessory that we'll return to HAP-NodeJS that represents our fake motionSensor.
-var sprinkler = exports.accessory = new __1.Accessory("💦 Sprinkler", sprinklerUUID);
+const sprinkler = exports.accessory = new __1.Accessory("Sprinkler", sprinklerUUID);
 // Add properties for publishing (in case we're using Core.js and not BridgedCore.js)
 // @ts-expect-error: Core/BridgeCore API
 sprinkler.username = "A3:AB:3D:4D:2E:A3";
 // @ts-expect-error: Core/BridgeCore API
 sprinkler.pincode = "123-44-567";
-sprinkler.category = 28 /* SPRINKLER */;
+sprinkler.category = 28 /* Categories.SPRINKLER */;
 // Add the actual Valve Service and listen for change events from iOS.
-var sprinklerService = sprinkler.addService(__1.Service.Valve, "💦 Sprinkler");
+const sprinklerService = sprinkler.addService(__1.Service.Valve, "Sprinkler");
 // Sprinkler Controll
 function openVentile() {
     // Add your code here
@@ -43,9 +43,9 @@ sprinklerService
     .setCharacteristic(__1.Characteristic.Name, SPRINKLER.name);
 sprinklerService
     .getCharacteristic(__1.Characteristic.Active)
-    .on("get" /* GET */, function (callback) {
+    .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
     console.log("get Active");
-    var err = null; // in case there were any problems
+    const err = null; // in case there were any problems
     if (SPRINKLER.active) {
         callback(err, true);
     }
@@ -53,12 +53,12 @@ sprinklerService
         callback(err, false);
     }
 })
-    .on("set" /* SET */, function (newValue, callback) {
+    .on("set" /* CharacteristicEventTypes.SET */, (newValue, callback) => {
     console.log("set Active => setNewValue: " + newValue);
     if (SPRINKLER.active) {
         SPRINKLER.active = false;
         closeVentile();
-        setTimeout(function () {
+        setTimeout(() => {
             console.log("Ausgeschaltet");
             SPRINKLER.timerEnd = SPRINKLER.defaultDuration + Math.floor(new Date().getTime() / 1000);
             callback(null);
@@ -73,7 +73,7 @@ sprinklerService
     else {
         SPRINKLER.active = true;
         openVentile();
-        setTimeout(function () {
+        setTimeout(() => {
             console.log("Eingeschaltet");
             SPRINKLER.timerEnd = SPRINKLER.defaultDuration + Math.floor(new Date().getTime() / 1000);
             callback(null, SPRINKLER.defaultDuration);
@@ -91,9 +91,9 @@ sprinklerService
 });
 sprinklerService
     .getCharacteristic(__1.Characteristic.InUse)
-    .on("get" /* GET */, function (callback) {
+    .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
     console.log("get In_Use");
-    var err = null; // in case there were any problems
+    const err = null; // in case there were any problems
     if (SPRINKLER.active) {
         callback(err, true);
     }
@@ -101,16 +101,16 @@ sprinklerService
         callback(err, false);
     }
 })
-    .on("set" /* SET */, function (newValue, callback) {
+    .on("set" /* CharacteristicEventTypes.SET */, (newValue, callback) => {
     console.log("set In_Use => NewValue: " + newValue);
     callback();
 });
 sprinklerService
     .getCharacteristic(__1.Characteristic.RemainingDuration)
-    .on("get" /* GET */, function (callback) {
-    var err = null; // in case there were any problems
+    .on("get" /* CharacteristicEventTypes.GET */, (callback) => {
+    const err = null; // in case there were any problems
     if (SPRINKLER.active) {
-        var duration = SPRINKLER.timerEnd - Math.floor(new Date().getTime() / 1000);
+        const duration = SPRINKLER.timerEnd - Math.floor(new Date().getTime() / 1000);
         console.log("RemainingDuration: " + duration);
         callback(err, duration);
     }
@@ -120,7 +120,7 @@ sprinklerService
 });
 sprinklerService
     .getCharacteristic(__1.Characteristic.SetDuration)
-    .on("set" /* SET */, function (newValue, callback) {
+    .on("set" /* CharacteristicEventTypes.SET */, (newValue, callback) => {
     console.log("SetDuration => NewValue: " + newValue);
     SPRINKLER.defaultDuration = newValue;
     callback();
